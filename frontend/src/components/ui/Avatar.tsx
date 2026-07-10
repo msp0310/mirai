@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Member } from "../../types/schedule";
+import * as styles from "./Avatar.css";
 
 type AvatarProps = {
   member: Pick<Member, "id" | "initials" | "color">;
@@ -9,7 +10,7 @@ type AvatarProps = {
 export function Avatar({ member }: AvatarProps) {
   return (
     <span
-      className="avatar"
+      className={styles.avatar}
       style={{ "--avatar-color": member.color } as CSSProperties}
       title={member.id}
     >

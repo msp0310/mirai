@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { GanttWorkbench } from "../components/gantt/GanttWorkbench";
+import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
 import { Sidebar } from "../components/layout/Sidebar";
 import {
   Topbar,
@@ -8,9 +8,9 @@ import {
   type TopbarNotification,
 } from "../components/layout/Topbar";
 import { type ViewTab } from "../components/layout/ViewTabs";
-import type { ProjectImportMode } from "../components/panels/ProjectImportSheet";
-import type { CreateProjectTemplateInput } from "../components/panels/ProjectCreateSheet";
-import type { TaskCsvImportOptions } from "../components/panels/TaskCsvImportSheet";
+import type { ProjectImportMode } from "../features/projects/components/ProjectImportSheet";
+import type { CreateProjectTemplateInput } from "../features/projects/components/ProjectCreateSheet";
+import type { TaskCsvImportOptions } from "../features/gantt/components/TaskCsvImportSheet";
 import { ToastViewport } from "../components/ui/ToastViewport";
 import {
   buildTaskChangeReview,
@@ -100,61 +100,61 @@ type AppWorkbenchProps = {
 type CollapsedIdUpdate = Set<string> | ((current: Set<string>) => Set<string>);
 
 const ActivityPanel = lazy(() =>
-  import("../components/activity/ActivityPanel").then((module) => ({
+  import("../features/activity/components/ActivityPanel").then((module) => ({
     default: module.ActivityPanel,
   })),
 );
 
 const CalendarPanel = lazy(() =>
-  import("../components/calendar/CalendarPanel").then((module) => ({
+  import("../features/calendar/components/CalendarPanel").then((module) => ({
     default: module.CalendarPanel,
   })),
 );
 
 const HelpPage = lazy(() =>
-  import("../components/help/HelpPage").then((module) => ({
+  import("../features/help/components/HelpPage").then((module) => ({
     default: module.HelpPage,
   })),
 );
 
 const ProjectIssuePanel = lazy(() =>
-  import("../components/issues/ProjectIssuePanel").then((module) => ({
+  import("../features/issues/components/ProjectIssuePanel").then((module) => ({
     default: module.ProjectIssuePanel,
   })),
 );
 
 const WorkLogPanel = lazy(() =>
-  import("../components/worklogs/WorkLogPanel").then((module) => ({
+  import("../features/worklogs/components/WorkLogPanel").then((module) => ({
     default: module.WorkLogPanel,
   })),
 );
 
 const CreateTaskSheet = lazy(() =>
-  import("../components/panels/CreateTaskSheet").then((module) => ({
+  import("../features/gantt/components/CreateTaskSheet").then((module) => ({
     default: module.CreateTaskSheet,
   })),
 );
 
 const MilestonePanel = lazy(() =>
-  import("../components/milestones/MilestonePanel").then((module) => ({
+  import("../features/milestones/components/MilestonePanel").then((module) => ({
     default: module.MilestonePanel,
   })),
 );
 
 const MasterSettingsPage = lazy(() =>
-  import("../components/panels/MasterSettingsSheet").then((module) => ({
+  import("../features/settings/components/MasterSettingsSheet").then((module) => ({
     default: module.MasterSettingsPage,
   })),
 );
 
 const ProjectCreateSheet = lazy(() =>
-  import("../components/panels/ProjectCreateSheet").then((module) => ({
+  import("../features/projects/components/ProjectCreateSheet").then((module) => ({
     default: module.ProjectCreateSheet,
   })),
 );
 
 const ProjectImportSheet = lazy(() =>
-  import("../components/panels/ProjectImportSheet").then((module) => ({
+  import("../features/projects/components/ProjectImportSheet").then((module) => ({
     default: module.ProjectImportSheet,
   })),
 );
@@ -166,55 +166,55 @@ const ProjectPortfolioPanel = lazy(() =>
 );
 
 const ProjectSettingsPage = lazy(() =>
-  import("../components/panels/ProjectSettingsSheet").then((module) => ({
+  import("../features/projects/components/ProjectSettingsSheet").then((module) => ({
     default: module.ProjectSettingsPage,
   })),
 );
 
 const ResetDraftDialog = lazy(() =>
-  import("../components/panels/ResetDraftDialog").then((module) => ({
+  import("../features/gantt/components/ResetDraftDialog").then((module) => ({
     default: module.ResetDraftDialog,
   })),
 );
 
 const ResourcePanel = lazy(() =>
-  import("../components/resource/ResourcePanel").then((module) => ({
+  import("../features/resource/components/ResourcePanel").then((module) => ({
     default: module.ResourcePanel,
   })),
 );
 
 const SaveReviewDialog = lazy(() =>
-  import("../components/panels/SaveReviewDialog").then((module) => ({
+  import("../features/gantt/components/SaveReviewDialog").then((module) => ({
     default: module.SaveReviewDialog,
   })),
 );
 
 const ShortcutHelpSheet = lazy(() =>
-  import("../components/panels/ShortcutHelpSheet").then((module) => ({
+  import("../features/gantt/components/ShortcutHelpSheet").then((module) => ({
     default: module.ShortcutHelpSheet,
   })),
 );
 
 const SummaryStrip = lazy(() =>
-  import("../components/summary/SummaryStrip").then((module) => ({
+  import("../features/status/components/SummaryStrip").then((module) => ({
     default: module.SummaryStrip,
   })),
 );
 
 const BrabioTaskImportSheet = lazy(() =>
-  import("../components/panels/BrabioTaskImportSheet").then((module) => ({
+  import("../features/gantt/components/BrabioTaskImportSheet").then((module) => ({
     default: module.BrabioTaskImportSheet,
   })),
 );
 
 const TaskCsvImportSheet = lazy(() =>
-  import("../components/panels/TaskCsvImportSheet").then((module) => ({
+  import("../features/gantt/components/TaskCsvImportSheet").then((module) => ({
     default: module.TaskCsvImportSheet,
   })),
 );
 
 const TaskInspector = lazy(() =>
-  import("../components/panels/TaskInspector").then((module) => ({
+  import("../features/gantt/components/TaskInspector").then((module) => ({
     default: module.TaskInspector,
   })),
 );

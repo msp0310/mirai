@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LoginScreen } from "./components/auth/LoginScreen";
+import { LoginScreen } from "./features/auth/components/LoginScreen";
 import { AppWorkbench } from "./app/AppWorkbench";
 import { authRepository, AuthRequestError } from "./data/authRepository";
 import { apiScheduleRepository, ApiRequestError } from "./data/apiScheduleRepository";

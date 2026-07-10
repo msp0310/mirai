@@ -1,9 +1,9 @@
-@import "./styles/auth.css";
-@import "./styles/portfolio.css";
-@import "./styles/gantt.css";
-@import "./styles/resource.css";
-@import "./styles/settings.css";
-@import "./styles/calendar-milestones.css";
+@import "./features/auth/styles.css";
+@import "./features/projects/styles.css";
+@import "./features/gantt/styles.css";
+@import "./features/resource/styles.css";
+@import "./features/settings/styles.css";
+@import "./features/calendar/styles.css";
 
 :root {
   color: #172033;
