@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import type {
+  Attachment,
   CalendarDefinition,
   Member,
   ScheduleTask,
@@ -30,8 +31,10 @@ import {
 } from "../../../lib/schedule";
 import { normalizeProgressStatus } from "../../../lib/taskOperations";
 import { MemberChecklist } from "../../../components/ui/MemberChecklist";
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type TaskInspectorProps = {
+  attachments: Attachment[];
   calendar: CalendarDefinition;
   calendarAware: boolean;
   focusRequest: {
@@ -51,12 +54,16 @@ type TaskInspectorProps = {
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSetTaskDates: (taskId: string, patch: Partial<Pick<ScheduleTask, "end" | "start">>) => void;
   onUpdateTask: (taskId: string, patch: Partial<ScheduleTask>) => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
+  projectId: string;
   tasks: ScheduleTask[];
   task: ScheduleTask | null;
 };
 
 /** 選択中タスクの詳細情報と編集項目を表示します。 */
 export function TaskInspector({
+  attachments,
   calendar,
   calendarAware,
   focusRequest,
@@ -67,6 +74,9 @@ export function TaskInspector({
   onResizeTask,
   onSetTaskDates,
   onUpdateTask,
+  onAttachmentAdded,
+  onAttachmentDeleted,
+  projectId,
   tasks,
   task,
 }: TaskInspectorProps) {
@@ -736,6 +746,18 @@ export function TaskInspector({
                 <span>{formatCommentTime(comment.createdAt)}</span>
               </div>
               <p>{comment.body}</p>
+              <AttachmentPanel
+                attachments={attachments.filter(
+                  (attachment) =>
+                    attachment.ownerType === "taskComment" && attachment.ownerId === comment.id,
+                )}
+                onAttachmentAdded={onAttachmentAdded}
+                onAttachmentDeleted={onAttachmentDeleted}
+                ownerId={comment.id}
+                ownerType="taskComment"
+                parentId={currentTask.id}
+                projectId={projectId}
+              />
             </article>
           ))}
           {comments.length === 0 ? (
@@ -743,6 +765,16 @@ export function TaskInspector({
           ) : null}
         </div>
       </section>
+      <AttachmentPanel
+        attachments={attachments.filter(
+          (attachment) => attachment.ownerType === "task" && attachment.ownerId === currentTask.id,
+        )}
+        onAttachmentAdded={onAttachmentAdded}
+        onAttachmentDeleted={onAttachmentDeleted}
+        ownerId={currentTask.id}
+        ownerType="task"
+        projectId={projectId}
+      />
       <section className="task-detail-section">
         <div className="task-detail-heading">
           <span>

@@ -10,6 +10,7 @@ import {
 import { useMemo, useState } from "react";
 import type { AuthUser } from "../../../data/authRepository";
 import type {
+  Attachment,
   Member,
   Project,
   ProjectIssue,
@@ -20,14 +21,18 @@ import type {
   ScheduleTask,
 } from "../../../types/schedule";
 import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type ProjectIssuePanelProps = {
+  attachments: Attachment[];
   issues: ProjectIssue[];
   members: Member[];
   currentUser: AuthUser;
   onCreateIssue: (issue: Partial<ProjectIssue>) => string;
   onSelectTask: (taskId: string) => void;
   onUpdateIssue: (issueId: string, patch: Partial<ProjectIssue>) => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
   project: Project;
   tasks: ScheduleTask[];
 };
@@ -66,12 +71,15 @@ const typeOptions = Object.keys(typeLabels) as ProjectIssueType[];
 
 /** プロジェクトに紐づく課題の一覧と更新操作を提供します。 */
 export function ProjectIssuePanel({
+  attachments,
   issues,
   members,
   currentUser,
   onCreateIssue,
   onSelectTask,
   onUpdateIssue,
+  onAttachmentAdded,
+  onAttachmentDeleted,
   project,
   tasks,
 }: ProjectIssuePanelProps) {
@@ -190,12 +198,16 @@ export function ProjectIssuePanel({
 
       {detailIssue ? (
         <IssueDetailPage
+          attachments={attachments}
           issue={detailIssue}
           memberById={memberById}
           onAddReply={(body) => addIssueReply(detailIssue.id, body)}
+          onAttachmentAdded={onAttachmentAdded}
+          onAttachmentDeleted={onAttachmentDeleted}
           onBack={() => setDetailIssueId(null)}
           onEdit={() => openEditDialog(detailIssue)}
           onSelectTask={onSelectTask}
+          projectId={project.id}
           taskById={taskById}
         />
       ) : (
@@ -573,20 +585,28 @@ function IssueStat({
 }
 
 function IssueDetailPage({
+  attachments,
   issue,
   memberById,
   onAddReply,
+  onAttachmentAdded,
+  onAttachmentDeleted,
   onBack,
   onEdit,
   onSelectTask,
+  projectId,
   taskById,
 }: {
+  attachments: Attachment[];
   issue: ProjectIssue;
   memberById: Map<string, Member>;
   onAddReply: (body: string) => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
   onBack: () => void;
   onEdit: () => void;
   onSelectTask: (taskId: string) => void;
+  projectId: string;
   taskById: Map<string, ScheduleTask>;
 }) {
   const linkedTask = issue.taskIds[0] ? (taskById.get(issue.taskIds[0]) ?? null) : null;
@@ -611,7 +631,26 @@ function IssueDetailPage({
         onSelectTask={onSelectTask}
       />
 
-      <IssueReplySection onAddReply={onAddReply} replies={issue.replies ?? []} />
+      <AttachmentPanel
+        attachments={attachments.filter(
+          (attachment) => attachment.ownerType === "issue" && attachment.ownerId === issue.id,
+        )}
+        onAttachmentAdded={onAttachmentAdded}
+        onAttachmentDeleted={onAttachmentDeleted}
+        ownerId={issue.id}
+        ownerType="issue"
+        projectId={projectId}
+      />
+
+      <IssueReplySection
+        attachments={attachments}
+        onAddReply={onAddReply}
+        onAttachmentAdded={onAttachmentAdded}
+        onAttachmentDeleted={onAttachmentDeleted}
+        parentIssueId={issue.id}
+        projectId={projectId}
+        replies={issue.replies ?? []}
+      />
     </article>
   );
 }
@@ -664,10 +703,20 @@ function IssueReadView({
 }
 
 function IssueReplySection({
+  attachments,
   onAddReply,
+  onAttachmentAdded,
+  onAttachmentDeleted,
+  parentIssueId,
+  projectId,
   replies,
 }: {
+  attachments: Attachment[];
   onAddReply: (body: string) => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
+  parentIssueId: string;
+  projectId: string;
   replies: ProjectIssueReply[];
 }) {
   const [replyBody, setReplyBody] = useState("");
@@ -704,6 +753,18 @@ function IssueReplySection({
                 <div className="issue-markdown-preview issue-reply-body">
                   <MarkdownPreview content={reply.body} />
                 </div>
+                <AttachmentPanel
+                  attachments={attachments.filter(
+                    (attachment) =>
+                      attachment.ownerType === "issueReply" && attachment.ownerId === reply.id,
+                  )}
+                  onAttachmentAdded={onAttachmentAdded}
+                  onAttachmentDeleted={onAttachmentDeleted}
+                  ownerId={reply.id}
+                  ownerType="issueReply"
+                  parentId={parentIssueId}
+                  projectId={projectId}
+                />
               </div>
             </article>
           ))

@@ -50,6 +50,7 @@ import { getActiveMembers, isMemberActive } from "../lib/members";
 import { getProjectAssignedMembers, projectLifecycleLabels } from "../lib/projects";
 import type { ScheduleFilters, TaskStatus } from "../types/schedule";
 import type {
+  Attachment,
   ActivityCategory,
   ActivityLogEntry,
   ActivityTone,
@@ -1027,6 +1028,29 @@ export function AppWorkbench({
     setLastSavedAt(saved.savedAt);
     setSavedSignature(createDraftSignature(nextSavedDraft));
     setSavedWorkspace(nextSavedDraft.workspace);
+  }
+
+  /** 添付メタデータだけを案件単位で更新します。スケジュール保存とは分離します。 */
+  function updateProjectAttachments(updater: (current: Attachment[]) => Attachment[]) {
+    setWorkspace((current) => ({
+      ...current,
+      schedules: current.schedules.map((snapshot) =>
+        snapshot.project.id === schedule.project.id
+          ? { ...snapshot, attachments: updater(snapshot.attachments ?? []) }
+          : snapshot,
+      ),
+    }));
+  }
+
+  function addProjectAttachment(attachment: Attachment) {
+    updateProjectAttachments((current) => [
+      attachment,
+      ...current.filter((item) => item.id !== attachment.id),
+    ]);
+  }
+
+  function deleteProjectAttachment(attachmentId: string) {
+    updateProjectAttachments((current) => current.filter((item) => item.id !== attachmentId));
   }
 
   /** 操作履歴のエントリを生成します。 */
@@ -2565,18 +2589,22 @@ export function AppWorkbench({
           ) : null}
           {showMainProjectViews && activeTab === "Issues" ? (
             <ProjectIssuePanel
+              attachments={schedule.attachments ?? []}
               currentUser={currentUser}
               issues={activeIssues}
               members={projectMembers}
               onCreateIssue={createProjectIssue}
               onSelectTask={(taskId) => selectTaskFromSecondaryView(taskId)}
               onUpdateIssue={updateProjectIssue}
+              onAttachmentAdded={addProjectAttachment}
+              onAttachmentDeleted={deleteProjectAttachment}
               project={schedule.project}
               tasks={tasks}
             />
           ) : null}
           {showMainProjectViews && activeTab === "WorkLogs" ? (
             <WorkLogPanel
+              attachments={schedule.attachments ?? []}
               currentUser={currentUser}
               issues={activeIssues}
               members={projectMembers}
@@ -2584,6 +2612,8 @@ export function AppWorkbench({
               onDeleteWorkLog={deleteProjectWorkLog}
               onSelectTask={(taskId) => selectTaskFromSecondaryView(taskId)}
               onUpdateWorkLog={updateProjectWorkLog}
+              onAttachmentAdded={addProjectAttachment}
+              onAttachmentDeleted={deleteProjectAttachment}
               project={schedule.project}
               tasks={tasks}
               workLogs={activeWorkLogs}
@@ -2669,6 +2699,7 @@ export function AppWorkbench({
       <Suspense fallback={null}>
         {showMainProjectViews && activeTab === "Gantt" ? (
           <TaskInspector
+            attachments={schedule.attachments ?? []}
             calendar={schedule.calendar}
             calendarAware={calendarAware}
             focusRequest={taskFocusRequest}
@@ -2687,6 +2718,9 @@ export function AppWorkbench({
             onResizeTask={taskActions.resizeTask}
             onSetTaskDates={taskActions.setTaskDates}
             onUpdateTask={taskActions.updateTask}
+            onAttachmentAdded={addProjectAttachment}
+            onAttachmentDeleted={deleteProjectAttachment}
+            projectId={schedule.project.id}
             tasks={tasks}
             task={taskInspectorTask}
           />

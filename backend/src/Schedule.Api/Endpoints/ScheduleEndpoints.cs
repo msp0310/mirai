@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Schedule.Api.Application;
 using Schedule.Api.Contracts;
 
@@ -82,6 +83,74 @@ public static class ScheduleEndpoints
             CancellationToken cancellationToken) =>
         {
             return Results.Ok(await schedules.GetChangeLogsAsync(projectId, cancellationToken));
+        });
+
+        api.MapGet("/projects/{projectId}/attachments", async (
+            string projectId,
+            AttachmentService attachments,
+            CancellationToken cancellationToken) =>
+        {
+            return Results.Ok(await attachments.ListAsync(projectId, cancellationToken));
+        });
+
+        api.MapPost("/projects/{projectId}/attachments", async (
+            string projectId,
+            HttpContext context,
+            [FromForm] string ownerType,
+            [FromForm] string ownerId,
+            [FromForm] string? parentId,
+            [FromForm] IFormFile? file,
+            AttachmentService attachments,
+            CancellationToken cancellationToken) =>
+        {
+            if (context.Items["CurrentUser"] is not AuthUserDto user)
+            {
+                return Results.Unauthorized();
+            }
+
+            var result = await attachments.UploadAsync(
+                projectId,
+                ownerType,
+                ownerId,
+                parentId,
+                file,
+                user,
+                cancellationToken);
+            return result.StatusCode switch
+            {
+                StatusCodes.Status404NotFound => Results.NotFound(),
+                StatusCodes.Status400BadRequest => Results.BadRequest(new { message = result.Error }),
+                _ => Results.Ok(result.Attachment)
+            };
+        })
+        .DisableAntiforgery();
+
+        api.MapGet("/projects/{projectId}/attachments/{attachmentId}/download", async (
+            string projectId,
+            string attachmentId,
+            AttachmentService attachments,
+            CancellationToken cancellationToken) =>
+        {
+            var download = await attachments.OpenDownloadAsync(projectId, attachmentId, cancellationToken);
+            return download is null
+                ? Results.NotFound()
+                : Results.File(
+                    download.Stream,
+                    download.ContentType,
+                    download.FileName,
+                    enableRangeProcessing: true,
+                    lastModified: null,
+                    entityTag: null);
+        });
+
+        api.MapDelete("/projects/{projectId}/attachments/{attachmentId}", async (
+            string projectId,
+            string attachmentId,
+            AttachmentService attachments,
+            CancellationToken cancellationToken) =>
+        {
+            var deleted = await attachments.DeleteAsync(projectId, attachmentId, cancellationToken);
+            return deleted ? Results.NoContent() : Results.NotFound();
         });
 
         api.MapGet("/holidays/japan", async (

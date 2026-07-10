@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Schedule.Api.Application;
 using Schedule.Api.Endpoints;
 using Schedule.Api.Infrastructure;
+using Microsoft.AspNetCore.Http.Features;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +39,11 @@ builder.Services.AddHttpClient<JapaneseHolidayService>(client =>
 });
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ScheduleService>();
+builder.Services.AddScoped<AttachmentService>();
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 50 * 1024 * 1024;
+});
 
 var app = builder.Build();
 

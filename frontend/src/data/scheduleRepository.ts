@@ -1,5 +1,6 @@
 import type {
   CalendarDefinition,
+  Attachment,
   Member,
   Project,
   ProjectIssue,
@@ -9,6 +10,7 @@ import type {
 } from "../types/schedule";
 
 export type ScheduleSnapshot = {
+  attachments?: Attachment[];
   calendar: CalendarDefinition;
   issues?: ProjectIssue[];
   members: Member[];

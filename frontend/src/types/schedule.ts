@@ -98,7 +98,24 @@ export type TaskChecklistItem = {
   label: string;
 };
 
+export type AttachmentOwnerType = "issue" | "issueReply" | "task" | "taskComment" | "workLog";
+
+export type Attachment = {
+  contentType: string;
+  downloadUrl: string;
+  fileName: string;
+  id: string;
+  ownerId: string;
+  ownerType: AttachmentOwnerType;
+  parentId?: string;
+  sha256: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  uploadedBy: string;
+};
+
 export type TaskComment = {
+  attachments?: Attachment[];
   author: string;
   body: string;
   createdAt: string;
@@ -122,6 +139,7 @@ export type ProjectIssueGitHubLink = {
 };
 
 export type ProjectIssueReply = {
+  attachments?: Attachment[];
   authorId?: string;
   authorName: string;
   body: string;
@@ -131,6 +149,7 @@ export type ProjectIssueReply = {
 };
 
 export type ProjectIssue = {
+  attachments?: Attachment[];
   assigneeIds: string[];
   body: string;
   closedAt?: string;
@@ -148,6 +167,7 @@ export type ProjectIssue = {
 };
 
 export type ProjectWorkLog = {
+  attachments?: Attachment[];
   billable: boolean;
   category: WorkLogCategory;
   createdAt: string;

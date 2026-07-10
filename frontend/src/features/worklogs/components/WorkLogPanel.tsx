@@ -11,6 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import type { AuthUser } from "../../../data/authRepository";
 import type {
+  Attachment,
   Member,
   Project,
   ProjectIssue,
@@ -19,8 +20,10 @@ import type {
   WorkLogCategory,
 } from "../../../types/schedule";
 import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type WorkLogPanelProps = {
+  attachments: Attachment[];
   currentUser: AuthUser;
   issues: ProjectIssue[];
   members: Member[];
@@ -28,6 +31,8 @@ type WorkLogPanelProps = {
   onDeleteWorkLog: (workLogId: string) => void;
   onSelectTask: (taskId: string) => void;
   onUpdateWorkLog: (workLogId: string, patch: Partial<ProjectWorkLog>) => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
   project: Project;
   tasks: ScheduleTask[];
   workLogs: ProjectWorkLog[];
@@ -51,6 +56,7 @@ const workLogCategoryOptions = Object.keys(workLogCategoryLabels) as WorkLogCate
 
 /** 運用保守を含むプロジェクト作業時間の記録を管理します。 */
 export function WorkLogPanel({
+  attachments,
   currentUser,
   issues,
   members,
@@ -58,6 +64,8 @@ export function WorkLogPanel({
   onDeleteWorkLog,
   onSelectTask,
   onUpdateWorkLog,
+  onAttachmentAdded,
+  onAttachmentDeleted,
   project,
   tasks,
   workLogs,
@@ -187,6 +195,12 @@ export function WorkLogPanel({
         onBack={() => setDetailWorkLogId(null)}
         onDelete={() => deleteWorkLog(detailWorkLog.id)}
         onEdit={() => openEditPage(detailWorkLog)}
+        attachments={attachments.filter(
+          (attachment) =>
+            attachment.ownerType === "workLog" && attachment.ownerId === detailWorkLog.id,
+        )}
+        onAttachmentAdded={onAttachmentAdded}
+        onAttachmentDeleted={onAttachmentDeleted}
         onSelectTask={onSelectTask}
         project={project}
         task={detailWorkLog.taskId ? (taskById.get(detailWorkLog.taskId) ?? null) : null}
@@ -349,21 +363,27 @@ export function WorkLogPanel({
 }
 
 function WorkLogDetailPage({
+  attachments,
   issue,
   member,
   onBack,
   onDelete,
   onEdit,
+  onAttachmentAdded,
+  onAttachmentDeleted,
   onSelectTask,
   project,
   task,
   workLog,
 }: {
+  attachments: Attachment[];
   issue: ProjectIssue | null;
   member: Member | null;
   onBack: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  onAttachmentAdded: (attachment: Attachment) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
   onSelectTask: (taskId: string) => void;
   project: Project;
   task: ScheduleTask | null;
@@ -440,6 +460,14 @@ function WorkLogDetailPage({
             )}
           </div>
         </section>
+        <AttachmentPanel
+          attachments={attachments}
+          onAttachmentAdded={onAttachmentAdded}
+          onAttachmentDeleted={onAttachmentDeleted}
+          ownerId={workLog.id}
+          ownerType="workLog"
+          projectId={project.id}
+        />
       </section>
     </article>
   );

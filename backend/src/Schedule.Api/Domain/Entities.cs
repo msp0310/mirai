@@ -91,6 +91,26 @@ public sealed class ProjectEntity
     public List<ProjectMemberEntity> Members { get; set; } = [];
     public List<TaskEntity> Tasks { get; set; } = [];
     public List<ProjectWorkLogEntity> WorkLogs { get; set; } = [];
+    public List<AttachmentEntity> Attachments { get; set; } = [];
+}
+
+/// <summary>プロジェクト内の課題、作業ログ、コメントに紐づく添付ファイルのメタデータです。</summary>
+public sealed class AttachmentEntity
+{
+    [Key]
+    public string Id { get; set; } = "";
+    public string ProjectId { get; set; } = "";
+    public string OwnerType { get; set; } = "";
+    public string OwnerId { get; set; } = "";
+    public string? ParentId { get; set; }
+    public string FileName { get; set; } = "";
+    public string StorageKey { get; set; } = "";
+    public string ContentType { get; set; } = "application/octet-stream";
+    public long SizeBytes { get; set; }
+    public string Sha256 { get; set; } = "";
+    public string UploadedBy { get; set; } = "";
+    public string UploadedAt { get; set; } = "";
+    public ProjectEntity? Project { get; set; }
 }
 
 /// <summary>プロジェクト課題の永続化エンティティです。</summary>

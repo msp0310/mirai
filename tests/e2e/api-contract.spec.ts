@@ -152,3 +152,63 @@ test("不正なタスク階層を保存せず400で拒否する", async ({ reque
   });
   expect(response.status()).toBe(400);
 });
+
+test("案件の作業ログへ添付ファイルを保存・取得・削除できる", async ({ request }) => {
+  const loginResponse = await request.post("/api/auth/login", {
+    data: { email: "pm@example.com", password: "Password123!" },
+  });
+  expect(loginResponse.ok()).toBe(true);
+  const session = (await loginResponse.json()) as { token: string };
+  const headers = { Authorization: `Bearer ${session.token}` };
+
+  const scheduleResponse = await request.get("/api/projects/crm-integration/schedule", { headers });
+  expect(scheduleResponse.ok()).toBe(true);
+  const schedule = (await scheduleResponse.json()) as {
+    workLogs: Array<{ id: string }>;
+  };
+  const workLogId = schedule.workLogs[0]?.id;
+  expect(workLogId).toBeTruthy();
+
+  const uploadResponse = await request.post("/api/projects/crm-integration/attachments", {
+    headers,
+    multipart: {
+      ownerType: "workLog",
+      ownerId: workLogId as string,
+      file: {
+        name: "operation-log.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from("運用保守の確認ログ\n", "utf8"),
+      },
+    },
+  });
+  expect(uploadResponse.ok()).toBe(true);
+  const attachment = (await uploadResponse.json()) as {
+    id: string;
+    fileName: string;
+    sizeBytes: number;
+    sha256: string;
+    downloadUrl: string;
+  };
+  expect(attachment.fileName).toBe("operation-log.txt");
+  expect(attachment.sizeBytes).toBeGreaterThan(0);
+  expect(attachment.sha256).toHaveLength(64);
+
+  try {
+    const listResponse = await request.get("/api/projects/crm-integration/attachments", {
+      headers,
+    });
+    expect(listResponse.ok()).toBe(true);
+    const attachments = (await listResponse.json()) as Array<{ id: string }>;
+    expect(attachments.some((item) => item.id === attachment.id)).toBe(true);
+
+    const downloadResponse = await request.get(attachment.downloadUrl, { headers });
+    expect(downloadResponse.ok()).toBe(true);
+    expect(await downloadResponse.text()).toBe("運用保守の確認ログ\n");
+  } finally {
+    const deleteResponse = await request.delete(
+      `/api/projects/crm-integration/attachments/${attachment.id}`,
+      { headers },
+    );
+    expect(deleteResponse.status()).toBe(204);
+  }
+});

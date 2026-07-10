@@ -10,6 +10,7 @@ import type {
 } from "./scheduleRepository";
 import { authRepository } from "./authRepository";
 import { requestJson } from "./apiClient";
+import { getProjectAttachments } from "./attachmentRepository";
 export { ApiRequestError } from "./apiClient";
 
 type SaveScheduleResponse = {
@@ -49,9 +50,13 @@ export const apiScheduleRepository: ScheduleRepository = {
 
   /** 指定案件の詳細スケジュールを取得します。 */
   async getProjectSchedule(projectId) {
-    return requestAuthenticatedJson<ScheduleSnapshot>(
-      `/projects/${encodeURIComponent(projectId)}/schedule`,
-    );
+    const [schedule, attachments] = await Promise.all([
+      requestAuthenticatedJson<ScheduleSnapshot>(
+        `/projects/${encodeURIComponent(projectId)}/schedule`,
+      ),
+      getProjectAttachments(projectId),
+    ]);
+    return { ...schedule, attachments };
   },
 
   /** APIのヘルスチェックを行い、同期表示用の状態を返します。 */
@@ -102,7 +107,9 @@ export const apiScheduleRepository: ScheduleRepository = {
       workspace: {
         ...workspace,
         schedules: workspace.schedules.map((snapshot) =>
-          snapshot.project.id === result.schedule.project.id ? result.schedule : snapshot,
+          snapshot.project.id === result.schedule.project.id
+            ? { ...result.schedule, attachments: schedule.attachments }
+            : snapshot,
         ),
       },
     };
