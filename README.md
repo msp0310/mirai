@@ -1,70 +1,178 @@
 # Mirai
 
-SI企業向けのチーム・プロジェクト・タスク管理アプリです。React + TypeScriptのフロントエンドと、ASP.NET Core 10 + SQLiteのAPIで構成しています。
+SI企業のチーム開発・運用保守を支える、案件スケジュール管理アプリです。
 
-## 構成
+`Team > Project > Task` の情報構造を軸に、案件ポートフォリオからプロジェクト単位のGanttへ自然につなぎます。タスクの階層、担当者、依存関係、稼働日カレンダーをまとめて扱い、計画と実績の差分をチームで追えることを目指しています。
 
-- `frontend/`: Vite + React + TypeScript。案件一覧、Gantt、課題、作業時間、リソース、カレンダー、マイルストーンを提供します。
-- `backend/src/Schedule.Api/`: .NET 10 Minimal API。認証、ワークスペース、プロジェクト単位の保存、変更履歴、祝日取得を提供します。
-- `tests/`: PlaywrightによるE2Eテストと大量データの性能テストです。
-- `docs/architecture.md`: データ取得境界、保存方式、性能上の不変条件をまとめています。
+## 主な機能
 
-## 起動
+### 案件管理
 
-フロントエンド:
+- チーム配下の案件をカード形式で一覧表示
+- 案件のステータス、期間、進捗、マイルストーンを確認
+- プロジェクトごとのメンバー・担当者を管理
+- チーム未所属の案件にも対応
 
-```bash
-cd frontend
-npm install
-npm run dev -- --port 5174
+### Gantt
+
+- 日・週・月単位の表示切り替え
+- タスクの階層化、展開・折りたたみ、並び替え
+- ドラッグによる期間移動・リサイズ
+- 稼働日を考慮した期間・工数計算
+- 依存関係、マイルストーン、基準計画の表示
+- インライン編集とキーボードショートカット
+- 複数タスク選択、一括移動、一括担当者変更
+- 大量タスクを想定した行仮想化
+
+### プロジェクト運用
+
+- 課題の登録、Markdown本文、返信履歴
+- 作業時間・運用保守時間の記録
+- リソース画面での担当者別・チーム横断の負荷確認
+- 稼働日カレンダーと日本の祝日取得
+- Brabio XLSXからのタスク移行
+- スケジュール変更履歴とActivity表示
+
+### 管理・認証
+
+- メンバー一覧とログインアカウント管理
+- パスワード再設定
+- 管理者権限
+- チーム、メンバー、カレンダーのマスター管理
+
+## 技術スタック
+
+| 領域 | 技術 |
+| --- | --- |
+| フロントエンド | React 19 / TypeScript 7 / Vite |
+| API | ASP.NET Core 10 Minimal API |
+| 永続化 | SQLite / Entity Framework Core 10 |
+| E2E・性能検証 | Playwright |
+| 静的検査 | TypeScript / Oxlint / .NET Analyzer |
+
+## プロジェクト構成
+
+```text
+.
+├── frontend/                 # React + TypeScriptの画面
+│   ├── src/components/       # Gantt、案件、課題などの機能別コンポーネント
+│   ├── src/app/              # 画面状態とアプリケーション導線
+│   ├── src/data/             # API、ローカル表示状態、Brabio取込
+│   └── src/lib/              # 日付・タスク階層などのドメイン処理
+├── backend/
+│   └── src/Schedule.Api/     # ASP.NET Core API、ドメイン、DB、Seed
+├── tests/
+│   ├── e2e/                  # 認証・案件導線・API契約・保存競合
+│   └── performance/          # 大量案件・大量タスク・Resource集計
+└── docs/                     # アーキテクチャ・DB設計
 ```
 
-API:
+## 必要環境
+
+- Node.js 20.19以上、または22.12以上
+- npm
+- .NET SDK 10.0.301（`global.json`で固定）
+
+## セットアップ
+
+リポジトリを取得し、依存関係をインストールします。
 
 ```bash
-ASPNETCORE_ENVIRONMENT=Development $HOME/.dotnet/dotnet run \
-  --project backend/src/Schedule.Api/Schedule.Api.csproj \
-  --urls http://127.0.0.1:5080
+git clone https://github.com/msp0310/mirai.git
+cd mirai
+
+# ルートの開発ツール
+corepack pnpm install
+
+# フロントエンド
+npm --prefix frontend ci
 ```
 
-ブラウザで `http://127.0.0.1:5174/` を開きます。ローカル開発用の初期アカウントは `pm@example.com` / `Password123!` です。ログイン画面には表示しません。
-
-## 検証
-
-```bash
-# フロントエンドの型検査とビルド
-cd frontend
-npm run check
-npm run build
-
-# ルートで実行
-cd ..
-npm run test:types
-npm run test:e2e
-npm run test:performance
-$HOME/.dotnet/dotnet build backend/ScheduleManager.sln
-```
-
-フロントエンドの未使用コード検査と.NETの分析警告はビルドゲートでエラー扱いにしています。
-
-初回だけPlaywrightのブラウザを導入します。
+Playwrightを初めて使う環境では、Chromiumも導入します。
 
 ```bash
 npx playwright install chromium
 ```
 
-E2E設定は `playwright.config.ts` にあり、フロントエンドとAPIを必要に応じて起動します。性能テストは、10万案件の初期選択、10万段のタスク階層、30人・10案件・3,000タスクのResource集計を計測します。
+## 起動
+
+ターミナルを2つ開き、APIとフロントエンドをそれぞれ起動します。
+
+### API
+
+```bash
+dotnet run \
+  --project backend/src/Schedule.Api/Schedule.Api.csproj \
+  --urls http://127.0.0.1:5080
+```
+
+### フロントエンド
+
+```bash
+cd frontend
+npm run dev -- --port 5174
+```
+
+ブラウザで [http://127.0.0.1:5174/](http://127.0.0.1:5174/) を開きます。
+
+APIの疎通は次のコマンドで確認できます。
+
+```bash
+curl http://127.0.0.1:5080/api/health
+```
+
+### ローカル開発用アカウント
+
+Development環境では、API起動時に次の管理者アカウントがSeedされます。
+
+| 項目 | 値 |
+| --- | --- |
+| メールアドレス | `pm@example.com` |
+| パスワード | `Password123!` |
+| 権限 | 管理者 |
+
+このアカウントはローカル開発専用です。ログイン画面には初期値を表示しません。
+
+## 検証コマンド
+
+```bash
+# フロントエンドの型検査
+npm run check
+
+# フロントエンドの本番ビルド
+npm run build
+
+# 静的検査
+npm run lint
+
+# E2E（フロントエンドとAPIを必要に応じて自動起動）
+npm run test:e2e
+
+# 性能テスト
+npm run test:performance
+
+# テストコードの型検査
+npm run test:types
+
+# API
+dotnet build backend/ScheduleManager.sln
+```
 
 ## 設計方針
 
-- 情報構造は `Team > Project > Task` です。
-- プロジェクト保存は楽観的バージョンで競合を検知します。
-- タスク保存はタスクID・担当者・依存関係を基準に差分適用し、日付1件の変更で全タスクを再作成しません。
-- 初期表示は `/api/workspace/summary` でチームと案件集計だけを取得し、タスク明細は選択された案件の `/api/projects/{projectId}/schedule` から遅延取得します。
-- Resourceのチーム横断表示は、必要な案件だけを並列取得してから集計します。起動時に全案件のタスクを読み込みません。
-- Ganttの行は仮想化し、表示中の行だけをDOMへ配置します。
-- 階層展開やリソース集計は、行数に対して不要な配列コピーや線形検索を増やさないようにします。
-- `localScheduleStorage` は表示状態と保存前ドラフトに限定し、プロジェクトデータはAPIリポジトリへ送ります。
-- Brabio取込は専用フローとして扱い、汎用CSVの列マッピングを前提にしません。
-- クラス・メソッドレベルの補足コメントは日本語で記述します。
-- インライン編集は入力中の状態更新を抑え、Enterまたはフォーカスアウト時に確定します。
+- 初期表示は軽量なワークスペースサマリーだけを取得し、タスク明細は選択した案件のGanttを開くときに遅延取得します。
+- 保存単位はプロジェクトです。プロジェクトのバージョンを使った楽観的同時実行制御で、他の利用者による更新を検知します。
+- タスク、担当者、依存関係はID単位で差分保存し、日付1件の変更で全タスクを再作成しません。
+- Ganttの行は仮想化し、タスク数が増えても表示中の行だけをDOMへ配置します。
+- `未所属` はチームの仮想レコードではなく、`team_id = NULL` の表示ラベルとして扱います。
+- Brabio取込は汎用CSVマッピングではなく、Brabio XLSX専用の移行フローとして扱います。
+- スケジュール変更履歴は、将来の見積もり改善・リスク分析につなげるための基盤として保持します。
+
+詳細な取得境界、保存方式、性能上の不変条件は [`docs/architecture.md`](docs/architecture.md) を参照してください。
+
+## 関連ドキュメント
+
+- [`docs/architecture.md`](docs/architecture.md): API境界、保存、性能方針
+- [`docs/databases/README.md`](docs/databases/README.md): データモデルとDB設計
+- [`frontend/design-qa.md`](frontend/design-qa.md): フロントエンドの検証記録
+- [`frontend/product-backlog.md`](frontend/product-backlog.md): 今後の改善候補
