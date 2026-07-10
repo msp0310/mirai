@@ -164,7 +164,7 @@ export function TaskTableRow({
     titleClickTimerRef.current = window.setTimeout(() => {
       titleClickTimerRef.current = null;
       onSelect(selectionOptions);
-    }, 180);
+    }, 80);
   }
 
   function commitProgress(value: string) {
