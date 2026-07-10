@@ -136,4 +136,23 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
       "ew-resize",
     );
   });
+
+  test("タスク表示をガントと表で切り替えられる", async ({ page }) => {
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+    await expect(page.getByRole("button", { name: "タスク追加" })).toBeVisible();
+
+    const viewModeControl = page.locator(".view-mode-control");
+    await viewModeControl.getByRole("button", { name: "表" }).click();
+    await expect(page.locator(".gantt-shell.table-view")).toBeVisible();
+    await expect(page.getByText("期間", { exact: true })).toBeVisible();
+    await expect(page.locator(".task-date-cell").first()).toBeVisible();
+    await expect(page.locator(".timeline-body")).toHaveCount(0);
+
+    await viewModeControl.getByRole("button", { name: "ガント" }).click();
+    await expect(page.locator(".timeline-body")).toBeVisible();
+  });
 });

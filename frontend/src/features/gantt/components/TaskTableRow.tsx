@@ -19,7 +19,7 @@ import type {
   TaskRow,
 } from "../../../types/schedule";
 import type { DependencyIssue } from "../../../lib/schedule";
-import { statusLabels, taskMatchesQuery } from "../../../lib/schedule";
+import { formatShortDate, statusLabels, taskMatchesQuery } from "../../../lib/schedule";
 import { getAssignableMembers } from "../../../lib/members";
 import { normalizeProgressStatus } from "../../../lib/taskOperations";
 import { Avatar } from "../../../components/ui/Avatar";
@@ -44,6 +44,7 @@ type TaskTableRowProps = {
   query: string;
   selected: boolean;
   task: TaskRow;
+  showDates?: boolean;
 };
 
 /** ガント左側のタスク行を表示し、名前や進捗の編集を受け付けます。 */
@@ -62,6 +63,7 @@ export function TaskTableRow({
   query,
   selected,
   task,
+  showDates = false,
 }: TaskTableRowProps) {
   const [titleDraft, setTitleDraft] = useState(task.title);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -321,6 +323,11 @@ export function TaskTableRow({
           </button>
         ) : null}
       </span>
+      {showDates ? (
+        <span className="task-date-cell">
+          {formatShortDate(task.start)} - {formatShortDate(task.end)}
+        </span>
+      ) : null}
       {columnVisibility.assignee ? (
         <span className="avatar-group">
           {canEditFields ? (

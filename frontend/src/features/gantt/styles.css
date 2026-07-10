@@ -168,6 +168,28 @@
   overflow: visible;
 }
 
+.gantt-shell.table-view {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gantt-shell.table-view .table-header,
+.gantt-shell.table-view .task-table {
+  grid-column: 1;
+}
+
+.gantt-shell.table-view .task-table {
+  border-right: 0;
+}
+
+.gantt-shell.table-view .table-header {
+  height: 44px;
+}
+
+.gantt-shell.table-view .table-header div {
+  height: 44px;
+  padding-top: 13px;
+}
+
 .table-header,
 .timeline-header {
   height: 78px;
@@ -193,6 +215,39 @@
   height: 34px;
   border-right: 1px solid #dfe6ef;
   padding: 10px 10px;
+}
+
+.view-mode-control {
+  display: inline-flex;
+  height: 32px;
+  align-items: center;
+  border: 1px solid #d7e1ef;
+  border-radius: 7px;
+  background: #f8faff;
+  padding: 2px;
+}
+
+.view-mode-control button {
+  height: 26px;
+  border: 0;
+  border-radius: 5px;
+  color: #52627a;
+  background: transparent;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.view-mode-control button:hover,
+.view-mode-control button:focus-visible {
+  color: #1649bf;
+  outline: 0;
+}
+
+.view-mode-control button.active {
+  color: #174ab6;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.12);
 }
 
 .timeline-header {
@@ -512,6 +567,14 @@
   align-items: center;
   gap: 7px;
   overflow: hidden;
+}
+
+.task-date-cell {
+  min-width: 0;
+  color: #5d6d83;
+  font-size: 11px;
+  font-weight: 760;
+  white-space: nowrap;
 }
 
 .inline-title-input,

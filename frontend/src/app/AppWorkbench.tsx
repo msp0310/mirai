@@ -367,6 +367,7 @@ export function AppWorkbench({
   );
   const [resourceScope, setResourceScope] = useState<ResourceScope>(initialAppState.resourceScope);
   const [timeUnit, setTimeUnit] = useState<GanttTimeUnit>(initialAppState.timeUnit);
+  const [ganttDisplayMode, setGanttDisplayMode] = useState<"gantt" | "table">("gantt");
   const [todaySignal, setTodaySignal] = useState(0);
   const [taskStartFocusSignal, setTaskStartFocusSignal] = useState(0);
   const [taskClipboard, setTaskClipboard] = useState<TaskClipboard | null>(null);
@@ -2541,6 +2542,8 @@ export function AppWorkbench({
               tasks={tasks}
               taskStartFocusSignal={taskStartFocusSignal}
               timeUnit={timeUnit}
+              displayMode={ganttDisplayMode}
+              onDisplayModeChange={setGanttDisplayMode}
               timeline={timeline}
               todaySignal={todaySignal}
               weeks={ganttColumns.secondary}

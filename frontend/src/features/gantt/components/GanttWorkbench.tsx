@@ -105,6 +105,8 @@ type GanttWorkbenchProps = {
   tasks: ScheduleTask[];
   taskStartFocusSignal: number;
   timeUnit: GanttTimeUnit;
+  displayMode: "gantt" | "table";
+  onDisplayModeChange: (mode: "gantt" | "table") => void;
   timeline: TimelineDay[];
   todaySignal: number;
   weeks: TimelineColumn[];
@@ -200,6 +202,8 @@ export function GanttWorkbench({
   tasks,
   taskStartFocusSignal,
   timeUnit,
+  displayMode,
+  onDisplayModeChange,
   timeline,
   todaySignal,
   weeks,
@@ -245,13 +249,14 @@ export function GanttWorkbench({
     () =>
       [
         "minmax(280px, 1fr)",
+        displayMode === "table" ? "minmax(144px, 180px)" : null,
         columnVisibility.assignee ? "72px" : null,
         columnVisibility.status ? "68px" : null,
         columnVisibility.progress ? "56px" : null,
       ]
         .filter(Boolean)
         .join(" "),
-    [columnVisibility],
+    [columnVisibility, displayMode],
   );
   const dayWidth = useMemo(() => {
     const widths: Record<GanttTimeUnit, Record<GanttScale, number>> = {
@@ -926,10 +931,12 @@ export function GanttWorkbench({
         scale={scale}
         selectedTaskCount={selectedTaskCount}
         timeUnit={timeUnit}
+        displayMode={displayMode}
+        onDisplayModeChange={onDisplayModeChange}
       />
 
       <div
-        className="gantt-shell"
+        className={displayMode === "table" ? "gantt-shell table-view" : "gantt-shell"}
         style={
           {
             "--task-table-columns": taskTableColumns,
@@ -938,35 +945,38 @@ export function GanttWorkbench({
       >
         <div className="table-header">
           <div>タスク名</div>
+          {displayMode === "table" ? <div>期間</div> : null}
           {columnVisibility.assignee ? <div>担当者</div> : null}
           {columnVisibility.status ? <div>状況</div> : null}
           {columnVisibility.progress ? <div>進捗</div> : null}
         </div>
-        <TimelineGrid
-          dayWidth={dayWidth}
-          headerRef={timelineHeaderRef}
-          members={members}
-          months={months}
-          onBodyScroll={handleTimelineScroll}
-          onTaskContextMenu={openTaskContextMenu}
-          onMoveTask={onMoveTask}
-          onOpenTaskInspector={onOpenTaskInspector}
-          onResizeTask={onResizeTask}
-          onSelectTask={onSelectTask}
-          dependencyIssueByTaskId={dependencyIssueByTaskId}
-          query={filters.query}
-          rowIndexOffset={virtualWindow.start}
-          rows={virtualWindow.rows}
-          selectedTaskIds={selectedTaskIds}
-          timeUnit={timeUnit}
-          timelineBodyRef={timelineBodyRef}
-          timeline={timeline}
-          todayKey={todayKey}
-          totalRows={rows.length}
-          visibleSlotWindow={visibleSlotWindow}
-          viewportHeight={viewportHeight}
-          weeks={weeks}
-        />
+        {displayMode === "gantt" ? (
+          <TimelineGrid
+            dayWidth={dayWidth}
+            headerRef={timelineHeaderRef}
+            members={members}
+            months={months}
+            onBodyScroll={handleTimelineScroll}
+            onTaskContextMenu={openTaskContextMenu}
+            onMoveTask={onMoveTask}
+            onOpenTaskInspector={onOpenTaskInspector}
+            onResizeTask={onResizeTask}
+            onSelectTask={onSelectTask}
+            dependencyIssueByTaskId={dependencyIssueByTaskId}
+            query={filters.query}
+            rowIndexOffset={virtualWindow.start}
+            rows={virtualWindow.rows}
+            selectedTaskIds={selectedTaskIds}
+            timeUnit={timeUnit}
+            timelineBodyRef={timelineBodyRef}
+            timeline={timeline}
+            todayKey={todayKey}
+            totalRows={rows.length}
+            visibleSlotWindow={visibleSlotWindow}
+            viewportHeight={viewportHeight}
+            weeks={weeks}
+          />
+        ) : null}
 
         <div
           className={
@@ -1024,6 +1034,7 @@ export function GanttWorkbench({
                   query={filters.query}
                   selected={selectedTaskIds.has(task.id)}
                   task={task}
+                  showDates={displayMode === "table"}
                 />
               ))}
             </div>

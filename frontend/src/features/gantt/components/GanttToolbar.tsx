@@ -52,6 +52,8 @@ type GanttToolbarProps = {
   scale: GanttScale;
   selectedTaskCount: number;
   timeUnit: GanttTimeUnit;
+  displayMode: "gantt" | "table";
+  onDisplayModeChange: (mode: "gantt" | "table") => void;
 };
 
 /** タスク操作、表示単位、検索、フィルターをまとめたツールバーです。 */
@@ -80,6 +82,8 @@ export function GanttToolbar({
   scale,
   selectedTaskCount,
   timeUnit,
+  displayMode,
+  onDisplayModeChange,
 }: GanttToolbarProps) {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const columnsPopoverRef = useRef<HTMLDivElement>(null);
@@ -185,76 +189,100 @@ export function GanttToolbar({
           削除
         </button>
       ) : null}
-      <div className="time-unit-control" aria-label="表示粒度">
-        {[
-          ["day", "日"],
-          ["week", "週"],
-          ["month", "月"],
-        ].map(([value, label], index) => (
+      <div className="view-mode-control" aria-label="タスク表示">
+        <button
+          className={displayMode === "gantt" ? "active" : ""}
+          onClick={() => onDisplayModeChange("gantt")}
+          type="button"
+        >
+          ガント
+        </button>
+        <button
+          className={displayMode === "table" ? "active" : ""}
+          onClick={() => onDisplayModeChange("table")}
+          type="button"
+        >
+          表
+        </button>
+      </div>
+      {displayMode === "gantt" ? (
+        <div className="time-unit-control" aria-label="表示粒度">
+          {[
+            ["day", "日"],
+            ["week", "週"],
+            ["month", "月"],
+          ].map(([value, label], index) => (
+            <button
+              className={timeUnit === value ? "active" : ""}
+              key={value}
+              onClick={() => onTimeUnitChange(value as GanttTimeUnit)}
+              title={`${label}単位 (${index + 1})`}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {displayMode === "gantt" ? (
+        <div className="timeline-nav-control" aria-label="タイムライン移動">
           <button
-            className={timeUnit === value ? "active" : ""}
-            key={value}
-            onClick={() => onTimeUnitChange(value as GanttTimeUnit)}
-            title={`${label}単位 (${index + 1})`}
+            aria-label="前月へ移動"
+            onClick={() => onTimelineNavigate(-1)}
+            title="前月へ移動"
             type="button"
           >
-            {label}
+            <ChevronLeftIcon />
+            前月
           </button>
-        ))}
-      </div>
-      <div className="timeline-nav-control" aria-label="タイムライン移動">
-        <button
-          aria-label="前月へ移動"
-          onClick={() => onTimelineNavigate(-1)}
-          title="前月へ移動"
-          type="button"
-        >
-          <ChevronLeftIcon />
-          前月
-        </button>
-        <button
-          aria-label="今日へ移動"
-          className="today-jump"
-          onClick={onToday}
-          title="今日へ移動 (T)"
-          type="button"
-        >
-          今日
-        </button>
-        <button
-          aria-label="来月へ移動"
-          onClick={() => onTimelineNavigate(1)}
-          title="来月へ移動"
-          type="button"
-        >
-          来月
-          <ChevronRightIcon />
-        </button>
-      </div>
-      <div className="zoom-control" aria-label="ガント表示幅">
-        {[
-          ["compact", "小"],
-          ["normal", "標準"],
-          ["comfortable", "広"],
-        ].map(([value, label]) => (
           <button
-            className={scale === value ? "active" : ""}
-            key={value}
-            onClick={() => onScaleChange(value as GanttScale)}
+            aria-label="今日へ移動"
+            className="today-jump"
+            onClick={onToday}
+            title="今日へ移動 (T)"
             type="button"
           >
-            {label}
+            今日
           </button>
-        ))}
-      </div>
-      <label className="calendar-toggle">
-        <input
-          checked={calendarAware}
-          onChange={(event) => onCalendarAwareChange(event.target.checked)}
-          type="checkbox"
-        />
-        休日を考慮
-      </label>
+          <button
+            aria-label="来月へ移動"
+            onClick={() => onTimelineNavigate(1)}
+            title="来月へ移動"
+            type="button"
+          >
+            来月
+            <ChevronRightIcon />
+          </button>
+        </div>
+      ) : null}
+      {displayMode === "gantt" ? (
+        <div className="zoom-control" aria-label="ガント表示幅">
+          {[
+            ["compact", "小"],
+            ["normal", "標準"],
+            ["comfortable", "広"],
+          ].map(([value, label]) => (
+            <button
+              className={scale === value ? "active" : ""}
+              key={value}
+              onClick={() => onScaleChange(value as GanttScale)}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {displayMode === "gantt" ? (
+        <label className="calendar-toggle">
+          <input
+            checked={calendarAware}
+            onChange={(event) => onCalendarAwareChange(event.target.checked)}
+            type="checkbox"
+          />
+          休日を考慮
+        </label>
+      ) : null}
       <div className="toolbar-popover-wrap" ref={columnsPopoverRef}>
         <button
           aria-controls="gantt-column-settings"
