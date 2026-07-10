@@ -1,21 +1,18 @@
 import {
-  ArrowRightIcon,
   ArrowsUpDownIcon,
   ExclamationTriangleIcon,
   FlagIcon,
   MagnifyingGlassIcon,
   PlusIcon,
-  StarIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { ProjectSummary, ScheduleSnapshot } from "../../data/scheduleRepository";
 import {
   formatShortDate,
   getProgressStats,
   getTaskAssigneeAllocationPercent,
   getWorkingDays,
-  statusLabels,
 } from "../../lib/schedule";
 import { isMemberActive } from "../../lib/members";
 import {
@@ -31,6 +28,12 @@ import type {
   ScheduleTask,
   Team,
 } from "../../types/schedule";
+import { ProjectPortfolioCard } from "./ProjectPortfolioCard";
+import type {
+  ProjectPortfolioBuildInput,
+  ProjectPortfolioItem,
+  ProjectPortfolioSummaryBuildInput,
+} from "./projectPortfolioTypes";
 
 type ProjectPortfolioPanelProps = {
   activeProjectId: string;
@@ -38,6 +41,7 @@ type ProjectPortfolioPanelProps = {
   calendarAware: boolean;
   favoriteProjectIds: Set<string>;
   onCreateProject: () => void;
+  onOpenProject: (projectId: string) => void;
   onSelectProject: (projectId: string) => void;
   onTeamChange: (teamId: string) => void;
   onToggleFavoriteProject: (projectId: string) => void;
@@ -45,21 +49,6 @@ type ProjectPortfolioPanelProps = {
   projectSummaries: ProjectSummary[];
   schedules: ScheduleSnapshot[];
   teams: Team[];
-};
-
-type ProjectPortfolioItem = {
-  assignedMembers: Member[];
-  completedCount: number;
-  delayedTasks: ScheduleTask[];
-  favorite: boolean;
-  lifecycleStatus: ProjectLifecycleStatus;
-  memberCount: number;
-  nextMilestone: Pick<ScheduleTask, "start" | "status" | "title">;
-  progress: number;
-  project: Project;
-  taskCount: number;
-  team: Team | undefined;
-  workDays: number | null;
 };
 
 type TeamWorkloadItem = {
@@ -99,6 +88,7 @@ export function ProjectPortfolioPanel({
   calendarAware,
   favoriteProjectIds,
   onCreateProject,
+  onOpenProject,
   onSelectProject,
   onTeamChange,
   onToggleFavoriteProject,
@@ -107,7 +97,7 @@ export function ProjectPortfolioPanel({
   schedules,
   teams,
 }: ProjectPortfolioPanelProps) {
-  const [filter, setFilter] = useState<PortfolioFilter>("all");
+  const [filter, setFilter] = useState<PortfolioFilter>("inProgress");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<PortfolioSort>("priority");
   const team = teams.find((item) => item.id === activeTeamId);
@@ -116,10 +106,13 @@ export function ProjectPortfolioPanel({
       snapshot.project.teamId === activeTeamId && snapshot.project.status !== "archived",
   );
   const teamProjectCount = projectSummaries.filter(
-    (summary) =>
-      summary.project.teamId === activeTeamId && summary.project.status !== "archived",
+    (summary) => summary.project.teamId === activeTeamId && summary.project.status !== "archived",
   ).length;
   const teamDetailsComplete = teamSchedules.length >= teamProjectCount;
+  const schedulesByProjectId = useMemo(
+    () => new Map(schedules.map((snapshot) => [snapshot.project.id, snapshot] as const)),
+    [schedules],
+  );
   const allItems = useMemo(
     () =>
       projectSummaries
@@ -128,7 +121,7 @@ export function ProjectPortfolioPanel({
             summary.project.teamId === activeTeamId && summary.project.status !== "archived",
         )
         .map((summary) => {
-          const snapshot = schedules.find((item) => item.project.id === summary.project.id);
+          const snapshot = schedulesByProjectId.get(summary.project.id);
           const projectTeam = teams.find((item) => item.id === summary.project.teamId);
           return snapshot
             ? buildPortfolioItem({
@@ -143,7 +136,14 @@ export function ProjectPortfolioPanel({
                 team: projectTeam,
               });
         }),
-    [activeTeamId, calendarAware, favoriteProjectIds, projectSummaries, schedules, teams],
+    [
+      activeTeamId,
+      calendarAware,
+      favoriteProjectIds,
+      projectSummaries,
+      schedulesByProjectId,
+      teams,
+    ],
   );
   const normalizedQuery = query.trim().toLowerCase();
   const filteredItems = useMemo(
@@ -154,15 +154,16 @@ export function ProjectPortfolioPanel({
         .sort((a, b) => comparePortfolioItems(a, b, sort)),
     [allItems, filter, normalizedQuery, sort],
   );
+  const inProgressItems = allItems.filter((item) => item.lifecycleStatus === "inProgress");
   const delayedProjectCount = filteredItems.filter(
     (item) => item.lifecycleStatus !== "completed" && item.delayedTasks.length > 0,
   ).length;
-  const totalTasks = filteredItems.reduce((sum, item) => sum + item.taskCount, 0);
-  const completedTasks = filteredItems.reduce((sum, item) => sum + item.completedCount, 0);
+  const totalTasks = inProgressItems.reduce((sum, item) => sum + item.taskCount, 0);
+  const completedTasks = inProgressItems.reduce((sum, item) => sum + item.completedCount, 0);
   const averageProgress =
-    filteredItems.length > 0
+    inProgressItems.length > 0
       ? Math.round(
-          filteredItems.reduce((sum, item) => sum + item.progress, 0) / filteredItems.length,
+          inProgressItems.reduce((sum, item) => sum + item.progress, 0) / inProgressItems.length,
         )
       : 0;
   const lifecycleCounts = projectLifecycleOptions.reduce(
@@ -201,8 +202,7 @@ export function ProjectPortfolioPanel({
     () =>
       teams.map((item) => ({
         activeProjectCount: projectSummaries.filter(
-          (summary) =>
-            summary.project.teamId === item.id && summary.project.status !== "archived",
+          (summary) => summary.project.teamId === item.id && summary.project.status !== "archived",
         ).length,
         memberCount: item.memberIds.length,
         team: item,
@@ -218,7 +218,11 @@ export function ProjectPortfolioPanel({
           <h2>{team?.name ?? "チーム未設定"}</h2>
         </div>
         <div className="portfolio-header-actions">
-          <button className="primary-button" onClick={onCreateProject} type="button">
+          <button
+            className="primary-button portfolio-add-button"
+            onClick={onCreateProject}
+            type="button"
+          >
             <PlusIcon />
             プロジェクト追加
           </button>
@@ -326,6 +330,7 @@ export function ProjectPortfolioPanel({
             <ProjectPortfolioCard
               active={item.project.id === activeProjectId}
               item={item}
+              onOpenProject={onOpenProject}
               key={item.project.id}
               onSelectProject={onSelectProject}
               onToggleFavoriteProject={onToggleFavoriteProject}
@@ -370,7 +375,7 @@ export function ProjectPortfolioPanel({
                 <button
                   className="portfolio-attention-row"
                   key={item.project.id}
-                  onClick={() => onSelectProject(item.project.id)}
+                  onClick={() => onOpenProject(item.project.id)}
                   type="button"
                 >
                   <span>{item.delayedTasks.length > 0 ? "遅延" : "低進捗"}</span>
@@ -397,7 +402,7 @@ export function ProjectPortfolioPanel({
                 <button
                   className="portfolio-milestone-row"
                   key={`${project.id}-${milestone.title}-${milestone.start}`}
-                  onClick={() => onSelectProject(project.id)}
+                  onClick={() => onOpenProject(project.id)}
                   type="button"
                 >
                   <span>{formatShortDate(milestone.start)}</span>
@@ -424,9 +429,7 @@ export function ProjectPortfolioPanel({
                 <button
                   className="portfolio-workload-row"
                   key={item.member.id}
-                  onClick={() =>
-                    item.topProject ? onSelectProject(item.topProject.id) : undefined
-                  }
+                  onClick={() => (item.topProject ? onOpenProject(item.topProject.id) : undefined)}
                   type="button"
                 >
                   <span
@@ -541,12 +544,7 @@ function buildPortfolioItem({
   calendarAware,
   snapshot,
   team,
-}: {
-  calendarAware: boolean;
-  favorite: boolean;
-  snapshot: ScheduleSnapshot;
-  team: Team | undefined;
-}): ProjectPortfolioItem {
+}: ProjectPortfolioBuildInput): ProjectPortfolioItem {
   const stats = getProgressStats(snapshot.tasks);
   const delayedTasks = snapshot.tasks
     .filter((task) => task.type === "task" && task.status === "delayed")
@@ -594,26 +592,26 @@ function buildPortfolioSummaryItem({
   favorite,
   summary,
   team,
-}: {
-  favorite: boolean;
-  summary: ProjectSummary;
-  team: Team | undefined;
-}): ProjectPortfolioItem {
+}: ProjectPortfolioSummaryBuildInput): ProjectPortfolioItem {
   return {
     assignedMembers: [],
     completedCount: summary.completedTaskCount,
-    delayedTasks: Array.from({ length: summary.delayedTaskCount }, (_, index) => ({
-      assigneeIds: [],
-      color: "#f59e0b",
-      end: summary.project.rangeEnd,
-      id: `${summary.project.id}-delayed-${index}`,
-      parentId: null,
-      progress: summary.progress,
-      start: summary.project.rangeEnd,
-      status: "delayed",
-      title: "遅延タスク",
-      type: "task",
-    } satisfies ScheduleTask)),
+    delayedTasks: Array.from(
+      { length: summary.delayedTaskCount },
+      (_, index) =>
+        ({
+          assigneeIds: [],
+          color: "#f59e0b",
+          end: summary.project.rangeEnd,
+          id: `${summary.project.id}-delayed-${index}`,
+          parentId: null,
+          progress: summary.progress,
+          start: summary.project.rangeEnd,
+          status: "delayed",
+          title: "遅延タスク",
+          type: "task",
+        }) satisfies ScheduleTask,
+    ),
     favorite,
     lifecycleStatus: getProjectLifecycleStatus(summary.project),
     memberCount: summary.memberCount,
@@ -709,140 +707,6 @@ function buildTeamWorkloads({
         b.remainingHours - a.remainingHours ||
         a.member.name.localeCompare(b.member.name, "ja"),
     );
-}
-
-function ProjectPortfolioCard({
-  active,
-  item,
-  onSelectProject,
-  onToggleFavoriteProject,
-  onUpdateProjectLifecycleStatus,
-}: {
-  active: boolean;
-  item: ProjectPortfolioItem;
-  onSelectProject: (projectId: string) => void;
-  onToggleFavoriteProject: (projectId: string) => void;
-  onUpdateProjectLifecycleStatus: (projectId: string, status: ProjectLifecycleStatus) => void;
-}) {
-  const tone =
-    item.delayedTasks.length > 0
-      ? "hot"
-      : item.progress >= 70
-        ? "good"
-        : item.progress === 0
-          ? "neutral"
-          : "blue";
-
-  return (
-    <article className={active ? "portfolio-card active" : "portfolio-card"}>
-      <header className="portfolio-card-header">
-        <div>
-          <span>{item.team?.name ?? item.project.teamId}</span>
-          <strong>{item.project.workspace}</strong>
-        </div>
-        <div className="portfolio-card-actions">
-          <select
-            aria-label={`${item.project.workspace} のステータス`}
-            className={`portfolio-lifecycle-select ${item.lifecycleStatus}`}
-            onChange={(event) =>
-              onUpdateProjectLifecycleStatus(
-                item.project.id,
-                event.target.value as ProjectLifecycleStatus,
-              )
-            }
-            value={item.lifecycleStatus}
-          >
-            {projectLifecycleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <button
-            aria-label={item.favorite ? "お気に入りから外す" : "お気に入りに追加"}
-            className={item.favorite ? "portfolio-favorite active" : "portfolio-favorite"}
-            onClick={() => onToggleFavoriteProject(item.project.id)}
-            title={item.favorite ? "お気に入りから外す" : "お気に入りに追加"}
-            type="button"
-          >
-            <StarIcon />
-          </button>
-        </div>
-      </header>
-
-      <div className={`portfolio-lifecycle-banner ${item.lifecycleStatus}`}>
-        <span>{projectLifecycleLabels[item.lifecycleStatus]}</span>
-        <strong>{item.project.name}</strong>
-      </div>
-
-      <div className="portfolio-card-metrics">
-        <div className={`portfolio-progress-ring ${tone}`}>{item.progress}%</div>
-        <dl>
-          <div>
-            <dt>タスク</dt>
-            <dd>
-              {item.completedCount}/{item.taskCount}
-            </dd>
-          </div>
-          <div>
-            <dt>期間</dt>
-            <dd>{item.workDays == null ? "詳細読込後" : `${item.workDays}稼働日`}</dd>
-          </div>
-          <div>
-            <dt>体制</dt>
-            <dd>{item.memberCount}名</dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="portfolio-card-progress">
-        <span style={{ width: `${item.progress}%` }} />
-      </div>
-
-      <div className="portfolio-card-detail">
-        <div>
-          <FlagIcon />
-          <span>
-            {formatShortDate(item.nextMilestone.start)} {item.nextMilestone.title}
-          </span>
-        </div>
-        <div>
-          <UserGroupIcon />
-          <span>
-            {item.delayedTasks.length > 0
-              ? `遅延 ${item.delayedTasks.length}件`
-              : statusLabels[item.nextMilestone.status]}
-          </span>
-        </div>
-      </div>
-
-      <div className="portfolio-card-members">
-        <UserGroupIcon />
-        <div className="portfolio-member-stack" aria-hidden="true">
-          {item.assignedMembers.slice(0, 4).map((member) => (
-            <span key={member.id} style={{ "--avatar-color": member.color } as CSSProperties}>
-              {member.initials}
-            </span>
-          ))}
-        </div>
-        <span>
-          {item.assignedMembers.length > 0
-            ? item.assignedMembers.map((member) => member.name).join(" / ")
-            : "要員未アサイン"}
-        </span>
-      </div>
-
-      <footer className="portfolio-card-footer">
-        <span>
-          {formatShortDate(item.project.rangeStart)} - {formatShortDate(item.project.rangeEnd)}
-        </span>
-        <button onClick={() => onSelectProject(item.project.id)} type="button">
-          Ganttへ
-          <ArrowRightIcon />
-        </button>
-      </footer>
-    </article>
-  );
 }
 
 function PortfolioSummaryCard({

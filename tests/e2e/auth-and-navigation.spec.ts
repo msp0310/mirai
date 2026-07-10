@@ -56,6 +56,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
   test("未取得の別案件を選ぶと詳細を遅延取得してGanttを切り替える", async ({ page }) => {
     await login(page);
+    await page.getByRole("button", { name: "全件", exact: true }).click();
 
     const projectCard = page.locator("article.portfolio-card").filter({
       hasText: "CRM連携基盤構築",

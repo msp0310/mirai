@@ -1,0 +1,707 @@
+.calendar-panel,
+.milestone-panel {
+  margin-top: 12px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.calendar-header,
+.milestone-header {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #dfe6ef;
+  padding: 12px 14px;
+}
+
+.calendar-header h2,
+.milestone-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.calendar-header span,
+.milestone-header span {
+  color: #66758b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.month-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d9e1ed;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.month-switcher button {
+  display: grid;
+  width: 30px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #4e5e75;
+  background: transparent;
+}
+
+.month-switcher button:hover {
+  color: #1649bf;
+  background: #edf4ff;
+}
+
+.month-switcher svg {
+  width: 16px;
+  height: 16px;
+}
+
+.month-switcher strong {
+  min-width: 104px;
+  color: #25334a;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 14px;
+  padding: 14px;
+}
+
+.calendar-main {
+  min-width: 0;
+}
+
+.calendar-weekdays,
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekdays span {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  color: #66758b;
+  background: #fbfcfe;
+  border-top: 1px solid #edf1f6;
+  border-right: 1px solid #edf1f6;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.month-grid {
+  border-left: 1px solid #edf1f6;
+}
+
+.calendar-day {
+  min-height: 104px;
+  border-right: 1px solid #edf1f6;
+  border-bottom: 1px solid #edf1f6;
+  background: #fff;
+  padding: 8px;
+}
+
+.calendar-day.outside {
+  color: #9aa6b8;
+  background: #fbfcfe;
+}
+
+.calendar-day.off {
+  background: #fff7f1;
+}
+
+.calendar-day.selected {
+  box-shadow: inset 0 0 0 2px #2864ea;
+}
+
+.calendar-day-head {
+  display: flex;
+  width: 100%;
+  min-height: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.calendar-day-head strong {
+  color: #22314a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.calendar-day-head span {
+  overflow: hidden;
+  color: #b64b17;
+  font-size: 10px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-events {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.calendar-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 5px;
+  color: #34506f;
+  background: #edf4ff;
+  padding: 3px 5px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.calendar-event:hover {
+  color: #174e93;
+  background: #dceaff;
+}
+
+.calendar-event span {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 1px 4px;
+  color: #31506f;
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.calendar-event.milestone {
+  color: #174e93;
+  background: #eaf7ff;
+}
+
+.calendar-event.more {
+  display: inline-grid;
+  grid-template-columns: 1fr;
+  justify-items: start;
+  color: #5d6a80;
+  background: #f4f7fb;
+}
+
+.calendar-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.calendar-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.calendar-metric,
+.calendar-card,
+.milestone-create,
+.next-milestone {
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.calendar-metric {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+}
+
+.calendar-metric span,
+.next-milestone span {
+  color: #6a7689;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.calendar-metric strong {
+  color: #172033;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.calendar-card {
+  padding: 12px;
+}
+
+.calendar-card h3 {
+  margin: 0 0 10px;
+  color: #25334a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.selected-day-card {
+  display: grid;
+  gap: 10px;
+}
+
+.selected-day-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.selected-day-heading h3 {
+  margin: 0;
+}
+
+.selected-day-heading strong {
+  color: #172033;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.selected-day-heading span {
+  justify-self: start;
+  border-radius: 999px;
+  background: #eef4ff;
+  padding: 2px 8px;
+  color: #2864ea;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.selected-day-events {
+  display: grid;
+  gap: 6px;
+}
+
+.selected-day-event {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 8px;
+  border: 1px solid #dfe6ef;
+  border-radius: 7px;
+  background: #fff;
+  padding: 8px;
+  color: #25334a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.selected-day-event:hover {
+  border-color: #b7c8ee;
+  background: #f7fbff;
+}
+
+.selected-day-event > span {
+  grid-row: span 2;
+  border-radius: 999px;
+  background: #edf4ff;
+  padding: 3px 7px;
+  color: #2864ea;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.selected-day-event.milestone > span {
+  color: #174e93;
+  background: #eaf7ff;
+}
+
+.selected-day-event strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-day-event small,
+.selected-day-empty {
+  margin: 0;
+  color: #637188;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.weekday-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.weekday-toggle-grid label {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  border: 1px solid #dfe6ef;
+  border-radius: 7px;
+  color: #3d4c64;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.weekday-toggle-grid input,
+.holiday-form input,
+.holiday-row button,
+.milestone-card input,
+.milestone-card select,
+.milestone-create input,
+.milestone-create select,
+.field-stack select {
+  accent-color: #2864ea;
+}
+
+.holiday-form {
+  display: grid;
+  gap: 8px;
+}
+
+.holiday-form input,
+.holiday-form button,
+.milestone-card input,
+.milestone-card select,
+.milestone-create input,
+.milestone-create select,
+.field-stack select {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #d9e1ed;
+  border-radius: 7px;
+  color: #354258;
+  background: #fff;
+  padding-inline: 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.holiday-form button {
+  color: #fff;
+  background: #2864ea;
+  font-weight: 900;
+}
+
+.holiday-list {
+  display: grid;
+  max-height: 210px;
+  overflow: auto;
+}
+
+.holiday-row {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #edf1f6;
+}
+
+.holiday-row span {
+  display: grid;
+  gap: 2px;
+  color: #45546b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.holiday-row strong {
+  color: #172033;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.holiday-row button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #a24d2b;
+  background: transparent;
+}
+
+.holiday-row svg {
+  width: 15px;
+  height: 15px;
+}
+
+.milestone-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 14px;
+  padding: 14px;
+}
+
+.next-milestone {
+  display: grid;
+  min-width: 220px;
+  gap: 3px;
+  padding: 10px 12px;
+}
+
+.next-milestone strong {
+  color: #172033;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.next-milestone small {
+  color: #66758b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.milestone-list {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.milestone-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 320px 130px;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #dfe6ef;
+  border-left: 4px solid #2864ea;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+}
+
+.milestone-card.done {
+  border-left-color: #24b36b;
+}
+
+.milestone-card.delayed {
+  border-left-color: #f05d2c;
+}
+
+.milestone-card.ready {
+  border-left-color: #24b36b;
+}
+
+.milestone-card.warning {
+  border-left-color: #f17d24;
+}
+
+.milestone-card-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  color: #2864ea;
+  background: #edf4ff;
+}
+
+.milestone-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.milestone-card-main {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.milestone-card-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.milestone-card-title input {
+  border-color: transparent;
+  padding-inline: 0;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.milestone-meta {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  color: #66758b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.milestone-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestone-readiness {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  border-radius: 999px;
+  background: #f4f7fb;
+  padding: 4px 8px;
+}
+
+.milestone-readiness strong {
+  color: #25334a;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.milestone-readiness span {
+  overflow: hidden;
+  color: #637188;
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestone-readiness.ready {
+  background: #ebfbf3;
+}
+
+.milestone-readiness.ready strong {
+  color: #168b52;
+}
+
+.milestone-readiness.warning {
+  background: #fff6e8;
+}
+
+.milestone-readiness.warning strong {
+  color: #b35612;
+}
+
+.milestone-gate-list {
+  display: grid;
+  gap: 5px;
+}
+
+.milestone-gate-item {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #dfe6ef;
+  border-radius: 7px;
+  background: #fbfcfe;
+  padding: 6px 8px;
+  color: #25334a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.milestone-gate-item:hover {
+  border-color: #b7c8ee;
+  background: #f4f8ff;
+}
+
+.milestone-gate-item strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestone-gate-item small {
+  color: #637188;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #9ca8b8;
+}
+
+.status-dot.done {
+  background: #24b36b;
+}
+
+.status-dot.inProgress {
+  background: #2864ea;
+}
+
+.status-dot.delayed {
+  background: #f05d2c;
+}
+
+.milestone-controls {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 72px;
+  gap: 8px;
+}
+
+.milestone-controls label {
+  display: grid;
+  gap: 4px;
+  color: #6a7689;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.milestone-assignee {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.milestone-assignee strong {
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.milestone-assignee button {
+  min-height: 28px;
+  border: 1px solid #d9e1ed;
+  border-radius: 7px;
+  color: #1649bf;
+  background: #f3f7ff;
+  padding-inline: 9px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.milestone-create {
+  align-self: start;
+  padding: 12px;
+}
+
+.milestone-add-button {
+  width: 100%;
+  margin-top: 10px;
+}

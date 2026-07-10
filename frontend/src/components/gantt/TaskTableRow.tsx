@@ -68,6 +68,10 @@ export function TaskTableRow({
   const [progressDraft, setProgressDraft] = useState(String(task.progress));
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const titleClickTimerRef = useRef<number | null>(null);
+  const pendingTitleSelectionRef = useRef<{
+    additive?: boolean;
+    range?: boolean;
+  } | null>(null);
   const assignees = task.assigneeIds
     .map((id) => members.find((member) => member.id === id))
     .filter((member): member is Member => Boolean(member));
@@ -149,6 +153,17 @@ export function TaskTableRow({
     setTitleDraft(value);
   }
 
+  function flushTitleSelection() {
+    if (titleClickTimerRef.current !== null) {
+      window.clearTimeout(titleClickTimerRef.current);
+      titleClickTimerRef.current = null;
+    }
+    if (pendingTitleSelectionRef.current) {
+      onSelect(pendingTitleSelectionRef.current);
+      pendingTitleSelectionRef.current = null;
+    }
+  }
+
   /** タスク名の単クリック選択とダブルクリック編集を競合させません。 */
   function handleTitleClick(event: MouseEvent<HTMLButtonElement>) {
     event.stopPropagation();
@@ -161,8 +176,10 @@ export function TaskTableRow({
       return;
     }
     const selectionOptions = getSelectionOptions(event);
+    pendingTitleSelectionRef.current = selectionOptions;
     titleClickTimerRef.current = window.setTimeout(() => {
       titleClickTimerRef.current = null;
+      pendingTitleSelectionRef.current = null;
       onSelect(selectionOptions);
     }, 80);
   }
@@ -196,6 +213,7 @@ export function TaskTableRow({
       onClick={handleRowClick}
       onContextMenu={onContextMenu}
       onKeyDown={(event) => {
+        if (event.currentTarget === event.target) flushTitleSelection();
         if (event.currentTarget !== event.target) return;
         if (event.key === " ") {
           event.preventDefault();
@@ -315,11 +333,11 @@ export function TaskTableRow({
                   assigneeIds: [event.target.value],
                 })
               }
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelect(getSelectionOptions(event));
-              if (event.detail >= 2) startTitleEdit();
-            }}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(getSelectionOptions(event));
+                if (event.detail >= 2) startTitleEdit();
+              }}
               onFocus={() => onSelect()}
               value={task.assigneeIds[0] ?? members[0]?.id ?? ""}
             >
