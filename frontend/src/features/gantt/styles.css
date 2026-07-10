@@ -179,10 +179,14 @@
 
 .gantt-shell.table-view .task-table {
   border-right: 0;
+  overflow-x: auto;
 }
 
 .gantt-shell.table-view .table-header {
   height: 44px;
+  position: sticky;
+  top: 0;
+  z-index: 8;
 }
 
 .gantt-shell.table-view .table-header div {
@@ -215,6 +219,32 @@
   height: 34px;
   border-right: 1px solid #dfe6ef;
   padding: 10px 10px;
+}
+
+.table-sort-button {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.table-sort-button:hover,
+.table-sort-button:focus-visible,
+.table-sort-button.active {
+  color: #1649bf;
+  outline: 0;
+}
+
+.table-sort-reset:disabled {
+  cursor: default;
+  opacity: 0.48;
 }
 
 .view-mode-control {
@@ -569,6 +599,13 @@
   overflow: hidden;
 }
 
+.gantt-shell.table-view .task-title {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: inherit;
+}
+
 .task-date-cell {
   min-width: 0;
   color: #5d6d83;
@@ -723,6 +760,11 @@
 
 .drag-handle:active {
   cursor: grabbing;
+}
+
+.drag-handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .drag-handle svg {

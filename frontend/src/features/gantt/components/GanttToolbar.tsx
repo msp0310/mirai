@@ -54,6 +54,8 @@ type GanttToolbarProps = {
   timeUnit: GanttTimeUnit;
   displayMode: "gantt" | "table";
   onDisplayModeChange: (mode: "gantt" | "table") => void;
+  onTableSortReset: () => void;
+  tableSortKey: string | null;
 };
 
 /** タスク操作、表示単位、検索、フィルターをまとめたツールバーです。 */
@@ -84,6 +86,8 @@ export function GanttToolbar({
   timeUnit,
   displayMode,
   onDisplayModeChange,
+  onTableSortReset,
+  tableSortKey,
 }: GanttToolbarProps) {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const columnsPopoverRef = useRef<HTMLDivElement>(null);
@@ -205,6 +209,17 @@ export function GanttToolbar({
           表
         </button>
       </div>
+      {displayMode === "table" ? (
+        <button
+          className="subtle-action table-sort-reset"
+          disabled={tableSortKey === null}
+          onClick={onTableSortReset}
+          title="元の階層順に戻す"
+          type="button"
+        >
+          階層順
+        </button>
+      ) : null}
       {displayMode === "gantt" ? (
         <div className="time-unit-control" aria-label="表示粒度">
           {[

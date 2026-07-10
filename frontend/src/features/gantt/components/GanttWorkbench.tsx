@@ -37,6 +37,7 @@ import { getActiveMembers } from "../../../lib/members";
 import { rowHeight, todayKey } from "./constants";
 import { FilterPanel } from "./FilterPanel";
 import { GanttToolbar } from "./GanttToolbar";
+import { TaskTableHeader, type TaskTableSortKey, type TaskTableSortState } from "./TaskTableHeader";
 import { TaskTableRow } from "./TaskTableRow";
 import { TimelineGrid } from "./TimelineGrid";
 
@@ -152,6 +153,60 @@ type RowReorderSession = {
   startY: number;
 };
 
+function sortTaskRowsPreservingHierarchy(
+  rows: TaskRow[],
+  sort: TaskTableSortState,
+  members: Member[],
+) {
+  if (!sort.key || rows.length < 2) return rows;
+
+  const memberNames = new Map(members.map((member) => [member.id, member.name]));
+  const statusOrder: Record<TaskStatus, number> = {
+    notStarted: 0,
+    inProgress: 1,
+    delayed: 2,
+    done: 3,
+  };
+
+  function compare(left: TaskRow, right: TaskRow) {
+    let result = 0;
+    if (sort.key === "title") {
+      result = left.title.localeCompare(right.title, "ja");
+    } else if (sort.key === "start") {
+      result = left.start.localeCompare(right.start) || left.end.localeCompare(right.end);
+    } else if (sort.key === "assignee") {
+      const leftAssignee = memberNames.get(left.assigneeIds[0] ?? "") ?? "未割当";
+      const rightAssignee = memberNames.get(right.assigneeIds[0] ?? "") ?? "未割当";
+      result = leftAssignee.localeCompare(rightAssignee, "ja");
+    } else if (sort.key === "status") {
+      result = statusOrder[left.status] - statusOrder[right.status];
+    } else {
+      result = left.progress - right.progress;
+    }
+    return (sort.direction === "asc" ? result : -result) || left.id.localeCompare(right.id);
+  }
+
+  function sortLevel(startIndex: number, depth: number): { nextIndex: number; rows: TaskRow[] } {
+    const blocks: Array<{ root: TaskRow; rows: TaskRow[] }> = [];
+    let index = startIndex;
+    while (index < rows.length && rows[index]?.depth === depth) {
+      const root = rows[index];
+      if (!root) break;
+      index += 1;
+      const children = sortLevel(index, depth + 1);
+      index = children.nextIndex;
+      blocks.push({ root, rows: [root, ...children.rows] });
+    }
+    blocks.sort((left, right) => compare(left.root, right.root));
+    return {
+      nextIndex: index,
+      rows: blocks.flatMap((block) => block.rows),
+    };
+  }
+
+  return sortLevel(0, rows[0]?.depth ?? 0).rows;
+}
+
 /** 大量のタスクを編集・選択・移動できるガントワークベンチです。 */
 export function GanttWorkbench({
   activeFilterCount,
@@ -223,6 +278,10 @@ export function GanttWorkbench({
   const [rowReorder, setRowReorder] = useState<RowReorderState | null>(null);
   const rowReorderSessionRef = useRef<RowReorderSession | null>(null);
   const suppressDragClickRef = useRef(false);
+  const [tableSort, setTableSort] = useState<TaskTableSortState>({
+    direction: "asc",
+    key: null,
+  });
   const dependencyIssueByTaskId = useMemo(() => {
     const issuesByTaskId = new Map<string, DependencyIssue[]>();
     const taskById = new Map(tasks.map((task) => [task.id, task]));
@@ -245,6 +304,11 @@ export function GanttWorkbench({
     return children;
   }, [tasks]);
   const taskById = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks]);
+  const displayRows = useMemo(
+    () =>
+      displayMode === "table" ? sortTaskRowsPreservingHierarchy(rows, tableSort, members) : rows,
+    [displayMode, members, rows, tableSort],
+  );
   const taskTableColumns = useMemo(
     () =>
       [
@@ -271,16 +335,16 @@ export function GanttWorkbench({
     const measuredHeight = viewportHeight || 580;
     const start = Math.max(Math.floor(scrollTop / rowHeight) - overscan, 0);
     const end = Math.min(
-      rows.length,
+      displayRows.length,
       Math.ceil((scrollTop + measuredHeight) / rowHeight) + overscan,
     );
     return {
-      rows: rows.slice(start, end),
+      rows: displayRows.slice(start, end),
       start,
       topSpacer: start * rowHeight,
-      totalHeight: rows.length * rowHeight,
+      totalHeight: displayRows.length * rowHeight,
     };
-  }, [rows, scrollTop, viewportHeight]);
+  }, [displayRows, scrollTop, viewportHeight]);
   const visibleSlotWindow = useMemo(() => {
     const measuredWidth = timelineViewportWidth || 980;
     const overscan = timeUnit === "day" ? Math.ceil(360 / dayWidth) : 4;
@@ -307,9 +371,9 @@ export function GanttWorkbench({
     if (!rowReorder?.targetTaskId) return null;
     const guideTaskId =
       rowReorder.mode === "outdent" ? rowReorder.referenceTaskId : rowReorder.targetTaskId;
-    const targetIndex = rows.findIndex((row) => row.id === guideTaskId);
+    const targetIndex = displayRows.findIndex((row) => row.id === guideTaskId);
     if (targetIndex < 0) return null;
-    const targetRow = rows[targetIndex];
+    const targetRow = displayRows[targetIndex];
     let guideIndex = targetIndex;
     if (targetRow && (rowReorder.mode === "child" || rowReorder.mode === "outdent")) {
       guideIndex = getVisibleSubtreeEndIndex(targetIndex);
@@ -325,7 +389,7 @@ export function GanttWorkbench({
       top: (rowReorder.placement === "after" ? guideIndex + 1 : guideIndex) * rowHeight,
       valid: rowReorder.valid,
     };
-  }, [rowReorder, rows]);
+  }, [displayRows, rowReorder]);
   const assigneeOptions = useMemo(() => {
     const activeMembers = getActiveMembers(members);
     return activeMembers.length > 0 ? activeMembers : members;
@@ -354,7 +418,7 @@ export function GanttWorkbench({
   }, []);
 
   useEffect(() => {
-    const selectedIndex = rows.findIndex((row) => row.id === selectedTaskId);
+    const selectedIndex = displayRows.findIndex((row) => row.id === selectedTaskId);
     if (selectedIndex < 0) return;
     const body = timelineBodyRef.current;
     const table = tableRef.current;
@@ -369,7 +433,7 @@ export function GanttWorkbench({
     if (body) body.scrollTop = nextTop;
     if (table) table.scrollTop = nextTop;
     setScrollTop(nextTop);
-  }, [rows, selectedTaskId]);
+  }, [displayRows, selectedTaskId]);
 
   useEffect(() => {
     const offset = getTimelineSlotIndex(todayKey, timeline);
@@ -464,19 +528,19 @@ export function GanttWorkbench({
 
   function getTaskIndexFromClientY(clientY: number) {
     const table = tableRef.current;
-    if (!table || rows.length === 0) return -1;
+    if (!table || displayRows.length === 0) return -1;
     const tableRect = table.getBoundingClientRect();
     const y = clientY - tableRect.top + table.scrollTop;
     const index = Math.floor(y / rowHeight);
-    return Math.min(Math.max(index, 0), rows.length - 1);
+    return Math.min(Math.max(index, 0), displayRows.length - 1);
   }
 
   function getVisibleSubtreeEndIndex(startIndex: number) {
-    const startRow = rows[startIndex];
+    const startRow = displayRows[startIndex];
     if (!startRow) return startIndex;
     let endIndex = startIndex;
-    for (let index = startIndex + 1; index < rows.length; index += 1) {
-      if (rows[index].depth <= startRow.depth) break;
+    for (let index = startIndex + 1; index < displayRows.length; index += 1) {
+      if (displayRows[index].depth <= startRow.depth) break;
       endIndex = index;
     }
     return endIndex;
@@ -555,7 +619,7 @@ export function GanttWorkbench({
     startX: number,
   ): RowReorderState {
     const targetIndex = getTaskIndexFromClientY(clientY);
-    const targetRow = targetIndex >= 0 ? rows[targetIndex] : undefined;
+    const targetRow = targetIndex >= 0 ? displayRows[targetIndex] : undefined;
     const placement = getRowReorderPlacement(clientY, Math.max(targetIndex, 0));
     const mode = getRowReorderMode(clientX, startX);
     if (!targetRow) {
@@ -686,8 +750,8 @@ export function GanttWorkbench({
   }
 
   function selectRangeByIndex(anchorIndex: number, currentIndex: number) {
-    const anchorTask = rows[anchorIndex];
-    const currentTask = rows[currentIndex];
+    const anchorTask = displayRows[anchorIndex];
+    const currentTask = displayRows[currentIndex];
     if (!anchorTask || !currentTask) return;
     onSelectTaskRange(anchorTask.id, currentTask.id);
   }
@@ -771,7 +835,7 @@ export function GanttWorkbench({
     taskId: string,
     event: ReactPointerEvent<HTMLButtonElement>,
   ) {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || (displayMode === "table" && tableSort.key !== null)) return;
     event.preventDefault();
     event.stopPropagation();
 
@@ -933,6 +997,8 @@ export function GanttWorkbench({
         timeUnit={timeUnit}
         displayMode={displayMode}
         onDisplayModeChange={onDisplayModeChange}
+        onTableSortReset={() => setTableSort({ direction: "asc", key: null })}
+        tableSortKey={tableSort.key}
       />
 
       <div
@@ -943,13 +1009,17 @@ export function GanttWorkbench({
           } as CSSProperties
         }
       >
-        <div className="table-header">
-          <div>タスク名</div>
-          {displayMode === "table" ? <div>期間</div> : null}
-          {columnVisibility.assignee ? <div>担当者</div> : null}
-          {columnVisibility.status ? <div>状況</div> : null}
-          {columnVisibility.progress ? <div>進捗</div> : null}
-        </div>
+        <TaskTableHeader
+          columnVisibility={columnVisibility}
+          displayMode={displayMode}
+          onSortChange={(key: TaskTableSortKey) =>
+            setTableSort((current) => ({
+              direction: current.key === key && current.direction === "asc" ? "desc" : "asc",
+              key,
+            }))
+          }
+          sort={tableSort}
+        />
         {displayMode === "gantt" ? (
           <TimelineGrid
             dayWidth={dayWidth}
@@ -1034,6 +1104,7 @@ export function GanttWorkbench({
                   query={filters.query}
                   selected={selectedTaskIds.has(task.id)}
                   task={task}
+                  canReorder={displayMode !== "table" || tableSort.key === null}
                   showDates={displayMode === "table"}
                 />
               ))}

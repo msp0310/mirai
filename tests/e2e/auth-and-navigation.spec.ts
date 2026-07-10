@@ -151,6 +151,22 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(page.getByText("期間", { exact: true })).toBeVisible();
     await expect(page.locator(".task-date-cell").first()).toBeVisible();
     await expect(page.locator(".timeline-body")).toHaveCount(0);
+    await expect(page.locator(".gantt-shell.table-view .table-header")).toHaveCSS(
+      "position",
+      "sticky",
+    );
+    await expect(page.locator(".gantt-shell.table-view .task-title").first()).toHaveCSS(
+      "position",
+      "sticky",
+    );
+
+    const titleHeader = page.getByRole("button", { name: "タスク名で並べ替え" });
+    await titleHeader.click();
+    await expect(titleHeader.locator("..")).toHaveAttribute("aria-sort", "ascending");
+    await titleHeader.click();
+    await expect(titleHeader.locator("..")).toHaveAttribute("aria-sort", "descending");
+    await page.getByRole("button", { name: "階層順" }).click();
+    await expect(page.getByRole("button", { name: "階層順" })).toBeDisabled();
 
     await viewModeControl.getByRole("button", { name: "ガント" }).click();
     await expect(page.locator(".timeline-body")).toBeVisible();

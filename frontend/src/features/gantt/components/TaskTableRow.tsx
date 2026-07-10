@@ -27,6 +27,7 @@ import { rowHeight } from "./constants";
 
 type TaskTableRowProps = {
   collapsed: boolean;
+  canReorder?: boolean;
   columnVisibility: GanttColumnVisibility;
   dependencyIssues: DependencyIssue[];
   dragReordering: boolean;
@@ -49,6 +50,7 @@ type TaskTableRowProps = {
 
 /** ガント左側のタスク行を表示し、名前や進捗の編集を受け付けます。 */
 export function TaskTableRow({
+  canReorder = true,
   collapsed,
   columnVisibility,
   dependencyIssues,
@@ -232,7 +234,8 @@ export function TaskTableRow({
           className="drag-handle"
           onClick={(event) => event.stopPropagation()}
           onPointerDown={onDragHandlePointerDown}
-          title="ドラッグで行を移動"
+          disabled={!canReorder}
+          title={canReorder ? "ドラッグで行を移動" : "表表示では階層順を変更できません"}
           type="button"
         >
           <Bars3Icon />
