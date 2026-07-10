@@ -120,4 +120,20 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
       }),
     ).toBeVisible();
   });
+
+  test("ガントバーは操作内容に応じたカーソルを表示する", async ({ page }) => {
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+    await expect(page.getByRole("button", { name: "タスク追加" })).toBeVisible();
+
+    await expect(page.locator(".gantt-bar.draggable").first()).toHaveCSS("cursor", "grab");
+    await expect(page.locator(".gantt-bar.readonly").first()).toHaveCSS("cursor", "pointer");
+    await expect(page.locator(".gantt-bar.draggable .resize-handle").first()).toHaveCSS(
+      "cursor",
+      "ew-resize",
+    );
+  });
 });
