@@ -2828,6 +2828,7 @@ export function AppWorkbench({
             <DailyReportPage
               currentUser={currentUser}
               schedules={currentReviewSchedules}
+              team={activeTeam}
               todayKey={todayKey}
             />
           ) : null}

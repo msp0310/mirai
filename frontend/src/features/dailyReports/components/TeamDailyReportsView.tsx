@@ -15,6 +15,7 @@ type TeamDailyReportsViewProps = {
   onOpenReport: (report: DailyReport) => void;
   reports: DailyReport[];
   schedules: ScheduleSnapshot[];
+  teamName: string;
   todayKey: string;
 };
 
@@ -24,6 +25,7 @@ export function TeamDailyReportsView({
   onOpenReport,
   reports,
   schedules,
+  teamName,
   todayKey,
 }: TeamDailyReportsViewProps) {
   const latestDate = reports[0]?.date ?? todayKey;
@@ -43,7 +45,7 @@ export function TeamDailyReportsView({
       <header className={styles.toolbar}>
         <div>
           <strong>{formatLongDate(selectedDate)}</strong>
-          <span>メンバーの作業内容と提出状況</span>
+          <span>{teamName}の作業内容と提出状況</span>
         </div>
         <label className={styles.datePicker}>
           <span>対象日</span>

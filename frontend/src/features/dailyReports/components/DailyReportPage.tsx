@@ -16,6 +16,7 @@ import type {
   DailyReport,
   DailyReportEntry,
   Member,
+  Team,
   WorkLogCategory,
 } from "../../../types/schedule";
 import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
@@ -25,6 +26,7 @@ import * as styles from "./DailyReportPage.css";
 type DailyReportPageProps = {
   currentUser: AuthUser;
   schedules: ScheduleSnapshot[];
+  team: Team;
   todayKey: string;
 };
 
@@ -38,14 +40,23 @@ const categoryLabels: Record<WorkLogCategory, string> = {
 };
 
 /** 複数案件の作業実績を一日単位で記録し、提出後のコメントまで管理します。 */
-export function DailyReportPage({ currentUser, schedules, todayKey }: DailyReportPageProps) {
+export function DailyReportPage({ currentUser, schedules, team, todayKey }: DailyReportPageProps) {
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<DailyReport | null>(null);
   const [comment, setComment] = useState("");
   const [message, setMessage] = useState("読み込み中...");
-  const [viewMode, setViewMode] = useState<"mine" | "team">("mine");
+  const [viewMode, setViewMode] = useState<"mine" | "team">("team");
   const members = useMemo(() => collectMembers(schedules), [schedules]);
+  const teamMembers = useMemo(() => {
+    const memberIds = new Set(team.memberIds);
+    return members.filter((member) => memberIds.has(member.id));
+  }, [members, team.memberIds]);
+  const teamMemberIds = useMemo(() => new Set(teamMembers.map((member) => member.id)), [teamMembers]);
+  const teamReports = useMemo(
+    () => reports.filter((report) => teamMemberIds.has(report.memberId)),
+    [reports, teamMemberIds],
+  );
   const currentMember = members.find((member) => member.name === currentUser.name) ?? members[0];
   const personalReports = useMemo(
     () => reports.filter((report) => report.memberId === currentMember?.id),
@@ -194,10 +205,11 @@ export function DailyReportPage({ currentUser, schedules, todayKey }: DailyRepor
       </header>
       {viewMode === "team" ? (
         <TeamDailyReportsView
-          members={members}
+          members={teamMembers}
           onOpenReport={openTeamReport}
-          reports={reports}
+          reports={teamReports}
           schedules={schedules}
+          teamName={team.name}
           todayKey={todayKey}
         />
       ) : <div className={styles.layout}>

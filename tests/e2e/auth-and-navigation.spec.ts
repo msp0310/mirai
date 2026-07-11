@@ -123,8 +123,10 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
     await login(page);
     await page.getByRole("button", { name: "日報", exact: true }).click();
-    const dailyReport = page.getByRole("region", { name: "日報" });
+    const dailyReport = page.getByRole("region", { name: "日報", exact: true });
     await expect(dailyReport).toBeVisible();
+    await expect(dailyReport.getByRole("region", { name: "みんなの日報" })).toBeVisible();
+    await dailyReport.getByRole("button", { name: "自分の日報" }).click();
     await dailyReport.getByRole("button", { name: "日報を作成" }).click();
     await dailyReport.getByLabel("本日のまとめ").fill("基本設計レビューを実施しました。");
     await dailyReport.getByLabel("作業内容").fill("レビュー指摘の整理");
