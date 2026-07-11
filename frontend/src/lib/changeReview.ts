@@ -7,10 +7,7 @@ import type {
 } from "../types/schedule";
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import { getTaskAssigneeAllocationMap, statusLabels } from "./schedule";
-import {
-  getProjectLifecycleStatus,
-  projectLifecycleLabels,
-} from "./projects";
+import { getProjectLifecycleStatus, projectLifecycleLabels } from "./projects";
 
 export type TaskChangeKind = "added" | "removed" | "updated";
 
@@ -228,18 +225,13 @@ export function buildWorkspaceConfigChangeReview({
   const savedByProjectId = new Map(
     savedWorkspace.schedules.map((schedule) => [schedule.project.id, schedule]),
   );
-  const allProjectIds = new Set([
-    ...currentByProjectId.keys(),
-    ...savedByProjectId.keys(),
-  ]);
+  const allProjectIds = new Set([...currentByProjectId.keys(), ...savedByProjectId.keys()]);
 
   allProjectIds.forEach((projectId) => {
     const currentSchedule = currentByProjectId.get(projectId);
     const savedSchedule = savedByProjectId.get(projectId);
     const projectLabel =
-      currentSchedule?.project.workspace ??
-      savedSchedule?.project.workspace ??
-      projectId;
+      currentSchedule?.project.workspace ?? savedSchedule?.project.workspace ?? projectId;
 
     if (!savedSchedule && currentSchedule) {
       rows.push({
@@ -411,6 +403,18 @@ function getProjectFieldChanges(
     formatTeamMemberIds(before.memberIds ?? [], savedMembersById),
     formatTeamMemberIds(after.memberIds ?? [], currentMembersById),
   );
+  addChange(
+    changes,
+    "アサイン計画",
+    formatProjectAssignments(before.assignments ?? [], savedMembersById),
+    formatProjectAssignments(after.assignments ?? [], currentMembersById),
+  );
+  addChange(
+    changes,
+    "要員要求",
+    formatStaffingDemands(before.staffingDemands ?? []),
+    formatStaffingDemands(after.staffingDemands ?? []),
+  );
   addChange(changes, "開始日", before.rangeStart, after.rangeStart);
   addChange(changes, "終了日", before.rangeEnd, after.rangeEnd);
   addChange(
@@ -419,13 +423,33 @@ function getProjectFieldChanges(
     `${before.nextMilestone.title} ${before.nextMilestone.date}`,
     `${after.nextMilestone.title} ${after.nextMilestone.date}`,
   );
-  addChange(
-    changes,
-    "状態",
-    formatProjectStatus(before),
-    formatProjectStatus(after),
-  );
+  addChange(changes, "状態", formatProjectStatus(before), formatProjectStatus(after));
   return changes;
+}
+
+function formatProjectAssignments(
+  assignments: NonNullable<Project["assignments"]>,
+  membersById: Map<string, string>,
+) {
+  if (assignments.length === 0) return "なし";
+  return [...assignments]
+    .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+    .map(
+      (assignment) =>
+        `${membersById.get(assignment.memberId) ?? assignment.memberId} ${assignment.role} ${assignment.allocationPercent}% ${assignment.startDate}-${assignment.endDate} ${assignment.status === "confirmed" ? "確定" : "仮"}`,
+    )
+    .join(" / ");
+}
+
+function formatStaffingDemands(demands: NonNullable<Project["staffingDemands"]>) {
+  if (demands.length === 0) return "なし";
+  return [...demands]
+    .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+    .map(
+      (demand) =>
+        `${demand.role} ${demand.requiredCount}名 ${demand.allocationPercent}% ${demand.startDate}-${demand.endDate} ${demand.status === "filled" ? "充足" : "未充足"}`,
+    )
+    .join(" / ");
 }
 
 function getCalendarFieldChanges(
@@ -446,8 +470,18 @@ function getCalendarFieldChanges(
 
 function getMemberDirectoryFieldChanges(before: Member[], after: Member[]) {
   const changes: TaskFieldChange[] = [];
-  addChange(changes, "有効メンバー", formatMemberNames(before, "active"), formatMemberNames(after, "active"));
-  addChange(changes, "休止メンバー", formatMemberNames(before, "inactive"), formatMemberNames(after, "inactive"));
+  addChange(
+    changes,
+    "有効メンバー",
+    formatMemberNames(before, "active"),
+    formatMemberNames(after, "active"),
+  );
+  addChange(
+    changes,
+    "休止メンバー",
+    formatMemberNames(before, "inactive"),
+    formatMemberNames(after, "inactive"),
+  );
   addChange(changes, "週キャパ合計", formatCapacityTotal(before), formatCapacityTotal(after));
   addChange(
     changes,
@@ -546,13 +580,7 @@ function getTaskFieldChanges(
   const changes: TaskFieldChange[] = [];
   addChange(changes, "タスク名", before.title, after.title, "title");
   addChange(changes, "種類", taskTypeLabels[before.type], taskTypeLabels[after.type]);
-  addChange(
-    changes,
-    "状態",
-    statusLabels[before.status],
-    statusLabels[after.status],
-    "status",
-  );
+  addChange(changes, "状態", statusLabels[before.status], statusLabels[after.status], "status");
   addChange(changes, "開始日", before.start, after.start, "start");
   addChange(changes, "終了日", before.end, after.end, "end");
   addChange(changes, "進捗", `${before.progress}%`, `${after.progress}%`, "progress");
@@ -590,13 +618,7 @@ function getTaskFieldChanges(
     formatEffort(after.effortHours),
     "effort",
   );
-  addChange(
-    changes,
-    "基準計画",
-    formatBaseline(before),
-    formatBaseline(after),
-    "baseline",
-  );
+  addChange(changes, "基準計画", formatBaseline(before), formatBaseline(after), "baseline");
   addChange(
     changes,
     "詳細",
@@ -646,9 +668,7 @@ function formatParent(parentId: string | null, tasks: ScheduleTask[]) {
 
 function formatDependencies(dependencyIds: string[], tasks: ScheduleTask[]) {
   if (dependencyIds.length === 0) return "なし";
-  return dependencyIds
-    .map((id) => tasks.find((task) => task.id === id)?.title ?? id)
-    .join(" / ");
+  return dependencyIds.map((id) => tasks.find((task) => task.id === id)?.title ?? id).join(" / ");
 }
 
 function formatEffort(effortHours?: number) {
@@ -674,7 +694,10 @@ function formatTeamName(teamId: string, teams: Team[]) {
 
 function formatWorkWeek(days: number[]) {
   const labels = ["日", "月", "火", "水", "木", "金", "土"];
-  return [...days].sort((a, b) => a - b).map((day) => labels[day] ?? String(day)).join(", ");
+  return [...days]
+    .sort((a, b) => a - b)
+    .map((day) => labels[day] ?? String(day))
+    .join(", ");
 }
 
 function formatCalendarHolidays(
@@ -690,9 +713,7 @@ function formatCalendarHolidays(
 function formatMemberNames(members: Member[], status: "active" | "inactive") {
   const names = members
     .filter((member) =>
-      status === "active"
-        ? member.status !== "inactive"
-        : member.status === "inactive",
+      status === "active" ? member.status !== "inactive" : member.status === "inactive",
     )
     .map((member) => member.name)
     .sort((a, b) => a.localeCompare(b, "ja"));

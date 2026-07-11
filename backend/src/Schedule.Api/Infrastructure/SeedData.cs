@@ -642,8 +642,34 @@ public static class SeedData
             new NextMilestoneDto(nextMilestoneTitle, nextMilestoneDate),
             "active",
             null,
-            1);
+            1,
+            memberIds.Select((memberId, index) => new ProjectAssignmentDto(
+                $"{id}-assignment-{memberId}",
+                memberId,
+                GetStaffingRole(memberId),
+                rangeStart,
+                rangeEnd,
+                index == 0 ? 50 : 80,
+                "confirmed")).ToArray(),
+            [new StaffingDemandDto(
+                $"{id}-demand-be",
+                "BE",
+                rangeStart,
+                rangeEnd,
+                1,
+                50,
+                "open")]);
     }
+
+    private static string GetStaffingRole(string memberId) => memberId switch
+    {
+        "yk" => "PM",
+        "st" => "PL",
+        "fe" => "FE",
+        "be" => "BE",
+        "qa" => "QA",
+        _ => "SE"
+    };
 
     private static CalendarDefinitionDto Calendar(string id)
     {
@@ -795,6 +821,32 @@ public static class SeedData
             .Select(issue => ScheduleMapper.ToEntity(issue, project.Id))
             .ToList();
         projectEntity.WorkLogs = (workLogs ?? [])
+            .ToList();
+        projectEntity.Assignments = (project.Assignments ?? [])
+            .Select(assignment => new ProjectAssignmentEntity
+            {
+                Id = assignment.Id,
+                ProjectId = project.Id,
+                MemberId = assignment.MemberId,
+                Role = assignment.Role,
+                StartDate = assignment.StartDate,
+                EndDate = assignment.EndDate,
+                AllocationPercent = assignment.AllocationPercent,
+                Status = assignment.Status
+            })
+            .ToList();
+        projectEntity.StaffingDemands = (project.StaffingDemands ?? [])
+            .Select(demand => new StaffingDemandEntity
+            {
+                Id = demand.Id,
+                ProjectId = project.Id,
+                Role = demand.Role,
+                StartDate = demand.StartDate,
+                EndDate = demand.EndDate,
+                RequiredCount = demand.RequiredCount,
+                AllocationPercent = demand.AllocationPercent,
+                Status = demand.Status
+            })
             .ToList();
         db.Projects.Add(projectEntity);
     }

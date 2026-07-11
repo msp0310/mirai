@@ -101,6 +101,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
         }
 
         var memberIds = project.Members.Select(member => member.MemberId).ToHashSet();
+        memberIds.UnionWith(project.Assignments.Select(assignment => assignment.MemberId));
         var taskMemberIds = project.Tasks
             .SelectMany(task => task.Assignments)
             .Select(assignment => assignment.MemberId);
@@ -152,6 +153,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
 
         await UpsertMembersAsync(request.Members, cancellationToken);
         ReplaceProjectMembers(existingProject, request.Project.MemberIds ?? []);
+        ReplaceProjectAssignments(existingProject, request.Project.Assignments ?? []);
+        ReplaceStaffingDemands(existingProject, request.Project.StaffingDemands ?? []);
         ReplaceCalendar(existingProject, request.Calendar);
         ReplaceIssues(existingProject, request.Issues ?? []);
         ReplaceWorkLogs(existingProject, request.WorkLogs ?? []);
@@ -219,6 +222,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
                 .ThenInclude(calendar => calendar.Holidays)
             .Include(project => project.Issues)
             .Include(project => project.WorkLogs)
+            .Include(project => project.Assignments)
+            .Include(project => project.StaffingDemands)
             .Include(project => project.Tasks)
                 .ThenInclude(task => task.Assignments)
             .Include(project => project.Tasks)
@@ -237,6 +242,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
         }
 
         var memberIds = project.Members.Select(member => member.MemberId).ToHashSet();
+        memberIds.UnionWith(project.Assignments.Select(assignment => assignment.MemberId));
         memberIds.UnionWith(project.Tasks.SelectMany(task => task.Assignments).Select(assignment => assignment.MemberId));
         var members = allMembers.Where(member => memberIds.Contains(member.Id)).ToArray();
         return ScheduleMapper.ToSnapshot(
@@ -298,6 +304,62 @@ public sealed class ScheduleService(ScheduleDbContext db)
                 ProjectId = project.Id,
                 MemberId = memberId
             });
+        }
+    }
+
+    /// <summary>案件への要員アサイン計画を受信内容で置き換えます。</summary>
+    private void ReplaceProjectAssignments(
+        ProjectEntity project,
+        IReadOnlyList<ProjectAssignmentDto> assignments)
+    {
+        var assignmentIds = assignments.Select(assignment => assignment.Id).ToHashSet();
+        var existingAssignments = project.Assignments.ToDictionary(assignment => assignment.Id);
+        var removedAssignments = project.Assignments
+            .Where(assignment => !assignmentIds.Contains(assignment.Id))
+            .ToArray();
+        foreach (var removed in removedAssignments) project.Assignments.Remove(removed);
+        db.ProjectAssignments.RemoveRange(removedAssignments);
+        foreach (var assignment in assignments)
+        {
+            if (!existingAssignments.TryGetValue(assignment.Id, out var entity))
+            {
+                entity = new ProjectAssignmentEntity { Id = assignment.Id, ProjectId = project.Id };
+                project.Assignments.Add(entity);
+            }
+            entity.MemberId = assignment.MemberId;
+            entity.Role = assignment.Role;
+            entity.StartDate = assignment.StartDate;
+            entity.EndDate = assignment.EndDate;
+            entity.AllocationPercent = assignment.AllocationPercent;
+            entity.Status = assignment.Status;
+        }
+    }
+
+    /// <summary>案件の未充足要員要求を受信内容で置き換えます。</summary>
+    private void ReplaceStaffingDemands(
+        ProjectEntity project,
+        IReadOnlyList<StaffingDemandDto> demands)
+    {
+        var demandIds = demands.Select(demand => demand.Id).ToHashSet();
+        var existingDemands = project.StaffingDemands.ToDictionary(demand => demand.Id);
+        var removedDemands = project.StaffingDemands
+            .Where(demand => !demandIds.Contains(demand.Id))
+            .ToArray();
+        foreach (var removed in removedDemands) project.StaffingDemands.Remove(removed);
+        db.StaffingDemands.RemoveRange(removedDemands);
+        foreach (var demand in demands)
+        {
+            if (!existingDemands.TryGetValue(demand.Id, out var entity))
+            {
+                entity = new StaffingDemandEntity { Id = demand.Id, ProjectId = project.Id };
+                project.StaffingDemands.Add(entity);
+            }
+            entity.Role = demand.Role;
+            entity.StartDate = demand.StartDate;
+            entity.EndDate = demand.EndDate;
+            entity.RequiredCount = demand.RequiredCount;
+            entity.AllocationPercent = demand.AllocationPercent;
+            entity.Status = demand.Status;
         }
     }
 

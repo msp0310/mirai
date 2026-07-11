@@ -36,13 +36,13 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(projectCard.locator("header strong")).toHaveText("販売管理システム刷新");
   });
 
-  test("全案件の稼働状況を人別とチーム別で切り替えられる", async ({ page }) => {
+  test("全案件の稼働・要員計画を人別とチーム別で切り替えられる", async ({ page }) => {
     await login(page);
-    await page.getByRole("button", { name: "稼働状況", exact: true }).click();
+    await page.getByRole("button", { name: "稼働・要員計画", exact: true }).click();
 
-    const workload = page.getByRole("region", { name: "稼働状況" });
+    const workload = page.getByRole("region", { name: "稼働・要員計画" });
     await expect(workload).toBeVisible();
-    await expect(page.getByRole("heading", { name: "稼働状況", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "稼働・要員計画", level: 1 })).toBeVisible();
     await expect(workload.getByText("表示メンバー")).toBeVisible();
     await expect(workload.getByRole("combobox", { name: "表示チーム" })).toHaveValue("all");
     await expect(page.getByRole("button", { name: "ガント", exact: true })).toHaveCount(0);
@@ -53,13 +53,46 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(workload.getByRole("button", { name: "業務システム事業部" })).toBeVisible();
     await expect(workload.getByText(/チーム$/).first()).toBeVisible();
 
-    await workload.getByRole("button", { name: "販売管理システム刷新", exact: true }).first().click();
+    await workload
+      .getByRole("button", { name: "販売管理システム刷新", exact: true })
+      .first()
+      .click();
     await expect(page.getByRole("button", { name: "タスク追加" })).toBeVisible();
     await expect(
       page
         .getByRole("complementary", { name: "メインナビゲーション" })
         .getByRole("button", { name: "ガント", exact: true }),
     ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("要員要求から仮アサインを計画へ反映できる", async ({ page }) => {
+    await login(page);
+    await page.getByRole("button", { name: "稼働・要員計画", exact: true }).click();
+    const workload = page.getByRole("region", { name: "稼働・要員計画" });
+
+    await workload.getByRole("button", { name: "要員要求追加" }).click();
+    const demandEditor = page.getByRole("complementary", { name: "要員要求編集" });
+    await demandEditor.getByLabel("必要な役割").fill("インフラ");
+    await demandEditor.getByLabel("必要人数").fill("1");
+    await demandEditor.getByLabel("配分率").fill("60");
+    await demandEditor.getByRole("button", { name: "要求を追加" }).click();
+
+    const demand = workload.getByRole("button", { name: /インフラ 1名/ });
+    await expect(demand).toBeVisible();
+    await demand.click();
+    const assignmentEditor = page.getByRole("complementary", { name: "アサイン編集" });
+    await assignmentEditor.getByLabel("メンバー").selectOption("fe");
+    await assignmentEditor.getByLabel("状態").selectOption("draft");
+    await assignmentEditor.getByRole("button", { name: "計画へ反映" }).click();
+
+    await expect(demand).toHaveCount(0);
+    await expect(workload.getByRole("button", { name: /インフラ \/ 60%/ })).toBeVisible();
+
+    await page.getByRole("button", { name: "保存", exact: true }).click();
+    const saveReview = page.getByRole("dialog", { name: "保存前確認" });
+    await expect(saveReview).toContainText("保存範囲: 要員計画");
+    await expect(saveReview).toContainText("アサイン計画");
+    await saveReview.getByRole("button", { name: "閉じる" }).click();
   });
 
   test("プロジェクトカードからGanttへ移動し、ショートカットを開ける", async ({ page }) => {

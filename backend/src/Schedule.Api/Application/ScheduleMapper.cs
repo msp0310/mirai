@@ -70,7 +70,29 @@ public static class ScheduleMapper
             new NextMilestoneDto(entity.NextMilestoneTitle, entity.NextMilestoneDate),
             entity.Status,
             entity.ArchivedAt,
-            entity.Version);
+            entity.Version,
+            entity.Assignments
+                .OrderBy(assignment => assignment.StartDate)
+                .Select(assignment => new ProjectAssignmentDto(
+                    assignment.Id,
+                    assignment.MemberId,
+                    assignment.Role,
+                    assignment.StartDate,
+                    assignment.EndDate,
+                    assignment.AllocationPercent,
+                    assignment.Status))
+                .ToArray(),
+            entity.StaffingDemands
+                .OrderBy(demand => demand.StartDate)
+                .Select(demand => new StaffingDemandDto(
+                    demand.Id,
+                    demand.Role,
+                    demand.StartDate,
+                    demand.EndDate,
+                    demand.RequiredCount,
+                    demand.AllocationPercent,
+                    demand.Status))
+                .ToArray());
     }
 
     /// <summary>タスクエンティティと関連付けをAPI DTOへ変換します。</summary>

@@ -2,6 +2,8 @@ export type TaskStatus = "notStarted" | "inProgress" | "done" | "delayed";
 export type TaskType = "summary" | "phase" | "task" | "milestone";
 export type ProjectStatus = "active" | "archived";
 export type ProjectLifecycleStatus = "planning" | "inProgress" | "completed";
+export type ProjectAssignmentStatus = "draft" | "confirmed";
+export type StaffingDemandStatus = "open" | "filled";
 export type ProjectIssuePriority = "critical" | "high" | "medium" | "low";
 export type ProjectIssueStatus = "open" | "inProgress" | "blocked" | "resolved" | "closed";
 export type ProjectIssueType = "bug" | "change" | "question" | "risk" | "task";
@@ -93,6 +95,28 @@ export type Project = {
   };
   status?: ProjectStatus;
   archivedAt?: string;
+  assignments?: ProjectAssignment[];
+  staffingDemands?: StaffingDemand[];
+};
+
+export type ProjectAssignment = {
+  allocationPercent: number;
+  endDate: string;
+  id: string;
+  memberId: string;
+  role: string;
+  startDate: string;
+  status: ProjectAssignmentStatus;
+};
+
+export type StaffingDemand = {
+  allocationPercent: number;
+  endDate: string;
+  id: string;
+  requiredCount: number;
+  role: string;
+  startDate: string;
+  status: StaffingDemandStatus;
 };
 
 export type TaskChecklistItem = {

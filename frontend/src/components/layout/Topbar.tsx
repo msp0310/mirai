@@ -145,14 +145,14 @@ export function Topbar({
       : isPortfolioContext
         ? "プロジェクトポートフォリオ"
         : isWorkloadContext
-          ? "稼働状況"
+          ? "稼働・要員計画"
         : project.workspace;
   const contextLabel = isAdminContext
     ? "管理設定"
     : isHelpContext
       ? "ヘルプ"
       : isWorkloadContext
-        ? "稼働状況"
+        ? "稼働・要員計画"
         : "案件一覧";
   const teamById = useMemo(() => new Map(teams.map((team) => [team.id, team])), [teams]);
   const normalizedProjectQuery = projectQuery.trim().toLowerCase();

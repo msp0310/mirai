@@ -15,6 +15,8 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
     public DbSet<ProjectIssueEntity> ProjectIssues => Set<ProjectIssueEntity>();
     public DbSet<ProjectMemberEntity> ProjectMembers => Set<ProjectMemberEntity>();
     public DbSet<ProjectWorkLogEntity> ProjectWorkLogs => Set<ProjectWorkLogEntity>();
+    public DbSet<ProjectAssignmentEntity> ProjectAssignments => Set<ProjectAssignmentEntity>();
+    public DbSet<StaffingDemandEntity> StaffingDemands => Set<StaffingDemandEntity>();
     public DbSet<AttachmentEntity> Attachments => Set<AttachmentEntity>();
     public DbSet<CalendarEntity> Calendars => Set<CalendarEntity>();
     public DbSet<CalendarHolidayEntity> CalendarHolidays => Set<CalendarHolidayEntity>();
@@ -77,6 +79,18 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
             .HasForeignKey(entity => entity.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<ProjectEntity>()
+            .HasMany(entity => entity.Assignments)
+            .WithOne(entity => entity.Project)
+            .HasForeignKey(entity => entity.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProjectEntity>()
+            .HasMany(entity => entity.StaffingDemands)
+            .WithOne(entity => entity.Project)
+            .HasForeignKey(entity => entity.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<TaskEntity>()
             .HasMany(entity => entity.Assignments)
             .WithOne(entity => entity.Task)
@@ -95,6 +109,8 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
         modelBuilder.Entity<ProjectMemberEntity>().HasIndex(entity => entity.MemberId);
         modelBuilder.Entity<ProjectIssueEntity>().HasIndex(entity => new { entity.ProjectId, entity.UpdatedAt });
         modelBuilder.Entity<ProjectWorkLogEntity>().HasIndex(entity => new { entity.ProjectId, entity.Date });
+        modelBuilder.Entity<ProjectAssignmentEntity>().HasIndex(entity => new { entity.ProjectId, entity.MemberId });
+        modelBuilder.Entity<StaffingDemandEntity>().HasIndex(entity => new { entity.ProjectId, entity.Status });
         modelBuilder.Entity<AttachmentEntity>().HasIndex(entity => new
         {
             entity.ProjectId,

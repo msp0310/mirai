@@ -92,6 +92,38 @@ public sealed class ProjectEntity
     public List<TaskEntity> Tasks { get; set; } = [];
     public List<ProjectWorkLogEntity> WorkLogs { get; set; } = [];
     public List<AttachmentEntity> Attachments { get; set; } = [];
+    public List<ProjectAssignmentEntity> Assignments { get; set; } = [];
+    public List<StaffingDemandEntity> StaffingDemands { get; set; } = [];
+}
+
+/// <summary>案件単位の要員アサイン計画です。</summary>
+public sealed class ProjectAssignmentEntity
+{
+    [Key]
+    public string Id { get; set; } = "";
+    public string ProjectId { get; set; } = "";
+    public string MemberId { get; set; } = "";
+    public string Role { get; set; } = "";
+    public string StartDate { get; set; } = "";
+    public string EndDate { get; set; } = "";
+    public int AllocationPercent { get; set; }
+    public string Status { get; set; } = "draft";
+    public ProjectEntity? Project { get; set; }
+}
+
+/// <summary>案件側で未充足となっている要員要求です。</summary>
+public sealed class StaffingDemandEntity
+{
+    [Key]
+    public string Id { get; set; } = "";
+    public string ProjectId { get; set; } = "";
+    public string Role { get; set; } = "";
+    public string StartDate { get; set; } = "";
+    public string EndDate { get; set; } = "";
+    public int RequiredCount { get; set; }
+    public int AllocationPercent { get; set; }
+    public string Status { get; set; } = "open";
+    public ProjectEntity? Project { get; set; }
 }
 
 /// <summary>プロジェクト内の課題、作業ログ、コメントに紐づく添付ファイルのメタデータです。</summary>

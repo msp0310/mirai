@@ -5,6 +5,7 @@ import type {
   MemberAvailabilityOverrideType,
   MemberStatus,
   Project,
+  ProjectAssignment,
   ProjectIssue,
   ProjectIssueGitHubLink,
   ProjectIssuePriority,
@@ -13,6 +14,7 @@ import type {
   ProjectIssueType,
   ProjectLifecycleStatus,
   ProjectWorkLog,
+  StaffingDemand,
   ScheduleTask,
   TaskAssigneeAllocation,
   TaskChecklistItem,
@@ -395,6 +397,34 @@ export function validateProjectImportData(data: ProjectImportData): ProjectImpor
   if (data.project.memberIds?.some((memberId) => !memberIds.has(memberId))) {
     errors.push("プロジェクト要員に存在しないメンバーIDがあります。");
   }
+  if (data.project.assignments?.some((assignment) => !memberIds.has(assignment.memberId))) {
+    errors.push("アサイン計画に存在しないメンバーIDがあります。");
+  }
+  const duplicateAssignmentIds = getDuplicates(
+    (data.project.assignments ?? []).map((assignment) => assignment.id),
+  );
+  if (duplicateAssignmentIds.length > 0) {
+    errors.push(`アサイン計画IDが重複しています: ${duplicateAssignmentIds.join(", ")}`);
+  }
+  (data.project.assignments ?? []).forEach((assignment) => {
+    if (
+      assignment.startDate > assignment.endDate ||
+      assignment.allocationPercent < 1 ||
+      assignment.allocationPercent > 100
+    ) {
+      errors.push(`アサイン計画「${assignment.id}」の期間または配分率が不正です。`);
+    }
+  });
+  (data.project.staffingDemands ?? []).forEach((demand) => {
+    if (
+      demand.startDate > demand.endDate ||
+      demand.requiredCount < 1 ||
+      demand.allocationPercent < 1 ||
+      demand.allocationPercent > 100
+    ) {
+      errors.push(`要員要求「${demand.id}」の内容が不正です。`);
+    }
+  });
   if (
     data.team &&
     data.project.memberIds?.some((memberId) => !data.team?.memberIds.includes(memberId))
@@ -1266,6 +1296,10 @@ function parseProject(value: unknown): Project {
     archivedAt:
       record.archivedAt == null ? undefined : readString(record.archivedAt, "project.archivedAt"),
     id: readString(record.id, "project.id"),
+    assignments:
+      record.assignments == null
+        ? undefined
+        : readArray(record.assignments, "project.assignments").map(parseProjectAssignment),
     lifecycleStatus:
       record.lifecycleStatus == null
         ? undefined
@@ -1284,8 +1318,49 @@ function parseProject(value: unknown): Project {
     rangeEnd: readDate(record.rangeEnd, "project.rangeEnd"),
     rangeStart: readDate(record.rangeStart, "project.rangeStart"),
     status: record.status == null ? undefined : readProjectStatus(record.status, "project.status"),
+    staffingDemands:
+      record.staffingDemands == null
+        ? undefined
+        : readArray(record.staffingDemands, "project.staffingDemands").map(parseStaffingDemand),
     teamId: readString(record.teamId, "project.teamId"),
     workspace: readString(record.workspace, "project.workspace"),
+  };
+}
+
+function parseProjectAssignment(value: unknown): ProjectAssignment {
+  const record = assertRecord(value, "project.assignment");
+  const status = readString(record.status, "project.assignment.status");
+  if (status !== "draft" && status !== "confirmed") {
+    throw new ProjectImportError("project.assignment.status の値が正しくありません。");
+  }
+  return {
+    allocationPercent: readNumber(record.allocationPercent, "project.assignment.allocationPercent"),
+    endDate: readDate(record.endDate, "project.assignment.endDate"),
+    id: readString(record.id, "project.assignment.id"),
+    memberId: readString(record.memberId, "project.assignment.memberId"),
+    role: readString(record.role, "project.assignment.role"),
+    startDate: readDate(record.startDate, "project.assignment.startDate"),
+    status,
+  };
+}
+
+function parseStaffingDemand(value: unknown): StaffingDemand {
+  const record = assertRecord(value, "project.staffingDemand");
+  const status = readString(record.status, "project.staffingDemand.status");
+  if (status !== "open" && status !== "filled") {
+    throw new ProjectImportError("project.staffingDemand.status の値が正しくありません。");
+  }
+  return {
+    allocationPercent: readNumber(
+      record.allocationPercent,
+      "project.staffingDemand.allocationPercent",
+    ),
+    endDate: readDate(record.endDate, "project.staffingDemand.endDate"),
+    id: readString(record.id, "project.staffingDemand.id"),
+    requiredCount: readNumber(record.requiredCount, "project.staffingDemand.requiredCount"),
+    role: readString(record.role, "project.staffingDemand.role"),
+    startDate: readDate(record.startDate, "project.staffingDemand.startDate"),
+    status,
   };
 }
 

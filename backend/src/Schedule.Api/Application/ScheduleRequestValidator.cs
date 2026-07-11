@@ -49,6 +49,29 @@ public static class ScheduleRequestValidator
             return "プロジェクト期間が不正です。";
         }
 
+        foreach (var assignment in request.Project.Assignments ?? [])
+        {
+            if (!DateOnly.TryParse(assignment.StartDate, out var start) ||
+                !DateOnly.TryParse(assignment.EndDate, out var end) ||
+                start > end ||
+                assignment.AllocationPercent is < 1 or > 100)
+            {
+                return $"要員アサイン「{assignment.Id}」の期間または配分率が不正です。";
+            }
+        }
+
+        foreach (var demand in request.Project.StaffingDemands ?? [])
+        {
+            if (!DateOnly.TryParse(demand.StartDate, out var start) ||
+                !DateOnly.TryParse(demand.EndDate, out var end) ||
+                start > end ||
+                demand.RequiredCount < 1 ||
+                demand.AllocationPercent is < 1 or > 100)
+            {
+                return $"要員要求「{demand.Id}」の内容が不正です。";
+            }
+        }
+
         if (request.Calendar.WorkWeek.Any(day => day is < 0 or > 6))
         {
             return "稼働曜日の値が不正です。";

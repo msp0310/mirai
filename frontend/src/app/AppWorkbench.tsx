@@ -59,11 +59,13 @@ import type {
   GanttTimeUnit,
   Member,
   Project,
+  ProjectAssignment,
   ProjectLifecycleStatus,
   ResourceDisplaySettings,
   ResourceScope,
   TaskInspectorFocusTarget,
   Team,
+  StaffingDemand,
 } from "../types/schedule";
 import {
   createConfigChangeReviewFromRows,
@@ -563,7 +565,8 @@ export function AppWorkbench({
 
   useEffect(() => {
     if (resourceScope !== "team" && activeTab !== "Workload") return;
-    const targetTeamIds = activeTab === "Workload" ? workspace.teams.map((team) => team.id) : [activeTeamId];
+    const targetTeamIds =
+      activeTab === "Workload" ? workspace.teams.map((team) => team.id) : [activeTeamId];
     const missingProjectIds = [
       ...new Set(
         targetTeamIds.flatMap((teamId) =>
@@ -597,7 +600,14 @@ export function AppWorkbench({
     return () => {
       cancelled = true;
     };
-  }, [activeTab, activeTeamId, projectSummaries, resourceScope, workspace.schedules, workspace.teams]);
+  }, [
+    activeTab,
+    activeTeamId,
+    projectSummaries,
+    resourceScope,
+    workspace.schedules,
+    workspace.teams,
+  ]);
   const teamResourceTasks = useMemo(
     () =>
       activeTeamReviewSchedules.flatMap((snapshot) =>
@@ -847,7 +857,9 @@ export function AppWorkbench({
     ? projectSaveScopeLabel
     : showMasterSettings
       ? "管理設定"
-      : "プロジェクト一覧";
+      : activeTab === "Workload"
+        ? "要員計画"
+        : "プロジェクト一覧";
   const taskChangeReview = isProjectSaveScope
     ? activeProjectTaskChangeReview
     : workspaceTaskChangeReview;
@@ -1315,6 +1327,52 @@ export function AppWorkbench({
       title: "プロジェクト設定を更新しました",
       tone: "success",
     });
+  }
+
+  /** 要員計画を案件へ反映し、参画メンバーを案件メンバーにも追加します。 */
+  function updateProjectStaffing(
+    projectId: string,
+    assignments: ProjectAssignment[],
+    staffingDemands: StaffingDemand[],
+  ) {
+    setWorkspace((current) => {
+      const memberById = new Map(
+        current.schedules
+          .flatMap((snapshot) => snapshot.members)
+          .map((member) => [member.id, member]),
+      );
+      const assignmentMemberIds = assignments.map((assignment) => assignment.memberId);
+      const updateProject = (project: Project) => ({
+        ...project,
+        assignments,
+        memberIds: Array.from(new Set([...(project.memberIds ?? []), ...assignmentMemberIds])),
+        staffingDemands,
+      });
+      return {
+        ...current,
+        projectSummaries: (current.projectSummaries ?? []).map((summary) =>
+          summary.project.id === projectId
+            ? { ...summary, project: updateProject(summary.project) }
+            : summary,
+        ),
+        schedules: current.schedules.map((snapshot) => {
+          if (snapshot.project.id !== projectId) return snapshot;
+          const existingIds = new Set(snapshot.members.map((member) => member.id));
+          return {
+            ...snapshot,
+            members: [
+              ...snapshot.members,
+              ...assignmentMemberIds
+                .filter((memberId) => !existingIds.has(memberId))
+                .map((memberId) => memberById.get(memberId))
+                .filter((member): member is Member => Boolean(member)),
+            ],
+            project: updateProject(snapshot.project),
+          };
+        }),
+      };
+    });
+    addToast({ title: "要員計画を更新しました", detail: "保存するとAPIへ反映されます。" });
   }
 
   /** プロジェクトのライフサイクル状態を更新します。 */
@@ -2513,7 +2571,7 @@ export function AppWorkbench({
                   ? "portfolio"
                   : activeTab === "Workload"
                     ? "workload"
-                  : "project"
+                    : "project"
           }
           currentUser={currentUser}
           favorite={favoriteProjectIds.has(schedule.project.id)}
@@ -2745,6 +2803,7 @@ export function AppWorkbench({
                 if (changeProject(projectId)) setActiveTab("Gantt");
               }}
               onOpenTeam={(teamId) => changeTeam(teamId, { stayOnPortfolio: true })}
+              onUpdateProjectStaffing={updateProjectStaffing}
               schedules={currentReviewSchedules}
               teams={workspace.teams}
             />

@@ -13,4 +13,6 @@ public sealed record ProjectDto(
     NextMilestoneDto NextMilestone,
     string? Status,
     string? ArchivedAt,
-    int Version);
+    int Version,
+    IReadOnlyList<ProjectAssignmentDto>? Assignments = null,
+    IReadOnlyList<StaffingDemandDto>? StaffingDemands = null);
