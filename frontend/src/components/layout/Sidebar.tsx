@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 import {
   AdjustmentsHorizontalIcon,
+  ChartBarIcon,
   CalendarDaysIcon,
   ClockIcon,
   Cog6ToothIcon,
@@ -29,6 +30,7 @@ const globalNavItems: NavItem[] = [{ label: "案件一覧", icon: FolderOpenIcon
 
 const projectNavItems: NavItem[] = [
   { label: "概要", icon: HomeIcon, tab: "Status" },
+  { label: "分析", icon: ChartBarIcon, tab: "Analysis" },
   { label: "ガント", icon: ListBulletIcon, tab: "Gantt" },
   { label: "課題", icon: ExclamationTriangleIcon, tab: "Issues" },
   { label: "作業時間", icon: WrenchScrewdriverIcon, tab: "WorkLogs" },

@@ -18,15 +18,12 @@ import type {
   ActivityCategory,
   ActivityLogEntry,
   Project,
-  ScheduleChangeLog,
-  ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../../../types/schedule";
 
 type ActivityPanelProps = {
   changeReview: TaskChangeReview;
   configReview: ConfigChangeReview;
-  changeLogs: ScheduleChangeLog[];
   entries: ActivityLogEntry[];
   hasUnsavedChanges: boolean;
   onSaveDraft: () => void;
@@ -36,7 +33,6 @@ type ActivityPanelProps = {
     projectId?: string,
   ) => void;
   project: Project;
-  tasks: ScheduleTask[];
 };
 
 const categoryLabels: Record<ActivityCategory | "all", string> = {
@@ -77,14 +73,12 @@ const filterCategories: Array<ActivityCategory | "all"> = [
 /** プロジェクト内の変更履歴を時系列で表示します。 */
 export function ActivityPanel({
   changeReview,
-  changeLogs,
   configReview,
   entries,
   hasUnsavedChanges,
   onSaveDraft,
   onSelectTask,
   project,
-  tasks,
 }: ActivityPanelProps) {
   const [category, setCategory] = useState<ActivityCategory | "all">("all");
   const [query, setQuery] = useState("");
@@ -145,12 +139,6 @@ export function ActivityPanel({
         review={changeReview}
       />
 
-      <ScheduleChangeAnalysis
-        changeLogs={changeLogs}
-        onSelectTask={onSelectTask}
-        tasks={tasks}
-      />
-
       <div className="activity-filter" aria-label="履歴カテゴリ">
         {filterCategories.map((item) => (
           <button
@@ -179,86 +167,6 @@ export function ActivityPanel({
           </div>
         ) : null}
       </div>
-    </section>
-  );
-}
-
-type ScheduleChangeAnalysisProps = {
-  changeLogs: ScheduleChangeLog[];
-  onSelectTask: (
-    taskId: string,
-    focusTarget?: TaskInspectorFocusTarget,
-    projectId?: string,
-  ) => void;
-  tasks: ScheduleTask[];
-};
-
-/** APIに保存された日程変更を、影響の大きいタスク順で表示します。 */
-function ScheduleChangeAnalysis({
-  changeLogs,
-  onSelectTask,
-  tasks,
-}: ScheduleChangeAnalysisProps) {
-  const taskNames = new Map(tasks.map((task) => [task.id, task.title]));
-  const rows = useMemo(() => {
-    const grouped = new Map<
-      string,
-      { count: number; deltaDays: number; latest: string; title: string }
-    >();
-    changeLogs
-      .filter((log) => log.field === "start" || log.field === "end")
-      .forEach((log) => {
-        const current = grouped.get(log.taskId) ?? {
-          count: 0,
-          deltaDays: 0,
-          latest: log.changedAt,
-          title: taskNames.get(log.taskId) ?? "削除されたタスク",
-        };
-        current.count += 1;
-        current.deltaDays += Math.abs(log.deltaDays ?? 0);
-        if (log.changedAt > current.latest) current.latest = log.changedAt;
-        grouped.set(log.taskId, current);
-      });
-    return [...grouped.entries()]
-      .map(([taskId, row]) => ({ taskId, ...row }))
-      .sort((left, right) => right.count - left.count || right.deltaDays - left.deltaDays)
-      .slice(0, 5);
-  }, [changeLogs, taskNames]);
-  const scheduleChangeCount = changeLogs.filter(
-    (log) => log.field === "start" || log.field === "end",
-  ).length;
-
-  return (
-    <section className="schedule-change-analysis" aria-label="保存済みの日程変更分析">
-      <div className="schedule-change-analysis-heading">
-        <div>
-          <strong>日程変更分析</strong>
-          <span>保存のたびに記録された開始日・終了日の変更</span>
-        </div>
-        <span>{scheduleChangeCount}件</span>
-      </div>
-      {rows.length > 0 ? (
-        <div className="schedule-change-analysis-list">
-          {rows.map((row) => (
-            <button
-              className="schedule-change-analysis-row"
-              key={row.taskId}
-              onClick={() => onSelectTask(row.taskId, "start")}
-              type="button"
-            >
-              <span className="schedule-change-count">{row.count}回</span>
-              <span className="schedule-change-task">{row.title}</span>
-              <span className="schedule-change-detail">
-                累計 {row.deltaDays}日 / 最終 {formatActivityDate(row.latest)}
-              </span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="schedule-change-analysis-empty">
-          保存済みの日程変更はありません。
-        </div>
-      )}
     </section>
   );
 }
@@ -468,14 +376,5 @@ function formatTime(value: string) {
   return date.toLocaleTimeString("ja-JP", {
     hour: "2-digit",
     minute: "2-digit",
-  });
-}
-
-function formatActivityDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "不明";
-  return date.toLocaleDateString("ja-JP", {
-    month: "numeric",
-    day: "numeric",
   });
 }

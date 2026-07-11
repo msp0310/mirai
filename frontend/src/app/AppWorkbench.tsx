@@ -106,6 +106,12 @@ const ActivityPanel = lazy(() =>
   })),
 );
 
+const AnalysisPanel = lazy(() =>
+  import("../features/analysis/components/AnalysisPanel").then((module) => ({
+    default: module.AnalysisPanel,
+  })),
+);
+
 const CalendarPanel = lazy(() =>
   import("../features/calendar/components/CalendarPanel").then((module) => ({
     default: module.CalendarPanel,
@@ -2631,6 +2637,17 @@ export function AppWorkbench({
               tasks={tasks}
             />
           ) : null}
+          {showMainProjectViews && activeTab === "Analysis" ? (
+            <AnalysisPanel
+              calendar={schedule.calendar}
+              calendarAware={calendarAware}
+              changeLogs={schedule.changeLogs ?? []}
+              onCaptureBaseline={captureBaseline}
+              onSelectTask={selectTaskFromSecondaryView}
+              project={schedule.project}
+              tasks={tasks}
+            />
+          ) : null}
           {showMainProjectViews && activeTab === "Issues" ? (
             <ProjectIssuePanel
               attachments={schedule.attachments ?? []}
@@ -2729,14 +2746,12 @@ export function AppWorkbench({
           {showMainProjectViews && activeTab === "Activity" ? (
             <ActivityPanel
               changeReview={taskChangeReview}
-              changeLogs={schedule.changeLogs ?? []}
               configReview={configChangeReview}
               entries={activeActivityEntries}
               hasUnsavedChanges={hasUnsavedChanges}
               onSaveDraft={requestSaveDraft}
               onSelectTask={selectTaskFromSecondaryView}
               project={schedule.project}
-              tasks={tasks}
             />
           ) : null}
         </Suspense>

@@ -19,6 +19,7 @@ export type MemberAvailabilityOverrideType = "unavailable";
 export type UtilizationTone = "good" | "warning" | "danger";
 export type AppViewTab =
   | "Gantt"
+  | "Analysis"
   | "Status"
   | "Projects"
   | "Resource"

@@ -5,6 +5,7 @@ export type ViewTab = AppViewTab;
 export const viewTabs: ViewTab[] = [
   "Gantt",
   "Status",
+  "Analysis",
   "Issues",
   "WorkLogs",
   "Resource",
@@ -14,6 +15,7 @@ export const viewTabs: ViewTab[] = [
 ];
 
 const viewTabLabels: Record<ViewTab, string> = {
+  Analysis: "分析",
   Activity: "履歴",
   Calendar: "カレンダー",
   Gantt: "ガント",

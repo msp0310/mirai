@@ -1058,6 +1058,233 @@ button {
   margin: 16px 0;
 }
 
+.analysis-page {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.analysis-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.analysis-header > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.analysis-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.analysis-header p,
+.analysis-header span {
+  margin: 0;
+  color: #66758b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.analysis-header-meta {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  text-align: right;
+}
+
+.analysis-header-meta strong {
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.analysis-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analysis-kpi {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+}
+
+.analysis-kpi > span,
+.analysis-kpi > small {
+  color: #728096;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.analysis-kpi > strong {
+  font-size: 24px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.analysis-kpi.blue {
+  border-top: 3px solid #2864ea;
+}
+
+.analysis-kpi.blue > strong {
+  color: #1649bf;
+}
+
+.analysis-kpi.teal {
+  border-top: 3px solid #11a7a4;
+}
+
+.analysis-kpi.teal > strong {
+  color: #008d8b;
+}
+
+.analysis-kpi.orange {
+  border-top: 3px solid #e46d2c;
+}
+
+.analysis-kpi.orange > strong {
+  color: #c4521d;
+}
+
+.analysis-main-grid,
+.analysis-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 14px;
+}
+
+.analysis-risk-panel,
+.analysis-baseline-panel {
+  min-width: 0;
+}
+
+.analysis-risk-panel .dashboard-panel-header,
+.analysis-baseline-panel .dashboard-panel-header {
+  align-items: flex-start;
+}
+
+.analysis-risk-panel .dashboard-panel-header > div,
+.analysis-baseline-panel .dashboard-panel-header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.analysis-risk-panel .dashboard-panel-header span,
+.analysis-baseline-panel .dashboard-panel-header span {
+  font-size: 11px;
+}
+
+.analysis-risk-panel .dashboard-panel-header > strong,
+.analysis-baseline-panel .dashboard-panel-header > strong {
+  color: #1649bf;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.analysis-risk-list {
+  display: grid;
+  gap: 7px;
+}
+
+.analysis-risk-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 8px;
+  align-items: center;
+  border: 1px solid #edf1f6;
+  border-radius: 7px;
+  background: #fff;
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.analysis-risk-row:hover,
+.analysis-risk-row:focus-visible {
+  border-color: #bad1ff;
+  background: #f8fbff;
+  outline: 0;
+}
+
+.analysis-risk-row > span {
+  grid-row: span 2;
+  border-radius: 999px;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.analysis-risk-row > span.delayed {
+  color: #b73b18;
+  background: #fff1e9;
+}
+
+.analysis-risk-row > span.blocked {
+  color: #765b09;
+  background: #fff8db;
+}
+
+.analysis-risk-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analysis-risk-row > small {
+  color: #728096;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.analysis-empty,
+.analysis-baseline-content {
+  border: 1px dashed #d6dfeb;
+  border-radius: 7px;
+  color: #7a8798;
+  padding: 16px 12px;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+}
+
+.analysis-baseline-content {
+  display: grid;
+  gap: 7px;
+  text-align: left;
+}
+
+.analysis-baseline-content p,
+.analysis-baseline-content small {
+  margin: 0;
+}
+
+.analysis-baseline-content p {
+  color: #25334a;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.analysis-baseline-content small {
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
 .activity-panel {
   display: grid;
   gap: 14px;
@@ -4482,6 +4709,15 @@ button.health-row:hover {
 
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analysis-main-grid,
+  .analysis-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .portfolio-layout {
