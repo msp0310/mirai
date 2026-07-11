@@ -907,8 +907,16 @@
   text-align: right;
 }
 
+.gantt-shell.table-view .inline-progress-input {
+  width: 48px;
+}
+
 .progress-readonly {
   width: 34px;
+}
+
+.gantt-shell.table-view .progress-readonly {
+  width: 44px;
 }
 
 .gantt-bar,
