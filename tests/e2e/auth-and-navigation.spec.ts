@@ -82,6 +82,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
     const demand = workload.getByRole("button", { name: /インフラ 1名/ });
     await expect(demand).toBeVisible();
+    await expect(workload.getByLabel("月別の要員不足")).toContainText("インフラ 1名");
     await demand.click();
     const assignmentEditor = page.getByRole("complementary", { name: "アサイン編集" });
     await assignmentEditor.getByLabel("メンバー").selectOption("fe");
@@ -90,6 +91,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
     await expect(demand).toHaveCount(0);
     await expect(workload.getByRole("button", { name: /インフラ \/ 60%/ })).toBeVisible();
+    await expect(workload.getByLabel("高橋 美咲の月別アサイン率")).toContainText("%");
 
     await page.getByRole("button", { name: "保存", exact: true }).click();
     const saveReview = page.getByRole("dialog", { name: "保存前確認" });

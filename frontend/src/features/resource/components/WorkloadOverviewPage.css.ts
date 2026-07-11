@@ -391,6 +391,68 @@ export const planTrack = style({
   backgroundImage: "linear-gradient(90deg, transparent calc(100% - 1px), #e7ecf3 0)",
   backgroundRepeat: "repeat-x",
 });
+export const monthlyAllocationRow = style({
+  position: "absolute",
+  inset: "0 0 auto",
+  zIndex: 1,
+  display: "grid",
+  height: 28,
+  borderBottom: "1px solid #e1e7ef",
+  background: "rgba(247, 249, 252, 0.94)",
+});
+export const monthlyAllocation = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRight: "1px solid #dfe6ef",
+  fontSize: 9,
+  fontWeight: 900,
+});
+export const monthlyAllocationOver = style({ color: "#b7352c", background: "#fff0ee" });
+export const monthlyAllocationFull = style({ color: "#9a5a00", background: "#fff7e8" });
+export const monthlyAllocationAvailable = style({ color: "#13724e", background: "#edf9f4" });
+export const monthlyAllocationEmpty = style({ color: "#9aa6b7", background: "#f7f9fc" });
+export const shortageScroll = style({
+  overflowX: "auto",
+  border: "1px solid #e4d5bc",
+  borderRadius: 7,
+  background: "#fffdf8",
+});
+export const shortageTimeline = style({
+  display: "grid",
+  gridTemplateColumns: "220px 1fr",
+  minHeight: 54,
+});
+export const shortageLabel = style({
+  display: "flex",
+  alignItems: "center",
+  borderRight: "1px solid #e6dcc9",
+  padding: "0 12px",
+  color: "#6b5638",
+  fontSize: 11,
+  fontWeight: 900,
+});
+export const shortageMonths = style({ display: "grid" });
+export const shortageMonth = style({
+  display: "grid",
+  alignContent: "center",
+  gap: 2,
+  minWidth: 0,
+  borderRight: "1px solid #ece3d4",
+  padding: "7px 5px",
+  color: "#8a7a65",
+  background: "#fffdf8",
+  textAlign: "center",
+});
+export const shortageMonthTitle = style({ fontSize: 9, fontWeight: 900 });
+export const shortageMonthDetail = style({
+  overflow: "hidden",
+  fontSize: 9,
+  fontWeight: 800,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+export const shortageMonthActive = style({ color: "#9d4c17", background: "#fff3df" });
 export const assignmentBar = style({
   position: "absolute",
   top: 10,

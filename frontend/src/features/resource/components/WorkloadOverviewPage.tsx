@@ -32,6 +32,11 @@ type WorkloadOverviewPageProps = {
 
 type ViewMode = "plan" | "member" | "team";
 type AssignmentWithProject = ProjectAssignment & { projectId: string; projectName: string };
+type OpenDemandWithProject = {
+  demand: StaffingDemand;
+  projectId: string;
+  projectName: string;
+};
 type AssignmentEditorState = {
   assignment: ProjectAssignment;
   demandId?: string;
@@ -362,6 +367,7 @@ export function WorkloadOverviewPage({
               ) : null}
             </div>
           </div>
+          <StaffingShortageTimeline demands={openDemands} weeks={visibleWeeks} />
           <AssignmentPlanBoard
             assignments={projectAssignments}
             members={scopedMembers}
@@ -462,7 +468,7 @@ function AssignmentPlanBoard({
             <div
               className={styles.planRow}
               key={member.id}
-              style={{ minHeight: Math.max(58, memberAssignments.length * 38 + 10) }}
+              style={{ minHeight: Math.max(72, memberAssignments.length * 38 + 42) }}
             >
               <div className={styles.planMember}>
                 <Avatar member={member} />
@@ -475,6 +481,28 @@ function AssignmentPlanBoard({
                 className={styles.planTrack}
                 style={{ backgroundSize: `${100 / Math.max(weeks.length, 1)}% 100%` }}
               >
+                <div
+                  className={styles.monthlyAllocationRow}
+                  aria-label={`${member.name}の月別アサイン率`}
+                  style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+                >
+                  {monthGroups.map((month) => {
+                    const allocation = getMonthlyAllocation(
+                      memberAssignments,
+                      weeks.slice(month.startIndex, month.startIndex + month.span),
+                    );
+                    return (
+                      <div
+                        className={`${styles.monthlyAllocation} ${getAllocationTone(allocation)}`}
+                        key={month.key}
+                        style={{ gridColumn: `span ${month.span}` }}
+                        title={`${month.label} ${allocation}%`}
+                      >
+                        {allocation}%
+                      </div>
+                    );
+                  })}
+                </div>
                 {memberAssignments.map((assignment, index) => {
                   const position = getAssignmentPosition(assignment, visibleStart!, visibleEnd!);
                   return (
@@ -486,7 +514,7 @@ function AssignmentPlanBoard({
                         {
                           "--assignment-color": getProjectColor(assignment.projectId),
                           left: `${position.left}%`,
-                          top: 6 + index * 38,
+                          top: 36 + index * 38,
                           width: `${position.width}%`,
                         } as CSSProperties
                       }
@@ -507,6 +535,47 @@ function AssignmentPlanBoard({
         {members.length === 0 ? (
           <div className={styles.empty}>表示対象のメンバーがいません。</div>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+function StaffingShortageTimeline({
+  demands,
+  weeks,
+}: {
+  demands: OpenDemandWithProject[];
+  weeks: ReturnType<typeof buildWeekColumns>;
+}) {
+  const monthGroups = buildMonthGroups(weeks);
+  const timelineMinWidth = Math.max(920, weeks.length * 40 + 220);
+  return (
+    <div className={styles.shortageScroll} aria-label="月別の要員不足">
+      <div className={styles.shortageTimeline} style={{ minWidth: timelineMinWidth }}>
+        <div className={styles.shortageLabel}>要員不足見通し</div>
+        <div
+          className={styles.shortageMonths}
+          style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+        >
+          {monthGroups.map((month) => {
+            const roles = aggregateDemandRoles(
+              demands,
+              weeks.slice(month.startIndex, month.startIndex + month.span),
+            );
+            return (
+              <div
+                className={`${styles.shortageMonth} ${roles.length > 0 ? styles.shortageMonthActive : ""}`}
+                key={month.key}
+                style={{ gridColumn: `span ${month.span}` }}
+              >
+                <strong className={styles.shortageMonthTitle}>{month.label}</strong>
+                <span className={styles.shortageMonthDetail}>
+                  {roles.length > 0 ? roles.join(" / ") : "不足なし"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1044,21 +1113,25 @@ function formatYearPeriod(start: string, end: string) {
 }
 
 function buildMonthGroups(weeks: ReturnType<typeof buildWeekColumns>) {
-  return weeks.reduce<Array<{ key: string; label: string; span: number }>>((groups, week) => {
-    const key = week.start?.slice(0, 7) ?? "unknown";
-    const current = groups.at(-1);
-    if (current?.key === key) {
-      current.span += 1;
+  return weeks.reduce<Array<{ key: string; label: string; span: number; startIndex: number }>>(
+    (groups, week, index) => {
+      const key = week.start?.slice(0, 7) ?? "unknown";
+      const current = groups.at(-1);
+      if (current?.key === key) {
+        current.span += 1;
+        return groups;
+      }
+      const [year, month] = key.split("-");
+      groups.push({
+        key,
+        label: key === "unknown" ? "期間未設定" : `${year}/${Number(month)}`,
+        span: 1,
+        startIndex: index,
+      });
       return groups;
-    }
-    const [year, month] = key.split("-");
-    groups.push({
-      key,
-      label: key === "unknown" ? "期間未設定" : `${year}/${Number(month)}`,
-      span: 1,
-    });
-    return groups;
-  }, []);
+    },
+    [],
+  );
 }
 
 function buildMonthWeekLabels(weeks: ReturnType<typeof buildWeekColumns>) {
@@ -1074,6 +1147,43 @@ function buildMonthWeekLabels(weeks: ReturnType<typeof buildWeekColumns>) {
     }
     return `W${weekOfMonth}`;
   });
+}
+
+function getMonthlyAllocation(
+  assignments: ProjectAssignment[],
+  weeks: ReturnType<typeof buildWeekColumns>,
+) {
+  return weeks.reduce((peak, week) => {
+    if (!week.start) return peak;
+    const weekEnd = addDateDays(week.start, 6)!;
+    const allocation = assignments
+      .filter((assignment) => assignment.startDate <= weekEnd && assignment.endDate >= week.start!)
+      .reduce((sum, assignment) => sum + assignment.allocationPercent, 0);
+    return Math.max(peak, allocation);
+  }, 0);
+}
+
+function getAllocationTone(allocation: number) {
+  if (allocation > 100) return styles.monthlyAllocationOver;
+  if (allocation >= 80) return styles.monthlyAllocationFull;
+  if (allocation > 0) return styles.monthlyAllocationAvailable;
+  return styles.monthlyAllocationEmpty;
+}
+
+function aggregateDemandRoles(
+  demands: OpenDemandWithProject[],
+  weeks: ReturnType<typeof buildWeekColumns>,
+) {
+  const start = weeks[0]?.start;
+  const end = addDateDays(weeks.at(-1)?.start, 6);
+  if (!start || !end) return [];
+  const counts = new Map<string, number>();
+  demands
+    .filter(({ demand }) => demand.startDate <= end && demand.endDate >= start)
+    .forEach(({ demand }) =>
+      counts.set(demand.role, (counts.get(demand.role) ?? 0) + demand.requiredCount),
+    );
+  return [...counts.entries()].map(([role, count]) => `${role} ${count}名`);
 }
 
 function formatYearMonth(dateKey: string) {
