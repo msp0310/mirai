@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type SVGProps } from "react";
+import { useEffect, useState, type ComponentType, type SVGProps } from "react";
 import {
   AdjustmentsHorizontalIcon,
   ChartBarIcon,
@@ -163,13 +163,19 @@ function NavGroup({
     activeTab === "Analysis" || activeTab === "WeeklyReport" ? "分析" : null,
   );
 
+  useEffect(() => {
+    if (activeTab === "Analysis" || activeTab === "WeeklyReport") {
+      setExpandedItemLabel("分析");
+    }
+  }, [activeTab]);
+
   return (
     <div className={styles.navGroup} aria-label={ariaLabel}>
       {label ? <span className={styles.navGroupLabel}>{label}</span> : null}
       {items.map((item) => {
         const Icon = item.icon;
         const hasActiveChild = item.children?.some((child) => child.tab === activeTab) ?? false;
-        const expanded = expandedItemLabel === item.label || hasActiveChild;
+        const expanded = expandedItemLabel === item.label;
         const active =
           !helpOpen &&
           ((item.tab
@@ -186,11 +192,12 @@ function NavGroup({
             aria-expanded={item.children ? expanded : undefined}
             className={active ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem}
             key={!item.children ? item.label : undefined}
-            onClick={() => {
-              if (item.children) {
-                setExpandedItemLabel((current) => (current === item.label ? null : item.label));
-              }
-              if (item.tab) onNavigate(item.tab);
+              onClick={() => {
+                if (item.children) {
+                  setExpandedItemLabel((current) => (current === item.label ? null : item.label));
+                  return;
+                }
+                if (item.tab) onNavigate(item.tab);
               if (item.action === "settings") onMasterSettingsOpen();
               if (item.action === "projectSettings") onProjectSettingsOpen();
             }}
