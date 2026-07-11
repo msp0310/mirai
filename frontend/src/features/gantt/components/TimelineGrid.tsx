@@ -111,18 +111,28 @@ export function TimelineGrid({
           ))}
         </div>
         <div className="week-row" style={{ width: timelineWidth }}>
-          {visibleWeeks.map((week) => (
-            <div
-              className={timeUnit === "day" ? "week-cell day-cell" : "week-cell"}
-              key={week.key}
-              style={{
-                left: week.startIndex * dayWidth,
-                width: week.span * dayWidth,
-              }}
-            >
-              {week.label}
-            </div>
-          ))}
+          {visibleWeeks.map((week) => {
+            const day = timeUnit === "day" ? timeline[week.startIndex] : undefined;
+            const className = [
+              timeUnit === "day" ? "week-cell day-cell" : "week-cell",
+              day?.holiday ? "holiday-date" : "",
+              day && !day.holiday && day.isWeekend ? "weekend-date" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+            return (
+              <div
+                className={className}
+                key={week.key}
+                style={{
+                  left: week.startIndex * dayWidth,
+                  width: week.span * dayWidth,
+                }}
+              >
+                {week.label}
+              </div>
+            );
+          })}
         </div>
         {showToday ? (
           <div className="today-label" style={{ left: todayOffset * dayWidth + dayWidth / 2 }}>

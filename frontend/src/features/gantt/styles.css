@@ -336,6 +336,14 @@
   white-space: nowrap;
 }
 
+.week-cell.day-cell.weekend-date {
+  color: #d36a5f;
+}
+
+.week-cell.day-cell.holiday-date {
+  color: #c4473e;
+}
+
 .today-label {
   position: absolute;
   top: 52px;
