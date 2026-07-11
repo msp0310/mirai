@@ -27,10 +27,10 @@ type WorkloadOverviewPageProps = {
   ) => void;
   schedules: ScheduleSnapshot[];
   teams: Team[];
+  todayKey: string;
 };
 
 type ViewMode = "plan" | "member" | "team";
-type HorizonMonths = 3 | 6 | 12;
 type AssignmentWithProject = ProjectAssignment & { projectId: string; projectName: string };
 type AssignmentEditorState = {
   assignment: ProjectAssignment;
@@ -48,11 +48,11 @@ export function WorkloadOverviewPage({
   onUpdateProjectStaffing,
   schedules,
   teams,
+  todayKey,
 }: WorkloadOverviewPageProps) {
   const [mode, setMode] = useState<ViewMode>("plan");
   const [teamId, setTeamId] = useState("all");
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [horizonMonths, setHorizonMonths] = useState<HorizonMonths>(6);
+  const [periodOffset, setPeriodOffset] = useState(0);
   const [editorState, setEditorState] = useState<AssignmentEditorState | null>(null);
   const [demandEditorState, setDemandEditorState] = useState<DemandEditorState | null>(null);
   const activeSchedules = useMemo(
@@ -60,20 +60,13 @@ export function WorkloadOverviewPage({
     [schedules],
   );
   const members = useMemo(() => collectMembers(activeSchedules), [activeSchedules]);
+  const currentMonth = `${todayKey.slice(0, 7)}-01`;
+  const periodStart = addDateMonths(currentMonth, periodOffset * 12);
+  const periodEnd = addDateDays(addDateMonths(periodStart, 12), -1)!;
   const weeks = useMemo(() => {
-    const start = activeSchedules.map((item) => item.project.rangeStart).sort()[0];
-    const projectEnd = activeSchedules
-      .map((item) => item.project.rangeEnd)
-      .sort()
-      .at(-1);
-    if (!start || !projectEnd) return [];
-    const end = [projectEnd, addDateMonths(start, 12)].sort().at(-1)!;
-    return buildWeekColumns(buildTimeline(start, end, calendar, calendarAware, "day"));
-  }, [activeSchedules, calendar, calendarAware]);
-  const visibleWeekCount = horizonMonths === 3 ? 13 : horizonMonths === 6 ? 26 : 52;
-  const maxOffset = Math.max(weeks.length - visibleWeekCount, 0);
-  const visibleOffset = Math.min(weekOffset, maxOffset);
-  const visibleWeeks = weeks.slice(visibleOffset, visibleOffset + visibleWeekCount);
+    return buildWeekColumns(buildTimeline(periodStart, periodEnd, calendar, calendarAware, "day"));
+  }, [calendar, calendarAware, periodEnd, periodStart]);
+  const visibleWeeks = weeks;
   const scopedSchedules = useMemo(
     () =>
       teamId === "all"
@@ -310,37 +303,20 @@ export function WorkloadOverviewPage({
           <span />
         )}
         <div className={styles.timelineControls}>
-          <div className={styles.horizon} aria-label="表示期間">
-            {([3, 6, 12] as const).map((months) => (
-              <button
-                className={`${styles.horizonButton} ${horizonMonths === months ? styles.horizonButtonActive : ""}`}
-                key={months}
-                onClick={() => {
-                  setHorizonMonths(months);
-                  setWeekOffset(0);
-                }}
-                type="button"
-              >
-                {months}か月
-              </button>
-            ))}
-          </div>
           <div className={styles.pager} aria-label="表示期間の切り替え">
             <button
               aria-label="前の期間"
               className={styles.pagerButton}
-              disabled={visibleOffset === 0}
-              onClick={() => setWeekOffset(Math.max(visibleOffset - visibleWeekCount, 0))}
+              onClick={() => setPeriodOffset((current) => current - 1)}
               type="button"
             >
               <ChevronLeftIcon className={styles.pagerIcon} />
             </button>
-            <span className={styles.period}>{formatPeriod(visibleWeeks)}</span>
+            <span className={styles.period}>{formatYearPeriod(periodStart, periodEnd)}</span>
             <button
               aria-label="次の期間"
               className={styles.pagerButton}
-              disabled={visibleOffset >= maxOffset}
-              onClick={() => setWeekOffset(Math.min(visibleOffset + visibleWeekCount, maxOffset))}
+              onClick={() => setPeriodOffset((current) => current + 1)}
               type="button"
             >
               <ChevronRightIcon className={styles.pagerIcon} />
@@ -1061,11 +1037,8 @@ function getScopedMembers(members: Member[], schedules: ScheduleSnapshot[], team
   return members.filter((member) => !team || teamIds.has(member.id) || assignedIds.has(member.id));
 }
 
-function formatPeriod(weeks: ReturnType<typeof buildWeekColumns>) {
-  if (weeks.length === 0) return "対象期間なし";
-  const start = weeks[0]?.start;
-  const end = addDateDays(weeks.at(-1)?.start, 6);
-  return start && end ? `${formatMonthDay(start)} - ${formatMonthDay(end)}` : "対象期間なし";
+function formatYearPeriod(start: string, end: string) {
+  return `${formatYearMonth(start)} - ${formatYearMonth(end)}`;
 }
 
 function buildMonthGroups(weeks: ReturnType<typeof buildWeekColumns>) {
@@ -1096,9 +1069,9 @@ function formatWeekNumber(dateKey: string | undefined) {
   return `W${week}`;
 }
 
-function formatMonthDay(dateKey: string) {
-  const [, month, day] = dateKey.split("-");
-  return `${Number(month)}/${Number(day)}`;
+function formatYearMonth(dateKey: string) {
+  const [year, month] = dateKey.split("-");
+  return `${year}/${Number(month)}`;
 }
 
 function getProjectAssignments(snapshot: ScheduleSnapshot, members: Member[]): ProjectAssignment[] {

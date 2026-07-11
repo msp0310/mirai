@@ -118,32 +118,6 @@ export const timelineControls = style({
   gap: 10,
 });
 
-export const horizon = style({
-  display: "inline-flex",
-  height: 32,
-  padding: 2,
-  border: "1px solid #d5dfed",
-  borderRadius: 6,
-  background: "#f5f7fa",
-});
-
-export const horizonButton = style({
-  minWidth: 52,
-  border: 0,
-  borderRadius: 4,
-  color: "#617087",
-  background: "transparent",
-  fontSize: 10,
-  fontWeight: 800,
-  cursor: "pointer",
-});
-
-export const horizonButtonActive = style({
-  color: "#174dbd",
-  background: "#fff",
-  boxShadow: "0 1px 3px rgba(35, 56, 91, 0.13)",
-});
-
 export const pagerButton = style({
   display: "grid",
   width: 32,

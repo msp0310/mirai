@@ -2806,6 +2806,7 @@ export function AppWorkbench({
               onUpdateProjectStaffing={updateProjectStaffing}
               schedules={currentReviewSchedules}
               teams={workspace.teams}
+              todayKey={todayKey}
             />
           ) : null}
           {showMainProjectViews && activeTab === "Resource" ? (
