@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, type SVGProps } from "react";
+import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import {
   AdjustmentsHorizontalIcon,
   ChartBarIcon,
@@ -159,18 +159,36 @@ function NavGroup({
   projectSettingsOpen,
   settingsOpen,
 }: NavGroupProps) {
-  const [expandedItemLabel, setExpandedItemLabel] = useState<string | null>(
-    activeTab === "Analysis" || activeTab === "WeeklyReport" ? "分析" : null,
-  );
+  const [expandedItemLabel, setExpandedItemLabel] = useState<string | null>(null);
+  const navGroupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (activeTab === "Analysis" || activeTab === "WeeklyReport") {
-      setExpandedItemLabel("分析");
+    setExpandedItemLabel(null);
+  }, [activeTab, helpOpen, projectSettingsOpen, settingsOpen]);
+
+  useEffect(() => {
+    if (expandedItemLabel === null) return;
+
+    function closeSubmenuOnOutsideClick(event: PointerEvent) {
+      if (event.target instanceof Node && !navGroupRef.current?.contains(event.target)) {
+        setExpandedItemLabel(null);
+      }
     }
-  }, [activeTab]);
+
+    function closeSubmenuOnEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") setExpandedItemLabel(null);
+    }
+
+    document.addEventListener("pointerdown", closeSubmenuOnOutsideClick);
+    window.addEventListener("keydown", closeSubmenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeSubmenuOnOutsideClick);
+      window.removeEventListener("keydown", closeSubmenuOnEscape);
+    };
+  }, [expandedItemLabel]);
 
   return (
-    <div className={styles.navGroup} aria-label={ariaLabel}>
+    <div className={styles.navGroup} aria-label={ariaLabel} ref={navGroupRef}>
       {label ? <span className={styles.navGroupLabel}>{label}</span> : null}
       {items.map((item) => {
         const Icon = item.icon;
@@ -223,7 +241,7 @@ function NavGroup({
                       className={childActive ? `${styles.navSubItem} ${styles.navSubItemActive}` : styles.navSubItem}
                       key={child.tab}
                       onClick={() => {
-                        setExpandedItemLabel(item.label);
+                        setExpandedItemLabel(null);
                         onNavigate(child.tab);
                       }}
                       title={child.label}

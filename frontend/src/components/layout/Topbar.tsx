@@ -129,6 +129,7 @@ export function Topbar({
   const brabioImportInputRef = useRef<HTMLInputElement>(null);
   const csvImportInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const topbarRef = useRef<HTMLElement>(null);
   const projectSearchInputRef = useRef<HTMLInputElement>(null);
   const projectSwitcherTriggerRef = useRef<HTMLButtonElement>(null);
   const projectRowRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -204,6 +205,27 @@ export function Topbar({
       setOpenMenu(null);
     }
   }, [isAdminContext, isHelpContext, isProjectContext, openMenu]);
+
+  useEffect(() => {
+    if (openMenu === null) return;
+
+    function closeMenuOnOutsideClick(event: PointerEvent) {
+      if (event.target instanceof Node && !topbarRef.current?.contains(event.target)) {
+        setOpenMenu(null);
+      }
+    }
+
+    function closeMenuOnEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") setOpenMenu(null);
+    }
+
+    document.addEventListener("pointerdown", closeMenuOnOutsideClick);
+    window.addEventListener("keydown", closeMenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenuOnOutsideClick);
+      window.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [openMenu]);
 
   useEffect(() => {
     if (openMenu !== "projects") return;
@@ -337,7 +359,7 @@ export function Topbar({
   }
 
   return (
-    <header className="topbar">
+    <header className="topbar" ref={topbarRef}>
       <div className="title-block">
         <div className="workspace-title">
           <div className="title-stack">

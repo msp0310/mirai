@@ -172,4 +172,23 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await viewModeControl.getByRole("button", { name: "ガント" }).click();
     await expect(page.locator(".timeline-body")).toBeVisible();
   });
+
+  test("ポップアップは外側クリックと項目選択で閉じる", async ({ page }) => {
+    await login(page);
+
+    await page.getByRole("button", { name: "通知" }).click();
+    await expect(page.locator(".notification-popover")).toBeVisible();
+    await page.locator("main").click({ position: { x: 700, y: 600 } });
+    await expect(page.locator(".notification-popover")).toHaveCount(0);
+
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+    await page.getByRole("button", { name: "分析", exact: true }).click();
+    await expect(page.getByLabel("分析のサブメニュー")).toBeVisible();
+    await page.getByRole("button", { name: "プロジェクト分析", exact: true }).click();
+    await expect(page.getByLabel("分析のサブメニュー")).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "プロジェクト分析" })).toBeVisible();
+  });
 });
