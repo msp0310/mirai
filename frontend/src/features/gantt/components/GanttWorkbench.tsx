@@ -315,12 +315,12 @@ export function GanttWorkbench({
     () =>
       (displayMode === "table"
         ? [
-            "minmax(220px, 1fr)",
-            "112px",
-            "112px",
-            "150px",
-            columnVisibility.status ? "82px" : null,
-            "92px",
+            "280px",
+            "110px",
+            "110px",
+            "220px",
+            columnVisibility.status ? "86px" : null,
+            "100px",
           ]
         : [
             "minmax(280px, 1fr)",
