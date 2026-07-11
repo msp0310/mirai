@@ -1,4 +1,9 @@
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  EyeIcon,
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "../../../data/authRepository";
 import {
@@ -40,6 +45,11 @@ export function DailyReportPage({ currentUser, schedules, todayKey }: DailyRepor
   const [message, setMessage] = useState("読み込み中...");
   const members = useMemo(() => collectMembers(schedules), [schedules]);
   const currentMember = members.find((member) => member.name === currentUser.name) ?? members[0];
+  const visibleReports = useMemo(
+    () =>
+      draft && !reports.some((report) => report.id === draft.id) ? [draft, ...reports] : reports,
+    [draft, reports],
+  );
 
   useEffect(() => {
     let active = true;
@@ -151,24 +161,26 @@ export function DailyReportPage({ currentUser, schedules, todayKey }: DailyRepor
       </header>
       <div className={styles.layout}>
         <aside className={styles.reportList} aria-label="日報一覧">
-          {reports.map((report) => (
+          <div className={styles.listHeading}>
+            <strong>最近の日報</strong>
+            <span>{visibleReports.length}件</span>
+          </div>
+          {visibleReports.map((report) => (
             <button
               className={`${styles.reportListItem} ${selectedId === report.id ? styles.reportListItemActive : ""}`}
               key={report.id}
               onClick={() => selectReport(report)}
               type="button"
             >
-              <strong>{report.date}</strong>
-              <span>
-                {members.find((member) => member.id === report.memberId)?.name ?? report.memberId}
+              <span className={styles.reportDate}>{formatReportDate(report.date)}</span>
+              <strong>{report.summary.trim() || "未入力の日報"}</strong>
+              <span className={styles.reportMeta}>
+                <small>{report.status === "submitted" ? "提出済み" : "下書き"}</small>
+                <small>{sumHours(report.entries)}h</small>
               </span>
-              <small>
-                {report.status === "submitted" ? "提出済み" : "下書き"} / {sumHours(report.entries)}
-                h
-              </small>
             </button>
           ))}
-          {reports.length === 0 ? <span className={styles.empty}>{message}</span> : null}
+          {visibleReports.length === 0 ? <span className={styles.empty}>{message}</span> : null}
         </aside>
         {draft ? (
           <DailyReportEditor
@@ -308,6 +320,12 @@ function DailyReportEditor({
                 明細追加
               </button>
             </header>
+            <div className={styles.entryLabels} aria-hidden="true">
+              <span>案件</span>
+              <span>タスク</span>
+              <span>時間</span>
+              <span>分類</span>
+            </div>
             {report.entries.map((entry) => {
               const schedule = schedules.find((item) => item.project.id === entry.projectId);
               return (
@@ -460,14 +478,44 @@ function MarkdownField({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const [mode, setMode] = useState<"edit" | "preview">("edit");
+
   return (
-    <label className={styles.markdownField}>
-      <strong>{label}</strong>
-      <textarea onChange={(event) => onChange(event.target.value)} value={value} />
-      <div className={styles.preview}>
-        <MarkdownPreview content={value || "_未入力_"} />
-      </div>
-    </label>
+    <section className={styles.markdownField}>
+      <header className={styles.markdownHeader}>
+        <strong>{label}</strong>
+        <div className={styles.modeSwitch}>
+          <button
+            className={mode === "edit" ? styles.modeActive : ""}
+            onClick={() => setMode("edit")}
+            type="button"
+          >
+            <PencilSquareIcon />
+            編集
+          </button>
+          <button
+            className={mode === "preview" ? styles.modeActive : ""}
+            onClick={() => setMode("preview")}
+            type="button"
+          >
+            <EyeIcon />
+            プレビュー
+          </button>
+        </div>
+      </header>
+      {mode === "edit" ? (
+        <textarea
+          aria-label={label}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={`${label}をMarkdownで入力`}
+          value={value}
+        />
+      ) : (
+        <div className={styles.preview}>
+          <MarkdownPreview content={value || "_未入力_"} />
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -491,4 +539,14 @@ function collectMembers(schedules: ScheduleSnapshot[]) {
 
 function sumHours(entries: DailyReportEntry[]) {
   return entries.reduce((sum, entry) => sum + (Number.isFinite(entry.hours) ? entry.hours : 0), 0);
+}
+
+function formatReportDate(date: string) {
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+  }).format(parsed);
 }

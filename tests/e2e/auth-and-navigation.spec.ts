@@ -129,7 +129,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await dailyReport.getByLabel("本日のまとめ").fill("基本設計レビューを実施しました。");
     await dailyReport.getByLabel("作業内容").fill("レビュー指摘の整理");
     await dailyReport.getByRole("button", { name: "提出して実績反映" }).click();
-    await expect(dailyReport.getByText("提出済み", { exact: true })).toBeVisible();
+    await expect(
+      dailyReport.getByRole("article").getByText("提出済み", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("日報を提出し、案件実績へ反映しました。")).toBeVisible();
 
     await dailyReport.getByLabel("日報コメント").fill("確認しました。明日の対応もお願いします。");

@@ -17,7 +17,7 @@ export const description = style({
 });
 export const layout = style({
   display: "grid",
-  gridTemplateColumns: "230px minmax(0, 1fr)",
+  gridTemplateColumns: "190px minmax(0, 1fr)",
   minHeight: "calc(100vh - 150px)",
   borderTop: "1px solid #dce4ef",
 });
@@ -28,18 +28,34 @@ export const reportList = style({
   borderRight: "1px solid #dce4ef",
   padding: "12px 10px 12px 0",
 });
+export const listHeading = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "2px 8px 7px",
+  color: "#5b6a80",
+  fontSize: 10,
+});
 export const reportListItem = style({
   display: "grid",
-  gap: 3,
+  gap: 5,
   border: "1px solid transparent",
   borderRadius: 6,
   color: "#33435b",
   background: "transparent",
-  padding: "9px 10px",
+  padding: "10px 11px",
   cursor: "pointer",
   textAlign: "left",
+  selectors: { "&:hover": { background: "#f4f7fb" } },
 });
 export const reportListItemActive = style({ borderColor: "#a9c1f5", background: "#eef4ff" });
+export const reportDate = style({ color: "#65758c", fontSize: 10, fontWeight: 800 });
+export const reportMeta = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  color: "#74839a",
+});
 export const empty = style({ color: "#8591a3", fontSize: 10, fontWeight: 700, padding: 8 });
 export const welcome = style({
   display: "grid",
@@ -81,7 +97,7 @@ export const secondaryButton = style({
   selectors: { "&:disabled": { cursor: "default", opacity: 0.45 } },
 });
 export const buttonIcon = style({ width: 15, height: 15 });
-export const editor = style({ minWidth: 0, padding: "12px 0 0 16px" });
+export const editor = style({ minWidth: 0, padding: "12px 0 0 14px" });
 export const editorHeader = style({
   display: "flex",
   alignItems: "center",
@@ -140,8 +156,8 @@ export const iconButton = style({
 });
 export const editorBody = style({
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 290px",
-  gap: 18,
+  gridTemplateColumns: "minmax(0, 1fr) 260px",
+  gap: 16,
   paddingTop: 14,
 });
 export const editorMain = style({ display: "grid", minWidth: 0, gap: 15 });
@@ -155,14 +171,29 @@ export const editorSide = style({
 export const markdownField = style({
   display: "grid",
   minWidth: 0,
-  gridTemplateColumns: "1fr 1fr",
-  gap: 7,
+  gap: 8,
   color: "#53627a",
   fontSize: 10,
   fontWeight: 900,
 });
+export const markdownHeader = style({
+  display: "flex",
+  minHeight: 28,
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 10,
+});
+export const modeSwitch = style({
+  display: "inline-flex",
+  alignItems: "center",
+  border: "1px solid #d6dfeb",
+  borderRadius: 5,
+  overflow: "hidden",
+  background: "#fff",
+});
+export const modeActive = style({ color: "#174dbd !important", background: "#edf4ff !important" });
 export const preview = style({
-  minHeight: 126,
+  minHeight: 112,
   overflow: "auto",
   border: "1px solid #e0e6ef",
   borderRadius: 6,
@@ -183,9 +214,18 @@ export const sectionHeader = style({
 });
 export const entry = style({
   display: "grid",
-  gridTemplateColumns: "1.3fr 1.3fr 70px 92px 32px",
+  gridTemplateColumns: "1.25fr 1.25fr 66px 88px 32px",
   gap: 6,
   alignItems: "center",
+});
+export const entryLabels = style({
+  display: "grid",
+  gridTemplateColumns: "1.25fr 1.25fr 66px 88px 32px",
+  gap: 6,
+  padding: "0 1px",
+  color: "#74839a",
+  fontSize: 9,
+  fontWeight: 800,
 });
 export const hoursInput = style({
   width: "100%",
@@ -247,9 +287,8 @@ export const message = style({
 });
 
 globalStyle(`${iconButton} > svg`, { width: 15, height: 15 });
-globalStyle(`${markdownField} > strong`, { gridColumn: "1 / -1" });
 globalStyle(`${markdownField} > textarea`, {
-  minHeight: 126,
+  minHeight: 112,
   resize: "vertical",
   border: "1px solid #d5deea",
   borderRadius: 6,
@@ -259,6 +298,20 @@ globalStyle(`${markdownField} > textarea`, {
   fontSize: 11,
   lineHeight: 1.6,
 });
+globalStyle(`${modeSwitch} > button`, {
+  display: "inline-flex",
+  height: 25,
+  alignItems: "center",
+  gap: 4,
+  border: 0,
+  color: "#66758b",
+  background: "transparent",
+  padding: "0 8px",
+  fontSize: 9,
+  fontWeight: 800,
+  cursor: "pointer",
+});
+globalStyle(`${modeSwitch} svg`, { width: 12, height: 12 });
 globalStyle(`${sectionHeader} > div`, {
   display: "flex",
   alignItems: "baseline",
