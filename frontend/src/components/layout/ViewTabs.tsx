@@ -6,6 +6,7 @@ export const viewTabs: ViewTab[] = [
   "Gantt",
   "Status",
   "Analysis",
+  "WeeklyReport",
   "Issues",
   "WorkLogs",
   "Resource",
@@ -25,6 +26,7 @@ const viewTabLabels: Record<ViewTab, string> = {
   Resource: "リソース",
   Status: "概要",
   WorkLogs: "作業時間",
+  WeeklyReport: "週次報告",
 };
 
 type ViewTabsProps = {

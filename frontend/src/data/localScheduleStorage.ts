@@ -241,6 +241,7 @@ function isAppViewTab(value: unknown): value is AppViewTab {
     value === "Gantt" ||
     value === "Status" ||
     value === "Analysis" ||
+    value === "WeeklyReport" ||
     value === "Projects" ||
     value === "Issues" ||
     value === "WorkLogs" ||

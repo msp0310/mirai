@@ -25,6 +25,7 @@ export type AppViewTab =
   | "Resource"
   | "Issues"
   | "WorkLogs"
+  | "WeeklyReport"
   | "Calendar"
   | "Milestones"
   | "Activity";

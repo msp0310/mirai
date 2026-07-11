@@ -1064,6 +1064,52 @@ button {
   margin: 16px 0;
 }
 
+.weekly-report-page {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.weekly-report-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.weekly-report-header > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.weekly-report-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.weekly-report-header p,
+.weekly-report-header span {
+  margin: 0;
+  color: #66758b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.weekly-report-header-meta {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  text-align: right;
+}
+
+.weekly-report-header-meta strong {
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .analysis-header {
   display: flex;
   align-items: end;
@@ -1203,6 +1249,44 @@ button {
   font-weight: 950;
 }
 
+.weekly-progress-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #e3eaf3;
+  border-radius: 7px;
+  background: #e3eaf3;
+}
+
+.weekly-progress-overview > div {
+  display: grid;
+  gap: 3px;
+  background: #f8fafc;
+  padding: 10px 12px;
+}
+
+.weekly-progress-overview span {
+  color: #728096;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.weekly-progress-overview strong {
+  color: #25334a;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.weekly-progress-overview .behind strong {
+  color: #c4521d;
+}
+
+.weekly-progress-overview .ahead strong,
+.weekly-progress-overview .on-track strong {
+  color: #008d8b;
+}
+
 .weekly-progress-table-wrap {
   max-height: 430px;
   overflow: auto;
@@ -1212,7 +1296,7 @@ button {
 
 .weekly-progress-table {
   width: 100%;
-  min-width: 680px;
+  min-width: 760px;
   border-collapse: separate;
   border-spacing: 0;
   color: #25334a;
@@ -1251,6 +1335,10 @@ button {
 
 .weekly-progress-table tbody tr.has-delay {
   background: #fffaf6;
+}
+
+.weekly-progress-table tbody tr.selected {
+  background: #f3f7ff;
 }
 
 .weekly-progress-table tbody th {
@@ -1304,6 +1392,204 @@ button {
   color: #8a96a7;
   font-size: 10px;
   font-weight: 750;
+}
+
+.weekly-progress-table th:last-child,
+.weekly-progress-table td:last-child {
+  text-align: center;
+}
+
+.weekly-progress-detail-button {
+  min-width: 42px;
+  border: 1px solid #cbdafa;
+  border-radius: 5px;
+  color: #1649bf;
+  background: #fff;
+  padding: 4px 7px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.weekly-progress-detail-button:hover,
+.weekly-progress-detail-button[aria-pressed="true"] {
+  border-color: #2864ea;
+  color: #fff;
+  background: #2864ea;
+}
+
+.weekly-progress-detail-button:focus-visible {
+  outline: 2px solid #2864ea;
+  outline-offset: 1px;
+}
+
+.weekly-progress-detail {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid #e3eaf3;
+  padding-top: 12px;
+}
+
+.weekly-progress-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weekly-progress-detail-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.weekly-progress-detail-heading h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.weekly-progress-detail-heading p,
+.weekly-progress-detail-heading > strong,
+.weekly-progress-detail-note {
+  margin: 0;
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.weekly-progress-detail-heading > strong {
+  color: #1649bf;
+  font-size: 16px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.weekly-progress-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 1px;
+}
+
+.weekly-progress-group {
+  min-width: 0;
+  border: 1px solid #e3eaf3;
+  border-radius: 7px;
+  background: #fff;
+  padding: 9px;
+}
+
+.weekly-progress-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.weekly-progress-group-heading strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekly-progress-group-heading span {
+  color: #8a96a7;
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.weekly-progress-task-list {
+  display: grid;
+  gap: 4px;
+}
+
+.weekly-progress-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  border: 1px solid #edf1f6;
+  border-radius: 5px;
+  background: #fff;
+  padding: 6px 7px;
+  text-align: left;
+}
+
+.weekly-progress-task:hover,
+.weekly-progress-task:focus-visible {
+  border-color: #bad1ff;
+  background: #f8fbff;
+  outline: 0;
+}
+
+.weekly-progress-task-status {
+  border-radius: 4px;
+  padding: 3px 4px;
+  color: #66758b;
+  background: #f0f3f7;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.weekly-progress-task-status.inProgress {
+  color: #1649bf;
+  background: #eaf1ff;
+}
+
+.weekly-progress-task-status.done {
+  color: #008d8b;
+  background: #e4f8f4;
+}
+
+.weekly-progress-task-status.delayed {
+  color: #b73b18;
+  background: #fff1e9;
+}
+
+.weekly-progress-task-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.weekly-progress-task-copy strong {
+  overflow: hidden;
+  color: #25334a;
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekly-progress-task-copy small {
+  color: #8a96a7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.weekly-progress-detail-empty {
+  border: 1px dashed #d6dfeb;
+  border-radius: 7px;
+  color: #7a8798;
+  padding: 12px;
+  font-size: 11px;
+  font-weight: 750;
+  text-align: center;
+}
+
+.weekly-progress-detail-note {
+  display: block;
+  line-height: 1.5;
 }
 
 .weekly-progress-meter {
@@ -4962,6 +5248,33 @@ button.health-row:hover {
 }
 
 @media (max-width: 760px) {
+  .weekly-report-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .weekly-report-header-meta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .weekly-progress-heading,
+  .weekly-progress-detail-heading {
+    flex-direction: column;
+  }
+
+  .weekly-progress-meta {
+    justify-items: start;
+  }
+
+  .weekly-progress-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-progress-groups {
+    grid-template-columns: 1fr;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }

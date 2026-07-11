@@ -90,6 +90,7 @@ import { useTaskActions } from "../features/gantt/hooks/useTaskActions";
 import { useScheduleSync } from "./useScheduleSync";
 import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
 import { useWorkbenchOverlays, type PendingTaskCsvImport } from "./useWorkbenchOverlays";
+import { todayKey } from "../features/gantt/components/constants";
 
 type AppWorkbenchProps = {
   currentUser: AuthUser;
@@ -109,6 +110,12 @@ const ActivityPanel = lazy(() =>
 const AnalysisPanel = lazy(() =>
   import("../features/analysis/components/AnalysisPanel").then((module) => ({
     default: module.AnalysisPanel,
+  })),
+);
+
+const WeeklyReportPanel = lazy(() =>
+  import("../features/analysis/components/WeeklyReportPanel").then((module) => ({
+    default: module.WeeklyReportPanel,
   })),
 );
 
@@ -2646,6 +2653,15 @@ export function AppWorkbench({
               onSelectTask={selectTaskFromSecondaryView}
               project={schedule.project}
               tasks={tasks}
+            />
+          ) : null}
+          {showMainProjectViews && activeTab === "WeeklyReport" ? (
+            <WeeklyReportPanel
+              members={projectMembers}
+              onSelectTask={selectTaskFromSecondaryView}
+              project={schedule.project}
+              tasks={tasks}
+              todayKey={todayKey}
             />
           ) : null}
           {showMainProjectViews && activeTab === "Issues" ? (
