@@ -39,7 +39,13 @@ export type TopbarSyncStatus = {
 };
 
 export type ApiConnectionMode = "offline" | "online";
-export type TopbarContextMode = "admin" | "help" | "portfolio" | "project" | "workload";
+export type TopbarContextMode =
+  | "admin"
+  | "dailyReports"
+  | "help"
+  | "portfolio"
+  | "project"
+  | "workload";
 
 export type TopbarAuthUser = {
   email: string;
@@ -137,6 +143,7 @@ export function Topbar({
   const isHelpContext = contextMode === "help";
   const isPortfolioContext = contextMode === "portfolio";
   const isWorkloadContext = contextMode === "workload";
+  const isDailyReportsContext = contextMode === "dailyReports";
   const isProjectContext = contextMode === "project";
   const pageTitle = isAdminContext
     ? "管理設定"
@@ -144,16 +151,20 @@ export function Topbar({
       ? "ヘルプ"
       : isPortfolioContext
         ? "プロジェクトポートフォリオ"
-        : isWorkloadContext
-          ? "稼働・要員計画"
-        : project.workspace;
+        : isDailyReportsContext
+          ? "日報"
+          : isWorkloadContext
+            ? "稼働・要員計画"
+            : project.workspace;
   const contextLabel = isAdminContext
     ? "管理設定"
     : isHelpContext
       ? "ヘルプ"
-      : isWorkloadContext
-        ? "稼働・要員計画"
-        : "案件一覧";
+      : isDailyReportsContext
+        ? "日報"
+        : isWorkloadContext
+          ? "稼働・要員計画"
+          : "案件一覧";
   const teamById = useMemo(() => new Map(teams.map((team) => [team.id, team])), [teams]);
   const normalizedProjectQuery = projectQuery.trim().toLowerCase();
   const filteredProjects = useMemo(
@@ -513,7 +524,7 @@ export function Topbar({
         </div>
       </div>
       <div className="topbar-actions">
-        <div className="topbar-action-wrap">
+        {!isDailyReportsContext ? <div className="topbar-action-wrap">
           <button
             className={`save-state ${syncStatus.status}${openMenu === "sync" ? " active" : ""}`}
             onClick={() => toggleMenu("sync")}
@@ -620,8 +631,8 @@ export function Topbar({
               ) : null}
             </div>
           ) : null}
-        </div>
-        <button
+        </div> : null}
+        {!isDailyReportsContext ? <button
           className={
             hasUnsavedChanges ? "toolbar-button save-button dirty" : "toolbar-button save-button"
           }
@@ -631,8 +642,8 @@ export function Topbar({
         >
           <CloudArrowUpIcon />
           保存
-        </button>
-        <button
+        </button> : null}
+        {!isDailyReportsContext ? <button
           aria-label="ローカル保存を初期化"
           className="icon-button"
           onClick={onResetDraft}
@@ -640,7 +651,7 @@ export function Topbar({
           type="button"
         >
           <ArrowPathIcon />
-        </button>
+        </button> : null}
         {isProjectContext ? (
           <>
             <div className="topbar-action-wrap">

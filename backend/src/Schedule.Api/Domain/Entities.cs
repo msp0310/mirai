@@ -199,7 +199,28 @@ public sealed class ProjectWorkLogEntity
     public string CreatedBy { get; set; } = "";
     public string CreatedAt { get; set; } = "";
     public string UpdatedAt { get; set; } = "";
+    public string? DailyReportId { get; set; }
+    public string? DailyReportEntryId { get; set; }
     public ProjectEntity? Project { get; set; }
+}
+
+/// <summary>複数案件の作業実績を一日単位でまとめる日報です。</summary>
+public sealed class DailyReportEntity
+{
+    [Key]
+    public string Id { get; set; } = "";
+    public string MemberId { get; set; } = "";
+    public string Date { get; set; } = "";
+    public string Status { get; set; } = "draft";
+    public string Summary { get; set; } = "";
+    public string? Blockers { get; set; }
+    public string? NextPlan { get; set; }
+    public string EntriesJson { get; set; } = "[]";
+    public string CommentsJson { get; set; } = "[]";
+    public string? SubmittedAt { get; set; }
+    public string CreatedAt { get; set; } = "";
+    public string UpdatedAt { get; set; } = "";
+    public int Version { get; set; } = 1;
 }
 
 /// <summary>プロジェクトに適用する稼働カレンダーのエンティティです。</summary>

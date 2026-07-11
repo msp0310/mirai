@@ -106,6 +106,44 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await saveReview.getByRole("button", { name: "閉じる" }).click();
   });
 
+  test("日報を提出し、案件実績とコメントへ連携できる", async ({ page, request }) => {
+    const loginResponse = await request.post("/api/auth/login", {
+      data: { email: "pm@example.com", password: "Password123!" },
+    });
+    const session = (await loginResponse.json()) as { token: string };
+    const headers = { Authorization: `Bearer ${session.token}` };
+    const existing = (await (
+      await request.get("/api/daily-reports", { headers })
+    ).json()) as Array<{ date: string; id: string; memberId: string }>;
+    for (const report of existing.filter(
+      (item) => item.date === "2025-05-21" && item.memberId === "yk",
+    )) {
+      await request.delete(`/api/daily-reports/${report.id}`, { headers });
+    }
+
+    await login(page);
+    await page.getByRole("button", { name: "日報", exact: true }).click();
+    const dailyReport = page.getByRole("region", { name: "日報" });
+    await expect(dailyReport).toBeVisible();
+    await dailyReport.getByRole("button", { name: "日報を作成" }).click();
+    await dailyReport.getByLabel("本日のまとめ").fill("基本設計レビューを実施しました。");
+    await dailyReport.getByLabel("作業内容").fill("レビュー指摘の整理");
+    await dailyReport.getByRole("button", { name: "提出して実績反映" }).click();
+    await expect(dailyReport.getByText("提出済み", { exact: true })).toBeVisible();
+    await expect(page.getByText("日報を提出し、案件実績へ反映しました。")).toBeVisible();
+
+    await dailyReport.getByLabel("日報コメント").fill("確認しました。明日の対応もお願いします。");
+    await dailyReport.getByRole("button", { name: "コメントを追加" }).click();
+    await expect(dailyReport.getByText("確認しました。明日の対応もお願いします。")).toBeVisible();
+
+    const savedReports = (await (
+      await request.get("/api/daily-reports", { headers })
+    ).json()) as Array<{ date: string; id: string; memberId: string }>;
+    const saved = savedReports.find((item) => item.date === "2025-05-21" && item.memberId === "yk");
+    expect(saved).toBeTruthy();
+    if (saved) await request.delete(`/api/daily-reports/${saved.id}`, { headers });
+  });
+
   test("プロジェクトカードからGanttへ移動し、ショートカットを開ける", async ({ page }) => {
     await login(page);
 

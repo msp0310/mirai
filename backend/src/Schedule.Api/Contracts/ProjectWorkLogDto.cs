@@ -14,4 +14,6 @@ public sealed record ProjectWorkLogDto(
     bool Billable,
     string CreatedBy,
     string CreatedAt,
-    string UpdatedAt);
+    string UpdatedAt,
+    string? DailyReportId = null,
+    string? DailyReportEntryId = null);

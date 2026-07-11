@@ -205,6 +205,12 @@ const WorkloadOverviewPage = lazy(() =>
   })),
 );
 
+const DailyReportPage = lazy(() =>
+  import("../features/dailyReports/components/DailyReportPage").then((module) => ({
+    default: module.DailyReportPage,
+  })),
+);
+
 const SaveReviewDialog = lazy(() =>
   import("../features/gantt/components/SaveReviewDialog").then((module) => ({
     default: module.SaveReviewDialog,
@@ -564,9 +570,12 @@ export function AppWorkbench({
   );
 
   useEffect(() => {
-    if (resourceScope !== "team" && activeTab !== "Workload") return;
+    if (resourceScope !== "team" && activeTab !== "Workload" && activeTab !== "DailyReports")
+      return;
     const targetTeamIds =
-      activeTab === "Workload" ? workspace.teams.map((team) => team.id) : [activeTeamId];
+      activeTab === "Workload" || activeTab === "DailyReports"
+        ? workspace.teams.map((team) => team.id)
+        : [activeTeamId];
     const missingProjectIds = [
       ...new Set(
         targetTeamIds.flatMap((teamId) =>
@@ -850,7 +859,10 @@ export function AppWorkbench({
     [schedule.project.id, workspaceConfigChangeReview.rows],
   );
   const isProjectSaveScope =
-    !showMasterSettings && activeTab !== "Projects" && activeTab !== "Workload";
+    !showMasterSettings &&
+    activeTab !== "Projects" &&
+    activeTab !== "Workload" &&
+    activeTab !== "DailyReports";
   const projectSaveScopeLabel =
     activeTab === "Issues" || activeTab === "WorkLogs" ? "この案件" : "このガント";
   const saveScopeLabel = isProjectSaveScope
@@ -2546,7 +2558,8 @@ export function AppWorkbench({
         projectNavigationVisible={
           !showMasterSettings &&
           !showHelpPage &&
-          (showProjectSettings || (activeTab !== "Projects" && activeTab !== "Workload"))
+          (showProjectSettings ||
+            (activeTab !== "Projects" && activeTab !== "Workload" && activeTab !== "DailyReports"))
         }
         projectSettingsOpen={showProjectSettings}
         settingsOpen={showMasterSettings}
@@ -2569,9 +2582,11 @@ export function AppWorkbench({
                 ? "admin"
                 : activeTab === "Projects"
                   ? "portfolio"
-                  : activeTab === "Workload"
-                    ? "workload"
-                    : "project"
+                  : activeTab === "DailyReports"
+                    ? "dailyReports"
+                    : activeTab === "Workload"
+                      ? "workload"
+                      : "project"
           }
           currentUser={currentUser}
           favorite={favoriteProjectIds.has(schedule.project.id)}
@@ -2806,6 +2821,13 @@ export function AppWorkbench({
               onUpdateProjectStaffing={updateProjectStaffing}
               schedules={currentReviewSchedules}
               teams={workspace.teams}
+              todayKey={todayKey}
+            />
+          ) : null}
+          {showMainProjectViews && activeTab === "DailyReports" ? (
+            <DailyReportPage
+              currentUser={currentUser}
+              schedules={currentReviewSchedules}
               todayKey={todayKey}
             />
           ) : null}

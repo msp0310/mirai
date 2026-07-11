@@ -15,6 +15,7 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
     public DbSet<ProjectIssueEntity> ProjectIssues => Set<ProjectIssueEntity>();
     public DbSet<ProjectMemberEntity> ProjectMembers => Set<ProjectMemberEntity>();
     public DbSet<ProjectWorkLogEntity> ProjectWorkLogs => Set<ProjectWorkLogEntity>();
+    public DbSet<DailyReportEntity> DailyReports => Set<DailyReportEntity>();
     public DbSet<ProjectAssignmentEntity> ProjectAssignments => Set<ProjectAssignmentEntity>();
     public DbSet<StaffingDemandEntity> StaffingDemands => Set<StaffingDemandEntity>();
     public DbSet<AttachmentEntity> Attachments => Set<AttachmentEntity>();
@@ -109,6 +110,8 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
         modelBuilder.Entity<ProjectMemberEntity>().HasIndex(entity => entity.MemberId);
         modelBuilder.Entity<ProjectIssueEntity>().HasIndex(entity => new { entity.ProjectId, entity.UpdatedAt });
         modelBuilder.Entity<ProjectWorkLogEntity>().HasIndex(entity => new { entity.ProjectId, entity.Date });
+        modelBuilder.Entity<ProjectWorkLogEntity>().HasIndex(entity => entity.DailyReportId);
+        modelBuilder.Entity<DailyReportEntity>().HasIndex(entity => new { entity.MemberId, entity.Date }).IsUnique();
         modelBuilder.Entity<ProjectAssignmentEntity>().HasIndex(entity => new { entity.ProjectId, entity.MemberId });
         modelBuilder.Entity<StaffingDemandEntity>().HasIndex(entity => new { entity.ProjectId, entity.Status });
         modelBuilder.Entity<AttachmentEntity>().HasIndex(entity => new

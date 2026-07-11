@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIResponse } from "@playwright/test";
 
 test("認証が必要なAPIは未認証リクエストを401で拒否する", async ({ request }) => {
   const response = await request.get("/api/workspace/summary");
@@ -80,6 +80,92 @@ test("初期表示用ワークスペースサマリーは詳細タスクを含�
   expect(summary.projects.length).toBeGreaterThan(0);
   expect(summary.projects[0]?.taskCount).toBeGreaterThanOrEqual(0);
   expect(summary).not.toHaveProperty("schedules");
+});
+
+test("日報の作業明細を案件実績へ反映し、削除時に取り消せる", async ({ request }) => {
+  const loginResponse = await request.post("/api/auth/login", {
+    data: { email: "pm@example.com", password: "Password123!" },
+  });
+  const session = (await loginResponse.json()) as { token: string };
+  const headers = { Authorization: `Bearer ${session.token}` };
+  const reportId = "e2e-daily-report";
+  await request.delete(`/api/daily-reports/${reportId}`, { headers });
+
+  const saveResponse = await request.put(`/api/daily-reports/${reportId}`, {
+    data: {
+      blockers: "確認事項なし",
+      comments: [],
+      date: "2025-05-20",
+      entries: [
+        {
+          category: "meeting",
+          hours: 1.5,
+          id: "entry-1",
+          projectId: "site-renewal",
+          summary: "日報API確認",
+          taskId: "task-ui-design",
+        },
+      ],
+      memberId: "yk",
+      nextPlan: "設計を継続",
+      status: "submitted",
+      summary: "日報保存テスト",
+      version: 0,
+    },
+    headers,
+  });
+  expect(saveResponse.ok()).toBe(true);
+  const report = (await saveResponse.json()) as {
+    entries: Array<{ workLogId: string }>;
+    version: number;
+  };
+  expect(report.version).toBe(1);
+  expect(report.entries[0]?.workLogId).toBeTruthy();
+
+  const scheduleResponse = await request.get("/api/projects/site-renewal/schedule", { headers });
+  const schedule = (await scheduleResponse.json()) as {
+    calendar: unknown;
+    issues: unknown[];
+    members: unknown[];
+    project: { version: number };
+    tasks: unknown[];
+    workLogs: Array<{ dailyReportId?: string; hours: number; summary: string }>;
+  };
+  expect(schedule.workLogs).toContainEqual(
+    expect.objectContaining({ dailyReportId: reportId, hours: 1.5, summary: "日報API確認" }),
+  );
+
+  let staleProjectSave: APIResponse | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const currentSchedule = (await (
+      await request.get("/api/projects/site-renewal/schedule", { headers })
+    ).json()) as typeof schedule;
+    staleProjectSave = await request.put("/api/projects/site-renewal/schedule", {
+      data: {
+        calendar: currentSchedule.calendar,
+        expectedVersion: currentSchedule.project.version,
+        issues: currentSchedule.issues ?? [],
+        members: currentSchedule.members,
+        project: currentSchedule.project,
+        tasks: currentSchedule.tasks,
+        workLogs: currentSchedule.workLogs.filter((log) => log.dailyReportId !== reportId),
+      },
+      headers,
+    });
+    if (staleProjectSave.ok()) break;
+    expect(staleProjectSave.status()).toBe(409);
+  }
+  expect(staleProjectSave?.ok()).toBe(true);
+  const protectedSchedule = (await (
+    await request.get("/api/projects/site-renewal/schedule", { headers })
+  ).json()) as { workLogs: Array<{ dailyReportId?: string }> };
+  expect(protectedSchedule.workLogs.some((log) => log.dailyReportId === reportId)).toBe(true);
+
+  expect((await request.delete(`/api/daily-reports/${reportId}`, { headers })).status()).toBe(204);
+  const restoredSchedule = (await (
+    await request.get("/api/projects/site-renewal/schedule", { headers })
+  ).json()) as { workLogs: Array<{ dailyReportId?: string }> };
+  expect(restoredSchedule.workLogs.some((log) => log.dailyReportId === reportId)).toBe(false);
 });
 
 test("プロジェクトスケジュールを同一内容で差分保存できる", async ({ request }) => {

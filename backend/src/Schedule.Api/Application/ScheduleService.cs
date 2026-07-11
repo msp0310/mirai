@@ -494,7 +494,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
         var workLogIds = workLogs.Select(workLog => workLog.Id).ToHashSet();
         var existingWorkLogs = project.WorkLogs.ToDictionary(workLog => workLog.Id);
         var removedWorkLogs = project.WorkLogs
-            .Where(workLog => !workLogIds.Contains(workLog.Id))
+            .Where(workLog => workLog.DailyReportId is null && !workLogIds.Contains(workLog.Id))
             .ToArray();
         foreach (var removedWorkLog in removedWorkLogs)
         {
@@ -507,6 +507,12 @@ public sealed class ScheduleService(ScheduleDbContext db)
             if (!existingWorkLogs.TryGetValue(dto.Id, out var entity))
             {
                 project.WorkLogs.Add(ScheduleMapper.ToEntity(dto, project.Id));
+                continue;
+            }
+
+            // 日報連携の実績は日報APIを正本とし、案件画面の古い状態で上書きしません。
+            if (entity.DailyReportId is not null)
+            {
                 continue;
             }
 
@@ -552,6 +558,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
         entity.CreatedBy = dto.CreatedBy;
         entity.CreatedAt = dto.CreatedAt;
         entity.UpdatedAt = dto.UpdatedAt;
+        entity.DailyReportId = dto.DailyReportId;
+        entity.DailyReportEntryId = dto.DailyReportEntryId;
     }
 
     /// <summary>保存前後のタスクを比較し、変更履歴を記録します。</summary>

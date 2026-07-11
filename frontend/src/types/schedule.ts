@@ -24,6 +24,7 @@ export type AppViewTab =
   | "Analysis"
   | "Status"
   | "Projects"
+  | "DailyReports"
   | "Workload"
   | "Resource"
   | "Issues"
@@ -200,6 +201,8 @@ export type ProjectWorkLog = {
   createdAt: string;
   createdBy: string;
   date: string;
+  dailyReportEntryId?: string;
+  dailyReportId?: string;
   hours: number;
   id: string;
   issueId?: string;
@@ -208,6 +211,41 @@ export type ProjectWorkLog = {
   summary: string;
   taskId?: string;
   updatedAt: string;
+};
+
+export type DailyReportEntry = {
+  id: string;
+  projectId: string;
+  taskId?: string;
+  hours: number;
+  category: WorkLogCategory;
+  summary: string;
+  note?: string;
+  workLogId?: string;
+};
+
+export type DailyReportComment = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+};
+
+export type DailyReport = {
+  id: string;
+  memberId: string;
+  date: string;
+  status: "draft" | "submitted";
+  summary: string;
+  blockers?: string;
+  nextPlan?: string;
+  entries: DailyReportEntry[];
+  comments: DailyReportComment[];
+  submittedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
 };
 
 export type TaskAssigneeAllocation = {

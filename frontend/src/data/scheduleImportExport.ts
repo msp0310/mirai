@@ -202,6 +202,14 @@ function parseProjectWorkLog(value: unknown): ProjectWorkLog {
     createdAt: readString(record.createdAt, "workLogs.createdAt"),
     createdBy: readString(record.createdBy, "workLogs.createdBy"),
     date: readDate(record.date, "workLogs.date"),
+    dailyReportEntryId:
+      record.dailyReportEntryId == null
+        ? undefined
+        : readString(record.dailyReportEntryId, "workLogs.dailyReportEntryId"),
+    dailyReportId:
+      record.dailyReportId == null
+        ? undefined
+        : readString(record.dailyReportId, "workLogs.dailyReportId"),
     hours: readNumber(record.hours, "workLogs.hours"),
     id: readString(record.id, "workLogs.id"),
     issueId: record.issueId == null ? undefined : readString(record.issueId, "workLogs.issueId"),

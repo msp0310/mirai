@@ -185,7 +185,9 @@ public static class ScheduleMapper
             entity.Billable,
             entity.CreatedBy,
             entity.CreatedAt,
-            entity.UpdatedAt);
+            entity.UpdatedAt,
+            entity.DailyReportId,
+            entity.DailyReportEntryId);
     }
 
     /// <summary>プロジェクトと関連データから画面用スナップショットを作成します。</summary>
@@ -371,7 +373,9 @@ public static class ScheduleMapper
             Billable = dto.Billable,
             CreatedBy = dto.CreatedBy,
             CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt
+            UpdatedAt = dto.UpdatedAt,
+            DailyReportId = dto.DailyReportId,
+            DailyReportEntryId = dto.DailyReportEntryId
         };
     }
 

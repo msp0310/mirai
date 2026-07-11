@@ -10,6 +10,7 @@ import {
   FolderOpenIcon,
   HomeIcon,
   ListBulletIcon,
+  DocumentTextIcon,
   QuestionMarkCircleIcon,
   UserGroupIcon,
   WrenchScrewdriverIcon,
@@ -35,6 +36,7 @@ type NavSubItem = {
 const globalNavItems: NavItem[] = [
   { label: "案件一覧", icon: FolderOpenIcon, tab: "Projects" },
   { label: "稼働・要員計画", icon: UserGroupIcon, tab: "Workload" },
+  { label: "日報", icon: DocumentTextIcon, tab: "DailyReports" },
 ];
 
 const projectNavItems: NavItem[] = [
@@ -200,9 +202,7 @@ function NavGroup({
         const active =
           !helpOpen &&
           ((item.tab
-            ? !settingsOpen &&
-              !projectSettingsOpen &&
-              (activeTab === item.tab || hasActiveChild)
+            ? !settingsOpen && !projectSettingsOpen && (activeTab === item.tab || hasActiveChild)
             : false) ||
             (item.action === "settings" && settingsOpen) ||
             (item.action === "projectSettings" && projectSettingsOpen));
@@ -213,12 +213,12 @@ function NavGroup({
             aria-expanded={item.children ? expanded : undefined}
             className={active ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem}
             key={!item.children ? item.label : undefined}
-              onClick={() => {
-                if (item.children) {
-                  setExpandedItemLabel((current) => (current === item.label ? null : item.label));
-                  return;
-                }
-                if (item.tab) onNavigate(item.tab);
+            onClick={() => {
+              if (item.children) {
+                setExpandedItemLabel((current) => (current === item.label ? null : item.label));
+                return;
+              }
+              if (item.tab) onNavigate(item.tab);
               if (item.action === "settings") onMasterSettingsOpen();
               if (item.action === "projectSettings") onProjectSettingsOpen();
             }}
@@ -237,11 +237,16 @@ function NavGroup({
             {expanded ? (
               <div className={styles.navSubmenu} aria-label={`${item.label}のサブメニュー`}>
                 {item.children.map((child) => {
-                  const childActive = !helpOpen && !settingsOpen && !projectSettingsOpen && activeTab === child.tab;
+                  const childActive =
+                    !helpOpen && !settingsOpen && !projectSettingsOpen && activeTab === child.tab;
                   return (
                     <button
                       aria-current={childActive ? "page" : undefined}
-                      className={childActive ? `${styles.navSubItem} ${styles.navSubItemActive}` : styles.navSubItem}
+                      className={
+                        childActive
+                          ? `${styles.navSubItem} ${styles.navSubItemActive}`
+                          : styles.navSubItem
+                      }
                       key={child.tab}
                       onClick={() => {
                         setExpandedItemLabel(null);

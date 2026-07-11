@@ -16,6 +16,7 @@ export const viewTabs: ViewTab[] = [
 
 const viewTabLabels: Record<ViewTab, string> = {
   Analysis: "分析",
+  DailyReports: "日報",
   Activity: "履歴",
   Calendar: "カレンダー",
   Gantt: "ガント",
@@ -40,9 +41,10 @@ export function ViewTabs({ activeTab, onChange }: ViewTabsProps) {
     <nav className="tabs project-view-tabs" aria-label="プロジェクト内ビュー切り替え">
       {viewTabs.map((tab, index) => {
         const label = viewTabLabels[tab];
-        const active = tab === "Analysis"
-          ? activeTab === "Analysis" || activeTab === "WeeklyReport"
-          : tab === activeTab;
+        const active =
+          tab === "Analysis"
+            ? activeTab === "Analysis" || activeTab === "WeeklyReport"
+            : tab === activeTab;
         return (
           <button
             className={active ? "tab active" : "tab"}

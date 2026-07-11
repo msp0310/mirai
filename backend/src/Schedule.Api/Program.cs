@@ -40,6 +40,7 @@ builder.Services.AddHttpClient<JapaneseHolidayService>(client =>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<AttachmentService>();
+builder.Services.AddScoped<DailyReportService>();
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 50 * 1024 * 1024;
@@ -100,6 +101,7 @@ app.Use(async (context, next) =>
 });
 app.MapAuthEndpoints();
 app.MapScheduleEndpoints();
+app.MapDailyReportEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
