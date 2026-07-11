@@ -213,6 +213,12 @@ const DailyReportPage = lazy(() =>
   })),
 );
 
+const PersonalAnalyticsPage = lazy(() =>
+  import("../features/personalAnalytics/components/PersonalAnalyticsPage").then((module) => ({
+    default: module.PersonalAnalyticsPage,
+  })),
+);
+
 const SaveReviewDialog = lazy(() =>
   import("../features/gantt/components/SaveReviewDialog").then((module) => ({
     default: module.SaveReviewDialog,
@@ -584,10 +590,15 @@ export function AppWorkbench({
   );
 
   useEffect(() => {
-    if (resourceScope !== "team" && activeTab !== "Workload" && activeTab !== "DailyReports")
+    if (
+      resourceScope !== "team" &&
+      activeTab !== "Workload" &&
+      activeTab !== "DailyReports" &&
+      activeTab !== "PersonalAnalytics"
+    )
       return;
     const targetTeamIds =
-      activeTab === "Workload" || activeTab === "DailyReports"
+      activeTab === "Workload" || activeTab === "DailyReports" || activeTab === "PersonalAnalytics"
         ? workspace.teams.map((team) => team.id)
         : [activeTeamId];
     const missingProjectIds = [
@@ -882,7 +893,8 @@ export function AppWorkbench({
     !showMasterSettings &&
     activeTab !== "Projects" &&
     activeTab !== "Workload" &&
-    activeTab !== "DailyReports";
+    activeTab !== "DailyReports" &&
+    activeTab !== "PersonalAnalytics";
   const projectSaveScopeLabel =
     activeTab === "Issues" || activeTab === "WorkLogs" ? "この案件" : "このガント";
   const saveScopeLabel = isProjectSaveScope
@@ -2579,7 +2591,10 @@ export function AppWorkbench({
           !showMasterSettings &&
           !showHelpPage &&
           (showProjectSettings ||
-            (activeTab !== "Projects" && activeTab !== "Workload" && activeTab !== "DailyReports"))
+            (activeTab !== "Projects" &&
+              activeTab !== "Workload" &&
+              activeTab !== "DailyReports" &&
+              activeTab !== "PersonalAnalytics"))
         }
         projectSettingsOpen={showProjectSettings}
         settingsOpen={showMasterSettings}
@@ -2604,9 +2619,11 @@ export function AppWorkbench({
                   ? "portfolio"
                   : activeTab === "DailyReports"
                     ? "dailyReports"
-                    : activeTab === "Workload"
-                      ? "workload"
-                      : "project"
+                    : activeTab === "PersonalAnalytics"
+                      ? "personalAnalytics"
+                      : activeTab === "Workload"
+                        ? "workload"
+                        : "project"
           }
           currentUser={currentUser}
           favorite={favoriteProjectIds.has(schedule.project.id)}
@@ -2850,6 +2867,13 @@ export function AppWorkbench({
               currentUser={currentUser}
               schedules={currentReviewSchedules}
               team={activeTeam}
+              todayKey={todayKey}
+            />
+          ) : null}
+          {showMainProjectViews && activeTab === "PersonalAnalytics" ? (
+            <PersonalAnalyticsPage
+              currentUser={currentUser}
+              schedules={currentReviewSchedules}
               todayKey={todayKey}
             />
           ) : null}

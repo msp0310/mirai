@@ -28,6 +28,11 @@ public sealed class DailyReportService(ScheduleDbContext db)
                 .Select(item => item.MemberId);
             query = query.Where(report => memberIds.Contains(report.MemberId));
         }
+        else if (!await IsManagerAsync(user, cancellationToken))
+        {
+            if (string.IsNullOrWhiteSpace(user.MemberId)) return [];
+            query = query.Where(report => report.MemberId == user.MemberId);
+        }
 
         var reports = await query
             .AsNoTracking()

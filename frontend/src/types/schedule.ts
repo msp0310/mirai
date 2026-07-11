@@ -25,6 +25,7 @@ export type AppViewTab =
   | "Status"
   | "Projects"
   | "DailyReports"
+  | "PersonalAnalytics"
   | "Workload"
   | "Resource"
   | "Issues"

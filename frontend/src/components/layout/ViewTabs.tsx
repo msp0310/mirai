@@ -22,6 +22,7 @@ const viewTabLabels: Record<ViewTab, string> = {
   Gantt: "ガント",
   Issues: "課題",
   Milestones: "マイルストーン",
+  PersonalAnalytics: "マイ分析",
   Projects: "案件一覧",
   Resource: "リソース",
   Status: "概要",

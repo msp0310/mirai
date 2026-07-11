@@ -42,6 +42,7 @@ export type ApiConnectionMode = "offline" | "online";
 export type TopbarContextMode =
   | "admin"
   | "dailyReports"
+  | "personalAnalytics"
   | "help"
   | "portfolio"
   | "project"
@@ -144,6 +145,7 @@ export function Topbar({
   const isPortfolioContext = contextMode === "portfolio";
   const isWorkloadContext = contextMode === "workload";
   const isDailyReportsContext = contextMode === "dailyReports";
+  const isPersonalAnalyticsContext = contextMode === "personalAnalytics";
   const isProjectContext = contextMode === "project";
   const pageTitle = isAdminContext
     ? "管理設定"
@@ -153,18 +155,22 @@ export function Topbar({
         ? "プロジェクトポートフォリオ"
         : isDailyReportsContext
           ? "日報"
-          : isWorkloadContext
-            ? "稼働・要員計画"
-            : project.workspace;
+          : isPersonalAnalyticsContext
+            ? "マイ分析"
+            : isWorkloadContext
+              ? "稼働・要員計画"
+              : project.workspace;
   const contextLabel = isAdminContext
     ? "管理設定"
     : isHelpContext
       ? "ヘルプ"
       : isDailyReportsContext
         ? "日報"
-        : isWorkloadContext
-          ? "稼働・要員計画"
-          : "案件一覧";
+        : isPersonalAnalyticsContext
+          ? "マイ分析"
+          : isWorkloadContext
+            ? "稼働・要員計画"
+            : "案件一覧";
   const teamById = useMemo(() => new Map(teams.map((team) => [team.id, team])), [teams]);
   const normalizedProjectQuery = projectQuery.trim().toLowerCase();
   const filteredProjects = useMemo(
@@ -524,134 +530,140 @@ export function Topbar({
         </div>
       </div>
       <div className="topbar-actions">
-        {!isDailyReportsContext ? <div className="topbar-action-wrap">
+        {!isDailyReportsContext && !isPersonalAnalyticsContext ? (
+          <div className="topbar-action-wrap">
+            <button
+              className={`save-state ${syncStatus.status}${openMenu === "sync" ? " active" : ""}`}
+              onClick={() => toggleMenu("sync")}
+              title={syncStatus.detail}
+              type="button"
+            >
+              <span />
+              <div>
+                <strong>{syncStatus.title}</strong>
+                <small>
+                  {syncStatus.lastSyncedAt
+                    ? formatSavedAt(syncStatus.lastSyncedAt)
+                    : syncStatus.modeLabel}
+                </small>
+              </div>
+            </button>
+            {openMenu === "sync" ? (
+              <div className="topbar-popover sync-popover">
+                <strong>同期状態</strong>
+                <div className={`sync-status-card ${syncStatus.status}`}>
+                  <span />
+                  <div>
+                    <strong>{syncStatus.title}</strong>
+                    <p>{syncStatus.detail}</p>
+                  </div>
+                </div>
+                <dl className="sync-meta">
+                  <div>
+                    <dt>保存範囲</dt>
+                    <dd>{syncStatus.scopeLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>保存先</dt>
+                    <dd>{syncStatus.providerLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>接続</dt>
+                    <dd>{syncStatus.endpointLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>未同期</dt>
+                    <dd>{syncStatus.pendingChangeCount}件</dd>
+                  </div>
+                </dl>
+                <div className="sync-mode-toggle" aria-label="API接続状態">
+                  <button
+                    className={apiConnectionMode === "online" ? "active" : ""}
+                    onClick={() => onApiConnectionModeChange("online")}
+                    type="button"
+                  >
+                    API online
+                  </button>
+                  <button
+                    className={apiConnectionMode === "offline" ? "active" : ""}
+                    onClick={() => onApiConnectionModeChange("offline")}
+                    type="button"
+                  >
+                    API offline
+                  </button>
+                </div>
+                <section className="sync-queue" aria-label="API送信キュー">
+                  <div className="sync-queue-heading">
+                    <strong>API送信キュー</strong>
+                    <span>{syncQueueItems.length}件</span>
+                  </div>
+                  {syncQueueItems.length > 0 ? (
+                    <div className="sync-queue-list">
+                      {syncQueueItems.map((item) => (
+                        <article className={`sync-queue-item ${item.status}`} key={item.id}>
+                          <span />
+                          <div>
+                            <strong>{item.title}</strong>
+                            <p>{item.detail}</p>
+                            {item.updatedAt ? <small>{formatSavedAt(item.updatedAt)}</small> : null}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="sync-queue-empty">API送信待ちはありません。</p>
+                  )}
+                </section>
+                <button
+                  className="primary-button full"
+                  onClick={() => {
+                    setOpenMenu(null);
+                    onSaveDraft();
+                  }}
+                  type="button"
+                >
+                  <CloudArrowUpIcon />
+                  今すぐ保存
+                </button>
+                {syncStatus.status === "error" || syncStatus.status === "saving" ? (
+                  <button
+                    className="subtle-action full"
+                    disabled={syncStatus.status === "saving"}
+                    onClick={onRetryApiSync}
+                    type="button"
+                  >
+                    <ArrowPathIcon />
+                    API再送
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {!isDailyReportsContext && !isPersonalAnalyticsContext ? (
           <button
-            className={`save-state ${syncStatus.status}${openMenu === "sync" ? " active" : ""}`}
-            onClick={() => toggleMenu("sync")}
-            title={syncStatus.detail}
+            className={
+              hasUnsavedChanges ? "toolbar-button save-button dirty" : "toolbar-button save-button"
+            }
+            onClick={onSaveDraft}
+            title={`${syncStatus.scopeLabel}を保存 (Ctrl/Cmd+S)`}
             type="button"
           >
-            <span />
-            <div>
-              <strong>{syncStatus.title}</strong>
-              <small>
-                {syncStatus.lastSyncedAt
-                  ? formatSavedAt(syncStatus.lastSyncedAt)
-                  : syncStatus.modeLabel}
-              </small>
-            </div>
+            <CloudArrowUpIcon />
+            保存
           </button>
-          {openMenu === "sync" ? (
-            <div className="topbar-popover sync-popover">
-              <strong>同期状態</strong>
-              <div className={`sync-status-card ${syncStatus.status}`}>
-                <span />
-                <div>
-                  <strong>{syncStatus.title}</strong>
-                  <p>{syncStatus.detail}</p>
-                </div>
-              </div>
-              <dl className="sync-meta">
-                <div>
-                  <dt>保存範囲</dt>
-                  <dd>{syncStatus.scopeLabel}</dd>
-                </div>
-                <div>
-                  <dt>保存先</dt>
-                  <dd>{syncStatus.providerLabel}</dd>
-                </div>
-                <div>
-                  <dt>接続</dt>
-                  <dd>{syncStatus.endpointLabel}</dd>
-                </div>
-                <div>
-                  <dt>未同期</dt>
-                  <dd>{syncStatus.pendingChangeCount}件</dd>
-                </div>
-              </dl>
-              <div className="sync-mode-toggle" aria-label="API接続状態">
-                <button
-                  className={apiConnectionMode === "online" ? "active" : ""}
-                  onClick={() => onApiConnectionModeChange("online")}
-                  type="button"
-                >
-                  API online
-                </button>
-                <button
-                  className={apiConnectionMode === "offline" ? "active" : ""}
-                  onClick={() => onApiConnectionModeChange("offline")}
-                  type="button"
-                >
-                  API offline
-                </button>
-              </div>
-              <section className="sync-queue" aria-label="API送信キュー">
-                <div className="sync-queue-heading">
-                  <strong>API送信キュー</strong>
-                  <span>{syncQueueItems.length}件</span>
-                </div>
-                {syncQueueItems.length > 0 ? (
-                  <div className="sync-queue-list">
-                    {syncQueueItems.map((item) => (
-                      <article className={`sync-queue-item ${item.status}`} key={item.id}>
-                        <span />
-                        <div>
-                          <strong>{item.title}</strong>
-                          <p>{item.detail}</p>
-                          {item.updatedAt ? <small>{formatSavedAt(item.updatedAt)}</small> : null}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="sync-queue-empty">API送信待ちはありません。</p>
-                )}
-              </section>
-              <button
-                className="primary-button full"
-                onClick={() => {
-                  setOpenMenu(null);
-                  onSaveDraft();
-                }}
-                type="button"
-              >
-                <CloudArrowUpIcon />
-                今すぐ保存
-              </button>
-              {syncStatus.status === "error" || syncStatus.status === "saving" ? (
-                <button
-                  className="subtle-action full"
-                  disabled={syncStatus.status === "saving"}
-                  onClick={onRetryApiSync}
-                  type="button"
-                >
-                  <ArrowPathIcon />
-                  API再送
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-        </div> : null}
-        {!isDailyReportsContext ? <button
-          className={
-            hasUnsavedChanges ? "toolbar-button save-button dirty" : "toolbar-button save-button"
-          }
-          onClick={onSaveDraft}
-          title={`${syncStatus.scopeLabel}を保存 (Ctrl/Cmd+S)`}
-          type="button"
-        >
-          <CloudArrowUpIcon />
-          保存
-        </button> : null}
-        {!isDailyReportsContext ? <button
-          aria-label="ローカル保存を初期化"
-          className="icon-button"
-          onClick={onResetDraft}
-          title="サンプルデータに戻す"
-          type="button"
-        >
-          <ArrowPathIcon />
-        </button> : null}
+        ) : null}
+        {!isDailyReportsContext && !isPersonalAnalyticsContext ? (
+          <button
+            aria-label="ローカル保存を初期化"
+            className="icon-button"
+            onClick={onResetDraft}
+            title="サンプルデータに戻す"
+            type="button"
+          >
+            <ArrowPathIcon />
+          </button>
+        ) : null}
         {isProjectContext ? (
           <>
             <div className="topbar-action-wrap">

@@ -247,6 +247,7 @@ function isAppViewTab(value: unknown): value is AppViewTab {
     value === "Issues" ||
     value === "WorkLogs" ||
     value === "DailyReports" ||
+    value === "PersonalAnalytics" ||
     value === "Resource" ||
     value === "Calendar" ||
     value === "Milestones" ||

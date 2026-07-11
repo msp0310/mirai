@@ -162,6 +162,14 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await deleteDialog.getByRole("button", { name: "キャンセル" }).click();
     await expect(deleteDialog).toHaveCount(0);
 
+    await page.getByRole("button", { name: "マイ分析", exact: true }).click();
+    const personalAnalytics = page.getByRole("region", { name: "マイ分析" });
+    await expect(personalAnalytics.getByLabel("対象年")).toHaveValue("2025");
+    await expect(personalAnalytics.getByLabel("対象メンバー")).toBeVisible();
+    await expect(personalAnalytics).toContainText("2025年にやったこと");
+    await expect(personalAnalytics).toContainText("レビュー指摘の整理");
+    await expect(personalAnalytics).toContainText("これまでのプロジェクト実績");
+
     const savedReports = (await (
       await request.get("/api/daily-reports", { headers })
     ).json()) as Array<{ date: string; id: string; memberId: string }>;

@@ -37,6 +37,7 @@ const globalNavItems: NavItem[] = [
   { label: "案件一覧", icon: FolderOpenIcon, tab: "Projects" },
   { label: "稼働・要員計画", icon: UserGroupIcon, tab: "Workload" },
   { label: "日報", icon: DocumentTextIcon, tab: "DailyReports" },
+  { label: "マイ分析", icon: ChartBarIcon, tab: "PersonalAnalytics" },
 ];
 
 const projectNavItems: NavItem[] = [
