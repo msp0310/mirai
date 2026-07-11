@@ -241,6 +241,12 @@ function ChangeReviewPanel({
 }) {
   const previewRows = review.rows.slice(0, 8);
   const configPreviewRows = configReview.rows.slice(0, 6);
+  const scheduleChangeCount = review.rows.reduce(
+    (count, row) =>
+      count +
+      row.fields.filter((field) => field.label === "開始日" || field.label === "終了日").length,
+    0,
+  );
   return (
     <section className="change-review-panel" aria-label="保存前レビュー">
       <div className="change-review-heading">
@@ -257,6 +263,7 @@ function ChangeReviewPanel({
         <ChangeReviewStat label="追加" value={review.addedCount} />
         <ChangeReviewStat label="更新" value={review.updatedCount} />
         <ChangeReviewStat label="削除" value={review.removedCount} />
+        <ChangeReviewStat label="日程差分" value={scheduleChangeCount} />
         <ChangeReviewStat label="設定" value={configReview.totalCount} />
         <ChangeReviewStat
           label="変更項目"

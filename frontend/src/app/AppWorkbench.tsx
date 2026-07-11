@@ -2398,7 +2398,8 @@ export function AppWorkbench({
   }, [hasUnsavedChanges]);
 
   const activeFilterCount =
-    Object.values(filters.statuses).filter(Boolean).length + (filters.assigneeId !== "all" ? 1 : 0);
+    Object.values(filters.statuses).filter((enabled) => !enabled).length +
+    (filters.assigneeId !== "all" ? 1 : 0);
   const nextProjectIndex =
     projectSummaries.filter(
       (summary) => summary.project.teamId === activeTeamId && !isProjectArchived(summary.project),
@@ -2529,6 +2530,7 @@ export function AppWorkbench({
               onBulkStatusChange={taskActions.bulkUpdateSelectedStatus}
               onCalendarAwareChange={setCalendarAware}
               onColumnVisibilityChange={setColumnVisibility}
+              onClearSelection={clearTaskSelection}
               onCopyTask={taskActions.copySelectedTask}
               onCreateTask={() => setShowCreateSheet(true)}
               onDeleteTask={taskActions.deleteSelectedTasks}

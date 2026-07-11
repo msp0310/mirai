@@ -81,7 +81,7 @@ export function FilterPanel({
           <CalendarDaysIcon />
         </div>
       </div>
-      <button className="apply-button" type="button">
+      <button className="apply-button" onClick={onClose} type="button">
         フィルターを適用
       </button>
     </aside>

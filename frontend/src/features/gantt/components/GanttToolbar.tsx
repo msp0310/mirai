@@ -7,6 +7,7 @@ import {
   QuestionMarkCircleIcon,
   TrashIcon,
   ViewColumnsIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
@@ -41,6 +42,7 @@ type GanttToolbarProps = {
   onCalendarAwareChange: (enabled: boolean) => void;
   onColumnVisibilityChange: (visibility: GanttColumnVisibility) => void;
   onCreateTask: () => void;
+  onClearSelection: () => void;
   onDeleteTask: () => void;
   onFilterOpenChange: (open: boolean) => void;
   onQueryChange: (query: string) => void;
@@ -73,6 +75,7 @@ export function GanttToolbar({
   onCalendarAwareChange,
   onColumnVisibilityChange,
   onCreateTask,
+  onClearSelection,
   onDeleteTask,
   onFilterOpenChange,
   onQueryChange,
@@ -182,16 +185,27 @@ export function GanttToolbar({
         </div>
       ) : null}
       {selectedTaskCount > 0 ? (
-        <button
-          className="subtle-action danger"
-          disabled={!canUseTaskActions}
-          onClick={onDeleteTask}
-          title="選択行を削除 (Delete)"
-          type="button"
-        >
-          <TrashIcon />
-          削除
-        </button>
+        <>
+          <button
+            className="subtle-action"
+            onClick={onClearSelection}
+            title="選択を解除 (Esc)"
+            type="button"
+          >
+            <XMarkIcon />
+            選択解除
+          </button>
+          <button
+            className="subtle-action danger"
+            disabled={!canUseTaskActions}
+            onClick={onDeleteTask}
+            title="選択行を削除 (Delete)"
+            type="button"
+          >
+            <TrashIcon />
+            削除
+          </button>
+        </>
       ) : null}
       <div className="view-mode-control" aria-label="タスク表示">
         <button

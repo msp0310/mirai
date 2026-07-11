@@ -58,6 +58,7 @@ type GanttWorkbenchProps = {
   onCalendarAwareChange: (enabled: boolean) => void;
   onColumnVisibilityChange: (visibility: GanttColumnVisibility) => void;
   onCopyTask: (taskId?: string | null) => void;
+  onClearSelection: () => void;
   onCreateTask: () => void;
   onDeleteTask: (taskId?: string | null) => void;
   onDuplicateTask: (taskId?: string | null) => void;
@@ -226,6 +227,7 @@ export function GanttWorkbench({
   onAssigneeChange,
   onCalendarAwareChange,
   onColumnVisibilityChange,
+  onClearSelection,
   onCopyTask,
   onCreateTask,
   onDeleteTask,
@@ -993,6 +995,7 @@ export function GanttWorkbench({
         onBulkStatusChange={onBulkStatusChange}
         onCalendarAwareChange={onCalendarAwareChange}
         onColumnVisibilityChange={onColumnVisibilityChange}
+        onClearSelection={onClearSelection}
         onCreateTask={onCreateTask}
         onDeleteTask={onDeleteTask}
         onFilterOpenChange={onFilterOpenChange}
