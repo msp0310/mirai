@@ -52,6 +52,7 @@ export function FilterPanel({
           value={filters.assigneeId}
         >
           <option value="all">すべての担当者</option>
+          <option value="unassigned">未割当</option>
           {members.map((member) => (
             <option key={member.id} value={member.id}>
               {member.name}

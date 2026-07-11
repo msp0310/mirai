@@ -2,10 +2,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
-  MagnifyingGlassIcon,
   PlusIcon,
   QuestionMarkCircleIcon,
   TrashIcon,
+  UserIcon,
   ViewColumnsIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -45,7 +45,7 @@ type GanttToolbarProps = {
   onClearSelection: () => void;
   onDeleteTask: () => void;
   onFilterOpenChange: (open: boolean) => void;
-  onQueryChange: (query: string) => void;
+  onAssigneeChange: (assigneeId: string) => void;
   onScaleChange: (scale: GanttScale) => void;
   onShortcutHelp: () => void;
   onTimelineNavigate: (direction: -1 | 1) => void;
@@ -78,7 +78,7 @@ export function GanttToolbar({
   onClearSelection,
   onDeleteTask,
   onFilterOpenChange,
-  onQueryChange,
+  onAssigneeChange,
   onScaleChange,
   onShortcutHelp,
   onTimelineNavigate,
@@ -341,17 +341,23 @@ export function GanttToolbar({
       </div>
       <div className="toolbar-spacer" />
       <div className="toolbar-search-actions">
-        <div className="search-box">
-          <MagnifyingGlassIcon />
-          <input
-            aria-label="タスク検索"
-            data-command="task-search"
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="タスク検索"
-            title="タスク検索 (/)"
-            value={filters.query}
-          />
-        </div>
+        <label className="assignee-quick-filter" title="担当者で絞り込み (/)">
+          <UserIcon />
+          <select
+            aria-label="担当者フィルター"
+            data-command="assignee-filter"
+            onChange={(event) => onAssigneeChange(event.target.value)}
+            value={filters.assigneeId}
+          >
+            <option value="all">すべての担当者</option>
+            <option value="unassigned">未割当</option>
+            {assigneeOptions.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           className={filterOpen ? "filter-button active" : "filter-button"}
           onClick={() => onFilterOpenChange(!filterOpen)}

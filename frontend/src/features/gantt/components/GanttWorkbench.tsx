@@ -81,7 +81,6 @@ type GanttWorkbenchProps = {
   ) => void;
   onOutdentTasks: () => void;
   onPasteTask: (taskId?: string | null) => void;
-  onQueryChange: (query: string) => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onScaleChange: (scale: GanttScale) => void;
   onShortcutHelp: () => void;
@@ -243,7 +242,6 @@ export function GanttWorkbench({
   onReparentTasksByDrag,
   onOutdentTasks,
   onPasteTask,
-  onQueryChange,
   onResizeTask,
   onScaleChange,
   onShortcutHelp,
@@ -318,20 +316,14 @@ export function GanttWorkbench({
   const taskTableColumns = useMemo(
     () =>
       (displayMode === "table"
-        ? [
-            "280px",
-            "110px",
-            "110px",
-            "220px",
-            columnVisibility.status ? "86px" : null,
-            "100px",
-          ]
+        ? ["280px", "110px", "110px", "220px", columnVisibility.status ? "86px" : null, "100px"]
         : [
             "minmax(280px, 1fr)",
             columnVisibility.assignee ? "72px" : null,
             columnVisibility.status ? "68px" : null,
             columnVisibility.progress ? "56px" : null,
-          ])
+          ]
+      )
         .filter(Boolean)
         .join(" "),
     [columnVisibility, displayMode],
@@ -1007,7 +999,7 @@ export function GanttWorkbench({
         onCreateTask={onCreateTask}
         onDeleteTask={onDeleteTask}
         onFilterOpenChange={onFilterOpenChange}
-        onQueryChange={onQueryChange}
+        onAssigneeChange={onAssigneeChange}
         onScaleChange={onScaleChange}
         onShortcutHelp={onShortcutHelp}
         onTimelineNavigate={handleTimelineNavigate}
@@ -1056,7 +1048,7 @@ export function GanttWorkbench({
             onResizeTask={onResizeTask}
             onSelectTask={onSelectTask}
             dependencyIssueByTaskId={dependencyIssueByTaskId}
-            query={filters.query}
+            query=""
             rowIndexOffset={virtualWindow.start}
             rows={virtualWindow.rows}
             selectedTaskIds={selectedTaskIds}
@@ -1125,13 +1117,11 @@ export function GanttWorkbench({
                   onSelect={(options) => onSelectTask(task.id, options)}
                   onToggle={() => onToggleCollapsed(task.id)}
                   onUpdateTask={onUpdateTask}
-                  query={filters.query}
+                  query=""
                   selected={selectedTaskIds.has(task.id)}
                   task={task}
                   titleEditSignal={
-                    taskTitleEditRequest.taskId === task.id
-                      ? taskTitleEditRequest.requestId
-                      : 0
+                    taskTitleEditRequest.taskId === task.id ? taskTitleEditRequest.requestId : 0
                   }
                   canReorder={displayMode !== "table" || tableSort.key === null}
                   showDates={displayMode === "table"}

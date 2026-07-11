@@ -5449,34 +5449,40 @@ button.health-row:hover {
   background: #e0a72f;
 }
 
-.search-box {
+.assignee-quick-filter {
   display: flex;
-  flex: 1 1 150px;
+  width: 182px;
+  height: 34px;
+  flex: 0 0 182px;
   align-items: center;
   gap: 7px;
-  min-width: 150px;
-  max-width: 182px;
-  height: 34px;
   border: 1px solid #d9e1ed;
   border-radius: 7px;
-  padding: 0 10px;
+  color: #748197;
   background: #fff;
+  padding: 0 8px;
 }
 
-.search-box svg {
+.assignee-quick-filter:focus-within {
+  border-color: #8fb2ff;
+  box-shadow: 0 0 0 2px rgba(40, 100, 234, 0.12);
+}
+
+.assignee-quick-filter svg {
   width: 16px;
   height: 16px;
-  color: #748197;
+  flex: 0 0 auto;
 }
 
-.search-box input {
+.assignee-quick-filter select {
   width: 100%;
+  min-width: 0;
   border: 0;
   outline: 0;
   color: #172033;
   background: transparent;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .filter-button {

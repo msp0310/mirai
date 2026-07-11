@@ -22,7 +22,7 @@ type UseGanttKeyboardShortcutsOptions = {
   onDeleteSelectedTasks: (taskId?: string) => void;
   onDuplicateTask: (taskId?: string) => void;
   onFocusSelectedTitle: () => void;
-  onFocusSearch: () => void;
+  onFocusAssigneeFilter: () => void;
   onFocusTaskStart: () => void;
   onInsertTaskAbove: (taskId?: string) => void;
   onInsertTaskBelow: (taskId?: string) => void;
@@ -79,7 +79,7 @@ export function useGanttKeyboardShortcuts({
   onCopyTask,
   onDeleteSelectedTasks,
   onDuplicateTask,
-  onFocusSearch,
+  onFocusAssigneeFilter,
   onFocusSelectedTitle,
   onFocusTaskStart,
   onIndentSelectedTasks,
@@ -399,7 +399,7 @@ export function useGanttKeyboardShortcuts({
       }
       if (event.key === "/") {
         event.preventDefault();
-        onFocusSearch();
+        onFocusAssigneeFilter();
         return;
       }
       if (key === "n") {
@@ -485,7 +485,7 @@ export function useGanttKeyboardShortcuts({
     onCopyTask,
     onDeleteSelectedTasks,
     onDuplicateTask,
-    onFocusSearch,
+    onFocusAssigneeFilter,
     onFocusSelectedTitle,
     onFocusTaskStart,
     onIndentSelectedTasks,

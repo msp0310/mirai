@@ -243,7 +243,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     ).toBeVisible();
   });
 
-  test("Ganttのタスク検索とキーボード範囲選択が操作予算内で動く", async ({ page }) => {
+  test("Ganttの担当者フィルターとキーボード範囲選択が操作予算内で動く", async ({ page }) => {
     await login(page);
     const projectCard = page.locator("article.portfolio-card").filter({
       hasText: "販売管理システム刷新",
@@ -251,13 +251,25 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await projectCard.getByRole("button", { name: "Ganttへ" }).click();
     await expect(page.getByRole("button", { name: "タスク追加" })).toBeVisible();
 
-    const search = page.getByLabel("タスク検索");
-    const searchStartedAt = Date.now();
-    await search.fill("API");
-    await expect(page.locator(".task-table-row.search-match")).toHaveCount(1);
-    expect(Date.now() - searchStartedAt).toBeLessThan(1_000);
+    const assigneeFilter = page.getByLabel("担当者フィルター");
+    await expect(assigneeFilter.locator('option[value="unassigned"]')).toHaveText("未割当");
+    const filterStartedAt = Date.now();
+    await assigneeFilter.selectOption("be");
+    await expect(
+      page.getByRole("button", {
+        name: "3.2 API実装（C#） のタスク名を編集",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "1.1 現行業務ヒアリング のタスク名を編集",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    expect(Date.now() - filterStartedAt).toBeLessThan(1_000);
 
-    await search.fill("");
+    await assigneeFilter.selectOption("all");
     const rows = page.locator(".task-table-row");
     const rowCount = await rows.count();
     expect(rowCount).toBe(16);

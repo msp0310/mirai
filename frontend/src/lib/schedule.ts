@@ -369,16 +369,15 @@ export function flattenTasks(tasks: ScheduleTask[], collapsedIds = new Set<strin
 
 /** filterTaskRowsを実行し、アプリケーション用の値を返します。 */
 export function filterTaskRows(rows: TaskRow[], filters: ScheduleFilters): TaskRow[] {
-  const query = filters.query.trim().toLowerCase();
   return rows.filter((task) => {
     const statusMatch = filters.statuses[task.status] || task.type !== "task";
     const assigneeMatch =
       filters.assigneeId === "all" ||
-      task.assigneeIds.includes(filters.assigneeId) ||
+      (filters.assigneeId === "unassigned"
+        ? task.assigneeIds.length === 0
+        : task.assigneeIds.includes(filters.assigneeId)) ||
       task.type !== "task";
-    const textMatch =
-      query.length === 0 || taskMatchesQuery(task, query);
-    return statusMatch && assigneeMatch && textMatch;
+    return statusMatch && assigneeMatch;
   });
 }
 

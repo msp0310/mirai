@@ -2497,10 +2497,9 @@ export function AppWorkbench({
     onCopyTask: taskActions.copySelectedTask,
     onDeleteSelectedTasks: taskActions.deleteSelectedTasks,
     onDuplicateTask: taskActions.duplicateSelectedTask,
-    onFocusSearch: () => {
-      const input = document.querySelector<HTMLInputElement>('[data-command="task-search"]');
-      input?.focus();
-      input?.select();
+    onFocusAssigneeFilter: () => {
+      const select = document.querySelector<HTMLSelectElement>('[data-command="assignee-filter"]');
+      select?.focus();
     },
     onFocusSelectedTitle: () => {
       if (selectedTaskId) focusTaskTitleEditor(selectedTaskId);
@@ -2717,12 +2716,6 @@ export function AppWorkbench({
               onFilterOpenChange={setFilterOpen}
               onFilterReset={() => setFilters(initialFilters)}
               onIndentTasks={taskActions.indentSelectedTasks}
-              onQueryChange={(query) =>
-                setFilters((current) => ({
-                  ...current,
-                  query,
-                }))
-              }
               onMoveTask={taskActions.moveTask}
               onReorderTasks={taskActions.moveSelectedTaskWithinSiblings}
               onReorderTasksToTarget={taskActions.moveSelectedTasksToSiblingPosition}

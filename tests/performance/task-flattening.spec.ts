@@ -13,18 +13,18 @@ function createDeepTasks(count: number): ScheduleTask[] {
     start: "2026-01-05",
     end: "2026-01-06",
     progress: 0,
-    assigneeIds: [],
+    assigneeIds: index === count - 1 ? ["target-member"] : [],
     color: "#89b7ff",
   }));
 }
 
-test("10万段のタスク階層を安全に平坦化し、検索できる", () => {
+test("10万段のタスク階層を安全に平坦化し、担当者で絞り込める", () => {
   const tasks = createDeepTasks(100_000);
   const startedAt = performance.now();
   const rows = flattenTasks(tasks);
   const filters: ScheduleFilters = {
-    query: "深い階層タスク 99999",
-    assigneeId: "all",
+    query: "",
+    assigneeId: "target-member",
     statuses: { notStarted: true, inProgress: true, done: true, delayed: true },
   };
   const matchedRows = filterTaskRows(rows, filters);
@@ -32,5 +32,7 @@ test("10万段のタスク階層を安全に平坦化し、検索できる", () 
 
   expect(rows).toHaveLength(100_000);
   expect(matchedRows).toHaveLength(1);
-  expect(elapsedMs, `階層展開と検索が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1_000);
+  expect(elapsedMs, `階層展開と絞り込みが${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(
+    1_000,
+  );
 });
