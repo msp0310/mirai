@@ -3222,6 +3222,117 @@ button {
   font-weight: 850;
 }
 
+.burndown-panel {
+  grid-column: 1 / -1;
+}
+
+.burndown-panel .dashboard-panel-header {
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.burndown-panel .dashboard-panel-header p {
+  margin: 4px 0 0;
+  color: #728096;
+  font-size: 12px;
+}
+
+.burndown-summary {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+.burndown-summary strong {
+  color: #1649bf;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.burndown-summary span,
+.burndown-note {
+  color: #728096;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.burndown-legend {
+  display: flex;
+  gap: 16px;
+  margin: 0 0 2px 44px;
+  color: #66758b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.burndown-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.burndown-legend-line {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: #2864ea;
+}
+
+.burndown-legend-line.actual {
+  background: #11a7a4;
+}
+
+.burndown-chart-wrap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.burndown-chart {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: 236px;
+}
+
+.burndown-grid-line {
+  stroke: #edf1f6;
+  stroke-width: 1;
+}
+
+.burndown-axis-label,
+.burndown-date-label {
+  fill: #7a8799;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.burndown-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.burndown-path.planned {
+  stroke: #2864ea;
+}
+
+.burndown-path.actual {
+  stroke: #11a7a4;
+}
+
+.burndown-point {
+  fill: #11a7a4;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.burndown-note {
+  display: block;
+  margin-top: 0;
+}
+
 .phase-list,
 .risk-list,
 .health-list,

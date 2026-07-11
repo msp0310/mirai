@@ -15,6 +15,7 @@ import {
   statusLabels,
 } from "../../../lib/schedule";
 import type { ScheduleHealthIssue, ScheduleHealthReport } from "../../../lib/scheduleHealth";
+import { BurndownChart } from "./BurndownChart";
 
 type SummaryStripProps = {
   calendar: CalendarDefinition;
@@ -146,6 +147,13 @@ export function SummaryStrip({
       </div>
 
       <div className="dashboard-grid">
+        <BurndownChart
+          calendar={calendar}
+          calendarAware={calendarAware}
+          projectEnd={project.rangeEnd}
+          projectStart={project.rangeStart}
+          tasks={tasks}
+        />
         <section className="dashboard-panel phase-panel">
           <PanelHeader title="工程別進捗" detail={`${phases.length}工程`} />
           <div className="phase-list">
