@@ -1120,6 +1120,7 @@ export function GanttWorkbench({
                   members={members}
                   onContextMenu={(event) => openTaskContextMenu(task.id, event)}
                   onDragHandlePointerDown={(event) => handleRowReorderPointerDown(task.id, event)}
+                  onFocusTaskStart={() => focusTimelineTaskStart(task.id)}
                   onOpenInspector={() => onOpenTaskInspector(task.id)}
                   onSelect={(options) => onSelectTask(task.id, options)}
                   onToggle={() => onToggleCollapsed(task.id)}

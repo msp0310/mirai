@@ -34,6 +34,7 @@ type TaskTableRowProps = {
   members: Member[];
   onContextMenu: (event: MouseEvent<HTMLDivElement>) => void;
   onDragHandlePointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onFocusTaskStart: () => void;
   onOpenInspector: () => void;
   onSelect: (options?: {
     additive?: boolean;
@@ -59,6 +60,7 @@ export function TaskTableRow({
   members,
   onContextMenu,
   onDragHandlePointerDown,
+  onFocusTaskStart,
   onOpenInspector,
   onSelect,
   onToggle,
@@ -99,7 +101,11 @@ export function TaskTableRow({
   }
 
   function handleRowClick(event: MouseEvent<HTMLDivElement>) {
-    onSelect(getSelectionOptions(event));
+    const selectionOptions = getSelectionOptions(event);
+    onSelect(selectionOptions);
+    if (!selectionOptions.additive && !selectionOptions.range && event.detail === 1) {
+      onFocusTaskStart();
+    }
     if (event.detail < 2) return;
     const target = event.target;
     if (
@@ -191,6 +197,7 @@ export function TaskTableRow({
       titleClickTimerRef.current = null;
       pendingTitleSelectionRef.current = null;
       onSelect(selectionOptions);
+      if (!selectionOptions.additive && !selectionOptions.range) onFocusTaskStart();
     }, 80);
   }
 
@@ -228,6 +235,7 @@ export function TaskTableRow({
         if (event.key === " ") {
           event.preventDefault();
           onSelect();
+          onFocusTaskStart();
         }
       }}
       role="button"

@@ -218,6 +218,31 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect.poll(() => taskBar.evaluate((element) => element.style.left)).toBe(originalLeft);
   });
 
+  test("左側のタスク行を選択しても開始日に移動する", async ({ page }) => {
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+
+    const timelineBody = page.locator(".timeline-body");
+    const taskRow = page.locator('.task-table-row[data-task-id="db-if-design"]');
+    const taskBar = page.locator('.timeline-canvas .gantt-bar[data-task-id="db-if-design"]');
+    await timelineBody.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    await taskRow.getByRole("button", { name: /DB \/ IF設計 のタスク名を編集/ }).click();
+
+    await expect(taskRow).toHaveClass(/selected/);
+    await expect
+      .poll(() => timelineBody.evaluate((element) => element.scrollLeft))
+      .toBeGreaterThan(0);
+    const bodyBox = await timelineBody.boundingBox();
+    const barBox = await taskBar.boundingBox();
+    if (!bodyBox || !barBox) throw new Error("開始日位置を取得できません。");
+    expect(barBox.x - bodyBox.x).toBeCloseTo(bodyBox.width * 0.14 + 7, 0);
+  });
+
   test("複数選択したガントバーをまとめてドラッグ移動できる", async ({ page }) => {
     await login(page);
     const projectCard = page.locator("article.portfolio-card").filter({
