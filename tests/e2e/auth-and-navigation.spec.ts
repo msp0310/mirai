@@ -191,4 +191,21 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(page.getByLabel("分析のサブメニュー")).toHaveCount(0);
     await expect(page.getByRole("region", { name: "プロジェクト分析" })).toBeVisible();
   });
+
+  test("Nキーで選択行の下へタスクを直接追加できる", async ({ page }) => {
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+
+    const anchorRow = page.locator('.task-table-row[data-task-id="db-if-design"]');
+    await anchorRow.click();
+    await page.keyboard.press("n");
+
+    await expect(page.getByRole("dialog", { name: "タスク追加" })).toHaveCount(0);
+    const titleInput = page.locator('.task-table-row.selected input[data-inline-field="title"]');
+    await expect(titleInput).toBeVisible();
+    await expect(titleInput).toHaveValue("新しい作業項目");
+  });
 });

@@ -45,6 +45,7 @@ type TaskTableRowProps = {
   query: string;
   selected: boolean;
   task: TaskRow;
+  titleEditSignal?: number;
   showDates?: boolean;
 };
 
@@ -65,6 +66,7 @@ export function TaskTableRow({
   query,
   selected,
   task,
+  titleEditSignal = 0,
   showDates = false,
 }: TaskTableRowProps) {
   const [titleDraft, setTitleDraft] = useState(task.title);
@@ -138,6 +140,10 @@ export function TaskTableRow({
     setTitleDraft(task.title);
     setIsEditingTitle(true);
   }
+
+  useEffect(() => {
+    if (titleEditSignal > 0) startTitleEdit();
+  }, [titleEditSignal]);
 
   function commitTitle(value: string) {
     const nextTitle = value.trim();

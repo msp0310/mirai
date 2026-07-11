@@ -23,7 +23,7 @@ const shortcutGroups: ShortcutGroup[] = [
       },
       { keys: ["Ctrl/Cmd", "K"], label: "プロジェクト検索を開く" },
       { keys: ["Ctrl/Cmd", "S"], label: "ローカル保存" },
-      { keys: ["N"], label: "タスクを追加" },
+      { keys: ["N"], label: "選択行の下へ直接追加" },
       { keys: ["/"], label: "タスク検索" },
       { keys: ["F"], label: "フィルターを開閉" },
     ],

@@ -260,7 +260,9 @@ function focusTaskTitleEditor(taskId: string) {
   }
 
   if (focusInput()) return;
-  document.querySelector<HTMLElement>(`${rowSelector} [data-title-edit-trigger="true"]`)?.click();
+  document
+    .querySelector<HTMLElement>(`${rowSelector} [data-title-edit-trigger="true"]`)
+    ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, detail: 2 }));
   window.requestAnimationFrame(focusInput);
 }
 
@@ -384,6 +386,10 @@ export function AppWorkbench({
   const [ganttDisplayMode, setGanttDisplayMode] = useState<"gantt" | "table">("gantt");
   const [todaySignal, setTodaySignal] = useState(0);
   const [taskStartFocusSignal, setTaskStartFocusSignal] = useState(0);
+  const [taskTitleEditRequest, setTaskTitleEditRequest] = useState({
+    requestId: 0,
+    taskId: null as string | null,
+  });
   const [taskClipboard, setTaskClipboard] = useState<TaskClipboard | null>(null);
   const [taskPasteMode] = useState<TaskPasteMode>("sibling");
   const taskClipboardRef = useRef<TaskClipboard | null>(null);
@@ -1106,11 +1112,7 @@ export function AppWorkbench({
   function selectAndFocusTaskTitle(taskId: string) {
     selectOnlyTask(taskId);
     setActiveTab("Gantt");
-    window.requestAnimationFrame(() => {
-      const row = document.querySelector(`[data-task-id="${taskId}"]`);
-      row?.scrollIntoView({ block: "nearest", inline: "nearest" });
-      focusTaskTitleEditor(taskId);
-    });
+    setTaskTitleEditRequest((current) => ({ requestId: current.requestId + 1, taskId }));
   }
 
   /** 現在案件の折りたたみ状態を更新します。 */
@@ -2403,7 +2405,6 @@ export function AppWorkbench({
     onSelectAllVisibleTasks: () => selectTaskIds(visibleRows.map((row) => row.id)),
     onSelectOnlyTask: selectOnlyTask,
     onSelectTask: selectTask,
-    onSetCreateSheetOpen: () => setShowCreateSheet(true),
     onSetFilterOpen: setFilterOpen,
     onSetTimeUnit: setTimeUnit,
     onShiftSelectedTasks: taskActions.shiftSelectedTasksByDays,
@@ -2621,6 +2622,7 @@ export function AppWorkbench({
               selectedTaskIds={selectedTaskIds}
               tasks={tasks}
               taskStartFocusSignal={taskStartFocusSignal}
+              taskTitleEditRequest={taskTitleEditRequest}
               timeUnit={timeUnit}
               displayMode={ganttDisplayMode}
               onDisplayModeChange={setGanttDisplayMode}

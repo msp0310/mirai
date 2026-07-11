@@ -106,6 +106,7 @@ type GanttWorkbenchProps = {
   selectedTaskIds: Set<string>;
   tasks: ScheduleTask[];
   taskStartFocusSignal: number;
+  taskTitleEditRequest: { requestId: number; taskId: string | null };
   timeUnit: GanttTimeUnit;
   displayMode: "gantt" | "table";
   onDisplayModeChange: (mode: "gantt" | "table") => void;
@@ -260,6 +261,7 @@ export function GanttWorkbench({
   selectedTaskIds,
   tasks,
   taskStartFocusSignal,
+  taskTitleEditRequest,
   timeUnit,
   displayMode,
   onDisplayModeChange,
@@ -1117,6 +1119,11 @@ export function GanttWorkbench({
                   query={filters.query}
                   selected={selectedTaskIds.has(task.id)}
                   task={task}
+                  titleEditSignal={
+                    taskTitleEditRequest.taskId === task.id
+                      ? taskTitleEditRequest.requestId
+                      : 0
+                  }
                   canReorder={displayMode !== "table" || tableSort.key === null}
                   showDates={displayMode === "table"}
                 />

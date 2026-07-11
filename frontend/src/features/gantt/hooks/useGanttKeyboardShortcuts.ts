@@ -36,7 +36,6 @@ type UseGanttKeyboardShortcutsOptions = {
   onSelectAllVisibleTasks: () => void;
   onSelectOnlyTask: (taskId: string) => void;
   onSelectTask: (taskId: string, options?: { range?: boolean }) => void;
-  onSetCreateSheetOpen: () => void;
   onSetFilterOpen: (open: boolean) => void;
   onSetTimeUnit: (unit: GanttTimeUnit) => void;
   onShiftSelectedTasks: (deltaDays: number) => void;
@@ -95,7 +94,6 @@ export function useGanttKeyboardShortcuts({
   onSelectAllVisibleTasks,
   onSelectOnlyTask,
   onSelectTask,
-  onSetCreateSheetOpen,
   onSetFilterOpen,
   onSetTimeUnit,
   onShiftSelectedTasks,
@@ -406,7 +404,7 @@ export function useGanttKeyboardShortcuts({
       }
       if (key === "n") {
         event.preventDefault();
-        onSetCreateSheetOpen();
+        onInsertTaskBelow(getEventTaskId(event.target) ?? undefined);
         return;
       }
       if (key === "u") {
@@ -502,7 +500,6 @@ export function useGanttKeyboardShortcuts({
     onSelectAllVisibleTasks,
     onSelectOnlyTask,
     onSelectTask,
-    onSetCreateSheetOpen,
     onSetFilterOpen,
     onSetTimeUnit,
     onShiftSelectedTasks,

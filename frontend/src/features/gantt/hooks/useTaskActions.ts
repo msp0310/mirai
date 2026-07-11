@@ -112,11 +112,10 @@ export function useTaskActions({
 
   /** commitTaskInsertionを実行します。 */
   function commitTaskInsertion(createNext: (current: ScheduleTask[]) => TaskInsertionResult) {
-    commitTasks((current) => {
-      const result = createNext(current);
-      if (result.insertedTaskId) selectAndFocusTaskTitle(result.insertedTaskId);
-      return result.tasks;
-    });
+    const result = createNext(tasks);
+    if (result.tasks === tasks) return;
+    commitTasks(() => result.tasks);
+    if (result.insertedTaskId) selectAndFocusTaskTitle(result.insertedTaskId);
   }
 
   /** getEditableSelectedTasksを実行します。 */
