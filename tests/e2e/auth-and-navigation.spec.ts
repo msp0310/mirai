@@ -207,6 +207,23 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(page.getByText("選択範囲を上下に広げる", { exact: true })).toBeVisible();
   });
 
+  test("週次進捗でタスク件数と完了件数を確認できる", async ({ page }) => {
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+    await page.getByRole("button", { name: "週次報告", exact: true }).click();
+
+    const weeklyReport = page.getByRole("region", { name: "週次報告" });
+    const overview = weeklyReport.getByLabel("プロジェクト全体の計画と実績");
+    await expect(overview.getByText("全タスク").locator("..")).toContainText("9件");
+    await expect(overview.getByText("完了済み").locator("..")).toContainText("3件");
+    await expect(overview.getByText("未完了").locator("..")).toContainText("6件");
+    await expect(overview).toContainText("全体完了率");
+    await expect(weeklyReport.getByRole("columnheader", { name: "対象タスク" })).toBeVisible();
+  });
+
   test("未取得の別案件を選ぶと詳細を遅延取得してGanttを切り替える", async ({ page }) => {
     await login(page);
     await page.getByRole("button", { name: "全件", exact: true }).click();

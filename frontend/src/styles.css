@@ -1331,7 +1331,7 @@ button {
 
 .weekly-progress-overview {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border: 1px solid #e3eaf3;
@@ -1360,6 +1360,10 @@ button {
 
 .weekly-progress-overview .behind strong {
   color: #c4521d;
+}
+
+.weekly-progress-overview > div:nth-child(4) strong {
+  color: #58677d;
 }
 
 .weekly-progress-overview .ahead strong,

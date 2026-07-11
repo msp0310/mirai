@@ -7,7 +7,13 @@ import type {
   ProjectIssueStatus,
   ScheduleTask,
 } from "../../../types/schedule";
-import { addDays, formatShortDate, parseDate, statusLabels, toDateKey } from "../../../lib/schedule";
+import {
+  addDays,
+  formatShortDate,
+  parseDate,
+  statusLabels,
+  toDateKey,
+} from "../../../lib/schedule";
 
 type WeeklyProgressSummaryProps = {
   issues: ProjectIssue[];
@@ -87,9 +93,7 @@ export function buildWeeklyProgressRows(
 
   return rows.map((row) => ({
     ...row,
-    currentProgress: row.targetCount > 0
-      ? Math.round(row.currentProgress / row.targetCount)
-      : 0,
+    currentProgress: row.targetCount > 0 ? Math.round(row.currentProgress / row.targetCount) : 0,
   }));
 }
 
@@ -101,8 +105,10 @@ export function getIssuesDueByWeek(issues: ProjectIssue[], weekEnd: string) {
       const leftResolved = isIssueResolved(left);
       const rightResolved = isIssueResolved(right);
       if (leftResolved !== rightResolved) return leftResolved ? 1 : -1;
-      return (left.dueDate ?? "").localeCompare(right.dueDate ?? "") ||
-        getIssuePriorityOrder(left.priority) - getIssuePriorityOrder(right.priority);
+      return (
+        (left.dueDate ?? "").localeCompare(right.dueDate ?? "") ||
+        getIssuePriorityOrder(left.priority) - getIssuePriorityOrder(right.priority)
+      );
     });
 }
 
@@ -123,20 +129,17 @@ export function WeeklyProgressSummary({
     () => buildWeeklyProgressRows(tasks, projectStart, projectEnd),
     [projectEnd, projectStart, tasks],
   );
-  const actionableTasks = useMemo(
-    () => tasks.filter((task) => task.type === "task"),
-    [tasks],
-  );
-  const currentWeek = useMemo(
-    () => {
-      const matched = rows.find((row) => row.start <= todayKey && todayKey <= row.end);
-      if (matched) return matched;
-      return todayKey < projectStart ? rows[0] : rows[rows.length - 1];
-    },
-    [projectStart, rows, todayKey],
-  );
+  const actionableTasks = useMemo(() => tasks.filter((task) => task.type === "task"), [tasks]);
+  const currentWeek = useMemo(() => {
+    const matched = rows.find((row) => row.start <= todayKey && todayKey <= row.end);
+    if (matched) return matched;
+    return todayKey < projectStart ? rows[0] : rows[rows.length - 1];
+  }, [projectStart, rows, todayKey]);
   const currentWeekIndex = currentWeek
-    ? Math.max(rows.findIndex((row) => row.weekKey === currentWeek.weekKey), 0)
+    ? Math.max(
+        rows.findIndex((row) => row.weekKey === currentWeek.weekKey),
+        0,
+      )
     : 0;
   const maxWeekWindowStart = Math.max(rows.length - visibleWeekCount, 0);
   const defaultWeekWindowStart = clampNumber(currentWeekIndex - 1, 0, maxWeekWindowStart);
@@ -145,35 +148,36 @@ export function WeeklyProgressSummary({
     0,
     maxWeekWindowStart,
   );
-  const visibleRows = rows.slice(
-    activeWeekWindowStart,
-    activeWeekWindowStart + visibleWeekCount,
-  );
-  const selectedWeek = rows.find((row) => row.weekKey === (selectedWeekKey ?? currentWeek?.weekKey)) ?? currentWeek;
+  const visibleRows = rows.slice(activeWeekWindowStart, activeWeekWindowStart + visibleWeekCount);
+  const selectedWeek =
+    rows.find((row) => row.weekKey === (selectedWeekKey ?? currentWeek?.weekKey)) ?? currentWeek;
   const totalCompleted = actionableTasks.filter((task) => task.status === "done").length;
+  const totalIncomplete = actionableTasks.length - totalCompleted;
   const delayedCount = actionableTasks.filter((task) => task.status === "delayed").length;
-  const actualCompletionRate = actionableTasks.length > 0
-    ? Math.round((totalCompleted / actionableTasks.length) * 100)
-    : 0;
+  const actualCompletionRate =
+    actionableTasks.length > 0 ? Math.round((totalCompleted / actionableTasks.length) * 100) : 0;
   const plannedCompletionCount = currentWeek
     ? rows
         .filter((row) => row.weekKey <= currentWeek.weekKey)
         .reduce((sum, row) => sum + row.planned, 0)
     : 0;
-  const plannedCompletionRate = actionableTasks.length > 0
-    ? Math.round((plannedCompletionCount / actionableTasks.length) * 100)
-    : 0;
+  const plannedCompletionRate =
+    actionableTasks.length > 0
+      ? Math.round((plannedCompletionCount / actionableTasks.length) * 100)
+      : 0;
   const completionGap = actualCompletionRate - plannedCompletionRate;
   const detail = useMemo(() => {
     if (!selectedWeek) return { groups: [], hiddenCount: 0, totalCount: 0 };
     const groups = buildWeeklyTaskGroups(selectedWeek, actionableTasks, members);
     const totalCount = new Set(groups.flatMap((group) => group.tasks.map((task) => task.id))).size;
     let remaining = maxDetailTasks;
-    const visibleGroups = groups.map((group) => {
-      const visibleTasks = group.tasks.slice(0, Math.min(group.tasks.length, remaining));
-      remaining -= visibleTasks.length;
-      return { ...group, tasks: visibleTasks };
-    }).filter((group) => group.tasks.length > 0);
+    const visibleGroups = groups
+      .map((group) => {
+        const visibleTasks = group.tasks.slice(0, Math.min(group.tasks.length, remaining));
+        remaining -= visibleTasks.length;
+        return { ...group, tasks: visibleTasks };
+      })
+      .filter((group) => group.tasks.length > 0);
     return {
       groups: visibleGroups,
       hiddenCount: Math.max(totalCount - (maxDetailTasks - remaining), 0),
@@ -205,22 +209,41 @@ export function WeeklyProgressSummary({
         </div>
         <div className="weekly-progress-meta">
           <strong>全{rows.length}週</strong>
-          <span>現在 {currentWeekIndex + 1}週目 / 完了 {totalCompleted}件 / 遅延 {delayedCount}件</span>
+          <span>
+            現在 {currentWeekIndex + 1}週目 / 完了 {totalCompleted}件 / 遅延 {delayedCount}件
+          </span>
         </div>
       </div>
 
       <div className="weekly-progress-overview" aria-label="プロジェクト全体の計画と実績">
         <div>
-          <span>{currentWeek ? `${formatWeekLabel(currentWeek.start)}時点の計画` : "計画"}</span>
-          <strong>{plannedCompletionRate}%</strong>
+          <span>全タスク</span>
+          <strong>{actionableTasks.length}件</strong>
         </div>
         <div>
-          <span>現在の実績</span>
+          <span>
+            {currentWeek ? `${formatWeekLabel(currentWeek.start)}までの計画完了` : "計画完了"}
+          </span>
+          <strong>{plannedCompletionCount}件</strong>
+        </div>
+        <div>
+          <span>完了済み</span>
+          <strong>{totalCompleted}件</strong>
+        </div>
+        <div>
+          <span>未完了</span>
+          <strong>{totalIncomplete}件</strong>
+        </div>
+        <div>
+          <span>全体完了率</span>
           <strong>{actualCompletionRate}%</strong>
         </div>
         <div className={completionGap < 0 ? "behind" : completionGap > 0 ? "ahead" : "on-track"}>
           <span>計画との差</span>
-          <strong>{completionGap > 0 ? "+" : ""}{completionGap}pt</strong>
+          <strong>
+            {completionGap > 0 ? "+" : ""}
+            {completionGap}pt
+          </strong>
         </div>
       </div>
 
@@ -228,7 +251,8 @@ export function WeeklyProgressSummary({
         <div>
           <span>表示中</span>
           <strong>
-            {activeWeekWindowStart + 1} - {Math.min(activeWeekWindowStart + visibleWeekCount, rows.length)}週目
+            {activeWeekWindowStart + 1} -{" "}
+            {Math.min(activeWeekWindowStart + visibleWeekCount, rows.length)}週目
           </strong>
         </div>
         <div className="weekly-progress-navigation-actions">
@@ -284,6 +308,7 @@ export function WeeklyProgressSummary({
           <thead>
             <tr>
               <th scope="col">週</th>
+              <th scope="col">対象タスク</th>
               <th scope="col">完了</th>
               <th scope="col">進行中</th>
               <th scope="col">終了予定</th>
@@ -294,9 +319,8 @@ export function WeeklyProgressSummary({
           </thead>
           <tbody>
             {visibleRows.map((row) => {
-              const completionRate = row.planned > 0
-                ? Math.round((row.completed / row.planned) * 100)
-                : 0;
+              const completionRate =
+                row.planned > 0 ? Math.round((row.completed / row.planned) * 100) : 0;
               const isSelected = row.weekKey === selectedWeek?.weekKey;
               return (
                 <tr
@@ -307,8 +331,11 @@ export function WeeklyProgressSummary({
                 >
                   <th scope="row">
                     <strong>{formatWeekLabel(row.start)}</strong>
-                    <small>{row.start.slice(5).replace("-", "/")} - {row.end.slice(5).replace("-", "/")}</small>
+                    <small>
+                      {row.start.slice(5).replace("-", "/")} - {row.end.slice(5).replace("-", "/")}
+                    </small>
                   </th>
+                  <td>{row.targetCount}件</td>
                   <td className="weekly-progress-completed">{row.completed}件</td>
                   <td>{row.inProgress}件</td>
                   <td>{row.planned}件</td>
@@ -347,7 +374,10 @@ export function WeeklyProgressSummary({
           <div className="weekly-progress-detail-heading">
             <div>
               <h3>{formatWeekLabel(selectedWeek.start)}の作業内容</h3>
-              <p>{formatShortDate(selectedWeek.start)} - {formatShortDate(selectedWeek.end)} / 担当者別</p>
+              <p>
+                {formatShortDate(selectedWeek.start)} - {formatShortDate(selectedWeek.end)} /
+                担当者別
+              </p>
             </div>
             <strong>{detail.totalCount}件</strong>
           </div>
@@ -372,7 +402,8 @@ export function WeeklyProgressSummary({
                       <span className="weekly-progress-task-copy">
                         <strong>{task.title}</strong>
                         <small>
-                          {formatShortDate(task.start)} - {formatShortDate(task.end)} / {task.progress}%
+                          {formatShortDate(task.start)} - {formatShortDate(task.end)} /{" "}
+                          {task.progress}%
                         </small>
                       </span>
                     </button>
@@ -386,7 +417,8 @@ export function WeeklyProgressSummary({
           </div>
           {detail.hiddenCount > 0 ? (
             <small className="weekly-progress-detail-note">
-              タスクが多いため、先頭{maxDetailTasks}件を表示しています。対象タスクは全{detail.totalCount}件です。
+              タスクが多いため、先頭{maxDetailTasks}件を表示しています。対象タスクは全
+              {detail.totalCount}件です。
             </small>
           ) : null}
         </div>
@@ -397,49 +429,69 @@ export function WeeklyProgressSummary({
           <div className="weekly-progress-issues-heading">
             <div>
               <h3>{formatWeekLabel(selectedWeek.start)}までに解消予定の課題</h3>
-              <p>期限が{formatShortDate(selectedWeek.end)}以前の課題を、持ち越しも含めて表示します。</p>
+              <p>
+                期限が{formatShortDate(selectedWeek.end)}以前の課題を、持ち越しも含めて表示します。
+              </p>
             </div>
             <div className="weekly-progress-issues-summary">
-              <span>未解消 <strong>{unresolvedIssueCount}件</strong></span>
+              <span>
+                未解消 <strong>{unresolvedIssueCount}件</strong>
+              </span>
               <span>解消済み {resolvedIssueCount}件</span>
-              <button onClick={onOpenIssues} type="button">課題一覧へ</button>
+              <button onClick={onOpenIssues} type="button">
+                課題一覧へ
+              </button>
             </div>
           </div>
           <div className="weekly-progress-issue-list">
             {selectedWeekIssues.slice(0, maxVisibleIssues).map((issue) => {
               const resolved = isIssueResolved(issue);
-              const carriedOver = !resolved && Boolean(issue.dueDate && issue.dueDate < selectedWeek.start);
+              const carriedOver =
+                !resolved && Boolean(issue.dueDate && issue.dueDate < selectedWeek.start);
               return (
-                <div className={`weekly-progress-issue-row ${resolved ? "resolved" : "unresolved"}`} key={issue.id}>
+                <div
+                  className={`weekly-progress-issue-row ${resolved ? "resolved" : "unresolved"}`}
+                  key={issue.id}
+                >
                   <div className="weekly-progress-issue-badges">
-                    <span className={`priority ${issue.priority}`}>{issuePriorityLabels[issue.priority]}</span>
-                    <span className={`status ${issue.status}`}>{issueStatusLabels[issue.status]}</span>
+                    <span className={`priority ${issue.priority}`}>
+                      {issuePriorityLabels[issue.priority]}
+                    </span>
+                    <span className={`status ${issue.status}`}>
+                      {issueStatusLabels[issue.status]}
+                    </span>
                     {carriedOver ? <span className="carry-over">持ち越し</span> : null}
                   </div>
                   <div className="weekly-progress-issue-copy">
                     <strong>{issue.title}</strong>
                     <small>
-                      {formatIssueAssignees(issue, memberById)} / 関連タスク {issue.taskIds.length}件
+                      {formatIssueAssignees(issue, memberById)} / 関連タスク {issue.taskIds.length}
+                      件
                     </small>
                   </div>
-                  <span className="weekly-progress-issue-due">期限 {formatShortDate(issue.dueDate ?? selectedWeek.end)}</span>
+                  <span className="weekly-progress-issue-due">
+                    期限 {formatShortDate(issue.dueDate ?? selectedWeek.end)}
+                  </span>
                 </div>
               );
             })}
             {selectedWeekIssues.length === 0 ? (
-              <div className="weekly-progress-detail-empty">この週までに期限を迎える課題はありません。</div>
+              <div className="weekly-progress-detail-empty">
+                この週までに期限を迎える課題はありません。
+              </div>
             ) : null}
           </div>
           {selectedWeekIssues.length > maxVisibleIssues ? (
             <small className="weekly-progress-detail-note">
-              先頭{maxVisibleIssues}件を表示しています。全{selectedWeekIssues.length}件は課題一覧で確認できます。
+              先頭{maxVisibleIssues}件を表示しています。全{selectedWeekIssues.length}
+              件は課題一覧で確認できます。
             </small>
           ) : null}
         </div>
       ) : null}
 
       <small className="weekly-progress-note">
-        完了率は、その週に終了予定のタスクのうち完了済みの割合です。対象進捗は、その週にかかるタスクの現在値です。
+        対象タスクは、その週に作業期間が重なるタスクの件数です。週別の完了率は、その週に終了予定のタスクのうち完了済みの割合です。
       </small>
     </section>
   );
@@ -495,7 +547,11 @@ function buildWeeklyTaskGroups(
     .sort((left, right) => {
       const leftPriority = left.status === "delayed" ? 0 : left.status === "inProgress" ? 1 : 2;
       const rightPriority = right.status === "delayed" ? 0 : right.status === "inProgress" ? 1 : 2;
-      return leftPriority - rightPriority || left.start.localeCompare(right.start) || left.title.localeCompare(right.title);
+      return (
+        leftPriority - rightPriority ||
+        left.start.localeCompare(right.start) ||
+        left.title.localeCompare(right.title)
+      );
     })
     .forEach((task) => {
       const assigneeIds = task.assigneeIds.length > 0 ? task.assigneeIds : [unassignedMemberId];
