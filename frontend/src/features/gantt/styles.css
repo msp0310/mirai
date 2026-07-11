@@ -375,6 +375,14 @@
   overflow: auto;
 }
 
+.timeline-body[data-auto-scroll="left"] {
+  box-shadow: inset 22px 0 18px -20px rgba(40, 100, 234, 0.7);
+}
+
+.timeline-body[data-auto-scroll="right"] {
+  box-shadow: inset -22px 0 18px -20px rgba(40, 100, 234, 0.7);
+}
+
 .task-table {
   grid-column: 1;
   grid-row: 2;

@@ -179,6 +179,30 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(taskBar).not.toHaveClass(/is-dragging/);
     const cancelledBox = await taskBar.boundingBox();
     expect(cancelledBox?.x).toBeCloseTo(initialBox.x, 0);
+
+    const bodyBox = await timelineBody.boundingBox();
+    const scrollableBarBox = await taskBar.boundingBox();
+    if (!bodyBox || !scrollableBarBox) {
+      throw new Error("タイムラインのドラッグ領域が見つかりません。");
+    }
+    const originalLeft = await taskBar.evaluate((element) => element.style.left);
+    const scrollStart = await timelineBody.evaluate((element) => element.scrollLeft);
+
+    await page.mouse.move(
+      scrollableBarBox.x + scrollableBarBox.width / 2,
+      scrollableBarBox.y + scrollableBarBox.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(bodyBox.x + bodyBox.width - 3, scrollableBarBox.y + 6);
+    await expect
+      .poll(() => timelineBody.evaluate((element) => element.scrollLeft))
+      .toBeGreaterThan(scrollStart);
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+
+    await expect(taskBar).not.toHaveClass(/is-dragging/);
+    await expect.poll(() => taskBar.evaluate((element) => element.style.transform)).toBe("");
+    await expect.poll(() => taskBar.evaluate((element) => element.style.left)).toBe(originalLeft);
   });
 
   test("タスク表示をガントと表で切り替えられる", async ({ page }) => {

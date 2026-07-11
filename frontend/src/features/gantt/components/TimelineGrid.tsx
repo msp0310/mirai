@@ -278,9 +278,6 @@ function TimelineRow({
   visibleSlotWindow,
 }: TimelineRowProps) {
   const span = getTaskTimelineSpan(task, timeline);
-  const spanEnd = span.offset + span.duration;
-  const isInVisibleRange =
-    spanEnd >= visibleSlotWindow.start && span.offset <= visibleSlotWindow.end;
   const baselineSpan =
     task.baselineStart && task.baselineEnd
       ? getTaskTimelineSpan({ ...task, end: task.baselineEnd, start: task.baselineStart }, timeline)
@@ -306,6 +303,16 @@ function TimelineRow({
   const metaTopOffset = task.type === "task" ? 10 : task.type === "summary" ? 10 : 9;
   const canResize = task.type === "task";
   const canMove = task.type !== "summary";
+  const barKeyboardHint = canResize
+    ? "。左右キーで日程を移動、Shiftと左右キーで終了日を変更"
+    : canMove
+      ? "。左右キーで日程を移動"
+      : "";
+  const barKeyShortcuts = canResize
+    ? "ArrowLeft ArrowRight Shift+ArrowLeft Shift+ArrowRight"
+    : canMove
+      ? "ArrowLeft ArrowRight"
+      : undefined;
   const baselineTone =
     task.baselineStart && task.baselineEnd
       ? task.start > task.baselineStart || task.end > task.baselineEnd
@@ -341,9 +348,13 @@ function TimelineRow({
     const element = event.currentTarget.closest(".gantt-bar, .milestone") as HTMLElement | null;
     if (!element) return;
     const canvas = element.closest(".timeline-canvas") as HTMLElement | null;
+    const body = element.closest(".timeline-body") as HTMLElement | null;
     let previewElements: ReturnType<typeof ensureDragPreviewElements> | null = null;
+    let autoScrollFrame: number | null = null;
     let active = false;
     const startX = event.clientX;
+    const startScrollLeft = body?.scrollLeft ?? 0;
+    let latestClientX = startX;
     let latestDelta = 0;
     const originalWidth = element.getBoundingClientRect().width;
     const minWidth = Math.max(dayWidth - 12, 10);
@@ -388,6 +399,11 @@ function TimelineRow({
       document.removeEventListener("mousemove", handleMove);
       document.removeEventListener("mouseup", handleUp);
       window.removeEventListener("keydown", handleCancel);
+      if (autoScrollFrame !== null) {
+        window.cancelAnimationFrame(autoScrollFrame);
+        autoScrollFrame = null;
+      }
+      if (body) delete body.dataset.autoScroll;
       element.classList.remove("is-dragging");
       element.style.transform = "";
       element.style.width = "";
@@ -396,8 +412,9 @@ function TimelineRow({
       clearDragPreviewElements(canvas);
     };
 
-    const handleMove = (moveEvent: globalThis.MouseEvent) => {
-      const rawDelta = moveEvent.clientX - startX;
+    const applyPointerPosition = (clientX: number) => {
+      const scrollDelta = (body?.scrollLeft ?? startScrollLeft) - startScrollLeft;
+      const rawDelta = clientX - startX + scrollDelta;
       if (!active && Math.abs(rawDelta) < 5) return;
       beginDrag();
       let deltaDays = Math.round(rawDelta / dayWidth);
@@ -419,6 +436,52 @@ function TimelineRow({
         element.style.width = `${Math.max(originalWidth + previewPx, minWidth)}px`;
       }
       updatePreview(latestDelta);
+    };
+
+    const getAutoScrollVelocity = () => {
+      if (!active || !body) return 0;
+      const rect = body.getBoundingClientRect();
+      const edgeSize = Math.min(56, rect.width * 0.16);
+      if (latestClientX < rect.left + edgeSize) {
+        return -Math.ceil(((rect.left + edgeSize - latestClientX) / edgeSize) * 14);
+      }
+      if (latestClientX > rect.right - edgeSize) {
+        return Math.ceil(((latestClientX - (rect.right - edgeSize)) / edgeSize) * 14);
+      }
+      return 0;
+    };
+
+    const runAutoScroll = () => {
+      autoScrollFrame = null;
+      if (!body) return;
+      const velocity = getAutoScrollVelocity();
+      if (velocity === 0) return;
+      const previousScrollLeft = body.scrollLeft;
+      body.scrollLeft += velocity;
+      if (body.scrollLeft === previousScrollLeft) return;
+      applyPointerPosition(latestClientX);
+      autoScrollFrame = window.requestAnimationFrame(runAutoScroll);
+    };
+
+    const updateAutoScroll = () => {
+      const velocity = getAutoScrollVelocity();
+      if (body) {
+        if (velocity < 0) body.dataset.autoScroll = "left";
+        else if (velocity > 0) body.dataset.autoScroll = "right";
+        else delete body.dataset.autoScroll;
+      }
+      if (velocity !== 0 && autoScrollFrame === null) {
+        autoScrollFrame = window.requestAnimationFrame(runAutoScroll);
+      } else if (velocity === 0 && autoScrollFrame !== null) {
+        window.cancelAnimationFrame(autoScrollFrame);
+        autoScrollFrame = null;
+      }
+    };
+
+    const handleMove = (moveEvent: globalThis.MouseEvent) => {
+      latestClientX = moveEvent.clientX;
+      applyPointerPosition(latestClientX);
+      updateAutoScroll();
     };
     const handleUp = () => {
       cleanup();
@@ -469,8 +532,6 @@ function TimelineRow({
     }
   }
 
-  if (!isInVisibleRange) return null;
-
   if (task.type === "milestone") {
     return (
       <>
@@ -487,6 +548,9 @@ function TimelineRow({
           />
         ) : null}
         <button
+          aria-keyshortcuts="ArrowLeft ArrowRight"
+          aria-label={`${task.title} ${formatShortDate(task.start)}。左右キーで日程を移動`}
+          aria-pressed={selected}
           className={`milestone status-${task.status} ${selected ? "selected" : ""} ${
             searchMatched ? "search-match" : ""
           } ${dependencyIssues.length > 0 ? "dependency-issue" : ""}`}
@@ -527,6 +591,11 @@ function TimelineRow({
         />
       ) : null}
       <button
+        aria-keyshortcuts={barKeyShortcuts}
+        aria-label={`${task.title} ${formatShortDate(task.start)}から${formatShortDate(
+          task.end,
+        )}${barKeyboardHint}`}
+        aria-pressed={selected}
         className={`gantt-bar ${task.type} status-${task.status} ${selected ? "selected" : ""} ${
           canMove ? "draggable" : "readonly"
         } ${searchMatched ? "search-match" : ""} ${
