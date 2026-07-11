@@ -28,8 +28,7 @@ export function TeamDailyReportsView({
   teamName,
   todayKey,
 }: TeamDailyReportsViewProps) {
-  const latestDate = reports[0]?.date ?? todayKey;
-  const [selectedDate, setSelectedDate] = useState(latestDate);
+  const [selectedDate, setSelectedDate] = useState(todayKey);
   const dateOptions = useMemo(
     () => [...new Set([todayKey, ...reports.map((report) => report.date)])].sort().reverse(),
     [reports, todayKey],
