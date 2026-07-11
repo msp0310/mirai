@@ -174,6 +174,8 @@ function sortTaskRowsPreservingHierarchy(
       result = left.title.localeCompare(right.title, "ja");
     } else if (sort.key === "start") {
       result = left.start.localeCompare(right.start) || left.end.localeCompare(right.end);
+    } else if (sort.key === "end") {
+      result = left.end.localeCompare(right.end) || left.start.localeCompare(right.start);
     } else if (sort.key === "assignee") {
       const leftAssignee = memberNames.get(left.assigneeIds[0] ?? "") ?? "未割当";
       const rightAssignee = memberNames.get(right.assigneeIds[0] ?? "") ?? "未割当";
@@ -311,13 +313,21 @@ export function GanttWorkbench({
   );
   const taskTableColumns = useMemo(
     () =>
-      [
-        "minmax(280px, 1fr)",
-        displayMode === "table" ? "minmax(144px, 180px)" : null,
-        columnVisibility.assignee ? "72px" : null,
-        columnVisibility.status ? "68px" : null,
-        columnVisibility.progress ? "56px" : null,
-      ]
+      (displayMode === "table"
+        ? [
+            "minmax(220px, 1fr)",
+            "112px",
+            "112px",
+            "150px",
+            columnVisibility.status ? "82px" : null,
+            "92px",
+          ]
+        : [
+            "minmax(280px, 1fr)",
+            columnVisibility.assignee ? "72px" : null,
+            columnVisibility.status ? "68px" : null,
+            columnVisibility.progress ? "56px" : null,
+          ])
         .filter(Boolean)
         .join(" "),
     [columnVisibility, displayMode],

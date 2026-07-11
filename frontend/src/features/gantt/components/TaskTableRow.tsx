@@ -327,11 +327,19 @@ export function TaskTableRow({
         ) : null}
       </span>
       {showDates ? (
-        <span className="task-date-cell">
-          {formatShortDate(task.start)} - {formatShortDate(task.end)}
-        </span>
+        <>
+          <span className="task-date-cell">{formatShortDate(task.start)}</span>
+          <span className="task-date-cell">{formatShortDate(task.end)}</span>
+        </>
       ) : null}
-      {columnVisibility.assignee ? (
+      {showDates ? (
+        <span
+          className="table-assignee-cell"
+          title={assignees.map((member) => member.name).join(" / ") || "担当者未設定"}
+        >
+          {assignees.length > 0 ? assignees.map((member) => member.name).join(" / ") : "未設定"}
+        </span>
+      ) : columnVisibility.assignee ? (
         <span className="avatar-group">
           {canEditFields ? (
             <select
@@ -395,7 +403,7 @@ export function TaskTableRow({
           )}
         </span>
       ) : null}
-      {columnVisibility.progress ? (
+      {showDates || columnVisibility.progress ? (
         <span className="progress-cell">
           <span className="progress-track">
             <span style={{ width: `${task.progress}%` }} />

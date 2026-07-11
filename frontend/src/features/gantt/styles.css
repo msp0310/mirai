@@ -622,6 +622,16 @@
   white-space: nowrap;
 }
 
+.table-assignee-cell {
+  min-width: 0;
+  overflow: hidden;
+  color: #3f5068;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .inline-title-input,
 .inline-title-display {
   min-width: 0;

@@ -1,6 +1,6 @@
 import type { GanttColumnVisibility } from "../../../types/schedule";
 
-export type TaskTableSortKey = "assignee" | "progress" | "start" | "status" | "title";
+export type TaskTableSortKey = "assignee" | "end" | "progress" | "start" | "status" | "title";
 
 export type TaskTableSortState = {
   direction: "asc" | "desc";
@@ -33,13 +33,21 @@ export function TaskTableHeader({
       />
       {displayMode === "table" ? (
         <HeaderCell
-          label="期間"
+          label="開始日"
           onClick={() => onSortChange("start")}
           sort={sort}
           sortKey="start"
         />
       ) : null}
-      {columnVisibility.assignee ? (
+      {displayMode === "table" ? (
+        <HeaderCell
+          label="終了日"
+          onClick={() => onSortChange("end")}
+          sort={sort}
+          sortKey="end"
+        />
+      ) : null}
+      {displayMode === "table" || columnVisibility.assignee ? (
         <HeaderCell
           label="担当者"
           onClick={sortable ? () => onSortChange("assignee") : undefined}
@@ -55,7 +63,7 @@ export function TaskTableHeader({
           sortKey="status"
         />
       ) : null}
-      {columnVisibility.progress ? (
+      {displayMode === "table" || columnVisibility.progress ? (
         <HeaderCell
           label="進捗"
           onClick={sortable ? () => onSortChange("progress") : undefined}
