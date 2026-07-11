@@ -3,6 +3,7 @@ import { globalStyle, style } from "@vanilla-extract/css";
 export const sidebar = style({
   position: "sticky",
   top: 0,
+  zIndex: 40,
   display: "flex",
   height: "100vh",
   flexDirection: "column",
@@ -30,7 +31,7 @@ export const navStack = style({
   flex: 1,
   flexDirection: "column",
   gap: 10,
-  overflowY: "auto",
+  overflowY: "visible",
   scrollbarWidth: "none",
   "@media": {
     "(max-width: 760px)": {
@@ -117,6 +118,59 @@ export const navItemActive = style({
   opacity: 1,
 });
 
+export const navItemWithChildren = style({
+  position: "relative",
+  "@media": {
+    "(max-width: 760px)": {
+      flex: "0 0 64px",
+    },
+  },
+});
+
+export const navSubmenu = style({
+  position: "absolute",
+  top: 0,
+  left: "calc(100% + 8px)",
+  zIndex: 30,
+  display: "grid",
+  gap: 2,
+  minWidth: 160,
+  border: "1px solid #dfe6ef",
+  borderRadius: 8,
+  background: "#fff",
+  boxShadow: "0 12px 28px rgba(24, 45, 78, 0.18)",
+  padding: 6,
+  "@media": {
+    "(max-width: 760px)": {
+      top: "calc(100% + 6px)",
+      left: 0,
+      minWidth: 148,
+    },
+  },
+});
+
+export const navSubItem = style({
+  minHeight: 32,
+  border: "1px solid transparent",
+  borderRadius: 6,
+  color: "#25334a",
+  background: "#fff",
+  padding: "7px 9px",
+  textAlign: "left",
+  "@media": {
+    "(max-width: 760px)": {
+      minHeight: 50,
+      padding: "7px 9px",
+    },
+  },
+});
+
+export const navSubItemActive = style({
+  borderColor: "#bad1ff",
+  color: "#1649bf",
+  background: "#edf4ff",
+});
+
 globalStyle(`${navItem} svg`, {
   width: 19,
   height: 19,
@@ -130,6 +184,15 @@ globalStyle(`${navItem} span`, {
   lineHeight: 1.15,
   overflowWrap: "anywhere",
   textAlign: "center",
+});
+
+globalStyle(`${navSubItem} span`, {
+  display: "block",
+  fontSize: 11,
+  fontWeight: 800,
+  lineHeight: 1.2,
+  overflowWrap: "anywhere",
+  textAlign: "left",
 });
 
 export const helpButton = style({

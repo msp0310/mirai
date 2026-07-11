@@ -1,9 +1,8 @@
-import type { ComponentType, SVGProps } from "react";
+import { useState, type ComponentType, type SVGProps } from "react";
 import {
   AdjustmentsHorizontalIcon,
   ChartBarIcon,
   CalendarDaysIcon,
-  ClipboardDocumentListIcon,
   ClockIcon,
   Cog6ToothIcon,
   ExclamationTriangleIcon,
@@ -22,17 +21,30 @@ type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 type NavItem = {
   action?: "settings" | "projectSettings";
+  children?: NavSubItem[];
   label: string;
   icon: IconComponent;
   tab?: ViewTab;
+};
+
+type NavSubItem = {
+  label: string;
+  tab: ViewTab;
 };
 
 const globalNavItems: NavItem[] = [{ label: "案件一覧", icon: FolderOpenIcon, tab: "Projects" }];
 
 const projectNavItems: NavItem[] = [
   { label: "概要", icon: HomeIcon, tab: "Status" },
-  { label: "分析", icon: ChartBarIcon, tab: "Analysis" },
-  { label: "週次報告", icon: ClipboardDocumentListIcon, tab: "WeeklyReport" },
+  {
+    children: [
+      { label: "プロジェクト分析", tab: "Analysis" },
+      { label: "週次報告", tab: "WeeklyReport" },
+    ],
+    label: "分析",
+    icon: ChartBarIcon,
+    tab: "Analysis",
+  },
   { label: "ガント", icon: ListBulletIcon, tab: "Gantt" },
   { label: "課題", icon: ExclamationTriangleIcon, tab: "Issues" },
   { label: "作業時間", icon: WrenchScrewdriverIcon, tab: "WorkLogs" },
@@ -147,23 +159,37 @@ function NavGroup({
   projectSettingsOpen,
   settingsOpen,
 }: NavGroupProps) {
+  const [expandedItemLabel, setExpandedItemLabel] = useState<string | null>(
+    activeTab === "Analysis" || activeTab === "WeeklyReport" ? "分析" : null,
+  );
+
   return (
     <div className={styles.navGroup} aria-label={ariaLabel}>
       {label ? <span className={styles.navGroupLabel}>{label}</span> : null}
       {items.map((item) => {
         const Icon = item.icon;
+        const hasActiveChild = item.children?.some((child) => child.tab === activeTab) ?? false;
+        const expanded = expandedItemLabel === item.label || hasActiveChild;
         const active =
           !helpOpen &&
-          ((item.tab ? !settingsOpen && !projectSettingsOpen && activeTab === item.tab : false) ||
+          ((item.tab
+            ? !settingsOpen &&
+              !projectSettingsOpen &&
+              (activeTab === item.tab || hasActiveChild)
+            : false) ||
             (item.action === "settings" && settingsOpen) ||
             (item.action === "projectSettings" && projectSettingsOpen));
 
-        return (
+        const navButton = (
           <button
             aria-current={active ? "page" : undefined}
+            aria-expanded={item.children ? expanded : undefined}
             className={active ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem}
-            key={item.label}
+            key={!item.children ? item.label : undefined}
             onClick={() => {
+              if (item.children) {
+                setExpandedItemLabel((current) => (current === item.label ? null : item.label));
+              }
               if (item.tab) onNavigate(item.tab);
               if (item.action === "settings") onMasterSettingsOpen();
               if (item.action === "projectSettings") onProjectSettingsOpen();
@@ -174,6 +200,35 @@ function NavGroup({
             <Icon />
             <span>{item.label}</span>
           </button>
+        );
+        if (!item.children) return navButton;
+
+        return (
+          <div className={styles.navItemWithChildren} key={item.label}>
+            {navButton}
+            {expanded ? (
+              <div className={styles.navSubmenu} aria-label={`${item.label}のサブメニュー`}>
+                {item.children.map((child) => {
+                  const childActive = !helpOpen && !settingsOpen && !projectSettingsOpen && activeTab === child.tab;
+                  return (
+                    <button
+                      aria-current={childActive ? "page" : undefined}
+                      className={childActive ? `${styles.navSubItem} ${styles.navSubItemActive}` : styles.navSubItem}
+                      key={child.tab}
+                      onClick={() => {
+                        setExpandedItemLabel(item.label);
+                        onNavigate(child.tab);
+                      }}
+                      title={child.label}
+                      type="button"
+                    >
+                      <span>{child.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         );
       })}
     </div>
