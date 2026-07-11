@@ -112,6 +112,38 @@ export const pager = style({
   gap: 6,
 });
 
+export const timelineControls = style({
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+});
+
+export const horizon = style({
+  display: "inline-flex",
+  height: 32,
+  padding: 2,
+  border: "1px solid #d5dfed",
+  borderRadius: 6,
+  background: "#f5f7fa",
+});
+
+export const horizonButton = style({
+  minWidth: 52,
+  border: 0,
+  borderRadius: 4,
+  color: "#617087",
+  background: "transparent",
+  fontSize: 10,
+  fontWeight: 800,
+  cursor: "pointer",
+});
+
+export const horizonButtonActive = style({
+  color: "#174dbd",
+  background: "#fff",
+  boxShadow: "0 1px 3px rgba(35, 56, 91, 0.13)",
+});
+
 export const pagerButton = style({
   display: "grid",
   width: 32,
@@ -160,6 +192,23 @@ export const head = style({
   background: "#f7f9fc",
   fontSize: 11,
   fontWeight: 900,
+});
+
+export const timelineEntityHead = style({
+  gridRow: "span 2",
+});
+
+export const monthHead = style({
+  minHeight: 28,
+  borderBottom: "1px solid #d6dfeb",
+  padding: "7px 8px",
+  textAlign: "center",
+});
+
+export const weekHead = style({
+  minHeight: 28,
+  padding: "7px 6px",
+  textAlign: "center",
 });
 
 export const entityCell = style({
@@ -298,7 +347,7 @@ export const demandMeta = style({
   fontWeight: 700,
 });
 export const planBoard = style({
-  overflow: "hidden",
+  overflow: "auto",
   border: "1px solid #dce4ef",
   borderRadius: 7,
   background: "#fff",
@@ -306,7 +355,7 @@ export const planBoard = style({
 export const planHeader = style({
   display: "grid",
   gridTemplateColumns: "220px 1fr",
-  minHeight: 44,
+  minHeight: 58,
   borderBottom: "1px solid #dce4ef",
   background: "#f7f9fc",
 });
@@ -321,13 +370,30 @@ export const planMemberHead = style({
 });
 export const planWeeks = style({
   display: "grid",
-  gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+  gridTemplateRows: "29px 29px",
+});
+export const planMonthRow = style({
+  display: "grid",
+});
+export const planMonth = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRight: "1px solid #d8e1ec",
+  borderBottom: "1px solid #d8e1ec",
+  color: "#4e5e76",
+  fontSize: 10,
+  fontWeight: 900,
+});
+export const planWeekRow = style({
+  display: "grid",
 });
 export const planWeek = style({
   display: "flex",
   alignItems: "center",
+  justifyContent: "center",
   borderRight: "1px solid #e3e9f2",
-  padding: "0 8px",
+  padding: "0 3px",
   color: "#5f6e84",
   fontSize: 10,
   fontWeight: 900,
@@ -348,8 +414,8 @@ export const planMember = style({
 export const planTrack = style({
   position: "relative",
   minWidth: 0,
-  background:
-    "repeating-linear-gradient(90deg, transparent 0, transparent calc(16.666% - 1px), #e7ecf3 calc(16.666% - 1px), #e7ecf3 16.666%)",
+  backgroundImage: "linear-gradient(90deg, transparent calc(100% - 1px), #e7ecf3 0)",
+  backgroundRepeat: "repeat-x",
 });
 export const assignmentBar = style({
   position: "absolute",

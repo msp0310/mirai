@@ -30,6 +30,7 @@ type WorkloadOverviewPageProps = {
 };
 
 type ViewMode = "plan" | "member" | "team";
+type HorizonMonths = 3 | 6 | 12;
 type AssignmentWithProject = ProjectAssignment & { projectId: string; projectName: string };
 type AssignmentEditorState = {
   assignment: ProjectAssignment;
@@ -51,6 +52,7 @@ export function WorkloadOverviewPage({
   const [mode, setMode] = useState<ViewMode>("plan");
   const [teamId, setTeamId] = useState("all");
   const [weekOffset, setWeekOffset] = useState(0);
+  const [horizonMonths, setHorizonMonths] = useState<HorizonMonths>(6);
   const [editorState, setEditorState] = useState<AssignmentEditorState | null>(null);
   const [demandEditorState, setDemandEditorState] = useState<DemandEditorState | null>(null);
   const activeSchedules = useMemo(
@@ -60,16 +62,18 @@ export function WorkloadOverviewPage({
   const members = useMemo(() => collectMembers(activeSchedules), [activeSchedules]);
   const weeks = useMemo(() => {
     const start = activeSchedules.map((item) => item.project.rangeStart).sort()[0];
-    const end = activeSchedules
+    const projectEnd = activeSchedules
       .map((item) => item.project.rangeEnd)
       .sort()
       .at(-1);
-    if (!start || !end) return [];
+    if (!start || !projectEnd) return [];
+    const end = [projectEnd, addDateMonths(start, 12)].sort().at(-1)!;
     return buildWeekColumns(buildTimeline(start, end, calendar, calendarAware, "day"));
   }, [activeSchedules, calendar, calendarAware]);
-  const maxOffset = Math.max(weeks.length - 6, 0);
+  const visibleWeekCount = horizonMonths === 3 ? 13 : horizonMonths === 6 ? 26 : 52;
+  const maxOffset = Math.max(weeks.length - visibleWeekCount, 0);
   const visibleOffset = Math.min(weekOffset, maxOffset);
-  const visibleWeeks = weeks.slice(visibleOffset, visibleOffset + 6);
+  const visibleWeeks = weeks.slice(visibleOffset, visibleOffset + visibleWeekCount);
   const scopedSchedules = useMemo(
     () =>
       teamId === "all"
@@ -242,7 +246,9 @@ export function WorkloadOverviewPage({
       <header className={styles.header}>
         <div>
           <h2 className={styles.heading}>稼働・要員計画</h2>
-          <span className={styles.description}>全案件の稼働を確認し、必要な要員とアサインを週単位で計画</span>
+          <span className={styles.description}>
+            全案件の稼働を確認し、必要な要員とアサインを週単位で計画
+          </span>
         </div>
         <div className={styles.segmented} aria-label="稼働・要員計画の表示軸">
           <button
@@ -303,26 +309,43 @@ export function WorkloadOverviewPage({
         ) : (
           <span />
         )}
-        <div className={styles.pager} aria-label="表示週の切り替え">
-          <button
-            aria-label="前の期間"
-            className={styles.pagerButton}
-            disabled={visibleOffset === 0}
-            onClick={() => setWeekOffset(Math.max(visibleOffset - 3, 0))}
-            type="button"
-          >
-            <ChevronLeftIcon className={styles.pagerIcon} />
-          </button>
-          <span className={styles.period}>{formatPeriod(visibleWeeks)}</span>
-          <button
-            aria-label="次の期間"
-            className={styles.pagerButton}
-            disabled={visibleOffset >= maxOffset}
-            onClick={() => setWeekOffset(Math.min(visibleOffset + 3, maxOffset))}
-            type="button"
-          >
-            <ChevronRightIcon className={styles.pagerIcon} />
-          </button>
+        <div className={styles.timelineControls}>
+          <div className={styles.horizon} aria-label="表示期間">
+            {([3, 6, 12] as const).map((months) => (
+              <button
+                className={`${styles.horizonButton} ${horizonMonths === months ? styles.horizonButtonActive : ""}`}
+                key={months}
+                onClick={() => {
+                  setHorizonMonths(months);
+                  setWeekOffset(0);
+                }}
+                type="button"
+              >
+                {months}か月
+              </button>
+            ))}
+          </div>
+          <div className={styles.pager} aria-label="表示期間の切り替え">
+            <button
+              aria-label="前の期間"
+              className={styles.pagerButton}
+              disabled={visibleOffset === 0}
+              onClick={() => setWeekOffset(Math.max(visibleOffset - visibleWeekCount, 0))}
+              type="button"
+            >
+              <ChevronLeftIcon className={styles.pagerIcon} />
+            </button>
+            <span className={styles.period}>{formatPeriod(visibleWeeks)}</span>
+            <button
+              aria-label="次の期間"
+              className={styles.pagerButton}
+              disabled={visibleOffset >= maxOffset}
+              onClick={() => setWeekOffset(Math.min(visibleOffset + visibleWeekCount, maxOffset))}
+              type="button"
+            >
+              <ChevronRightIcon className={styles.pagerIcon} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -415,73 +438,99 @@ function AssignmentPlanBoard({
 }) {
   const visibleStart = weeks[0]?.start;
   const visibleEnd = addDateDays(weeks.at(-1)?.start, 6);
+  const monthGroups = buildMonthGroups(weeks);
+  const timelineMinWidth = Math.max(920, weeks.length * 48 + 220);
   return (
     <div className={styles.planBoard} aria-label="アサイン計画ボード">
-      <div className={styles.planHeader}>
-        <div className={styles.planMemberHead}>メンバー / 参画案件</div>
-        <div className={styles.planWeeks}>
-          {weeks.map((week) => (
-            <div className={styles.planWeek} key={week.key}>
-              {week.label}
+      <div style={{ minWidth: timelineMinWidth }}>
+        <div className={styles.planHeader}>
+          <div className={styles.planMemberHead}>メンバー / 参画案件</div>
+          <div className={styles.planWeeks} aria-label="月・週の時間軸">
+            <div
+              className={styles.planMonthRow}
+              style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+            >
+              {monthGroups.map((month) => (
+                <div
+                  className={styles.planMonth}
+                  key={month.key}
+                  style={{ gridColumn: `span ${month.span}` }}
+                >
+                  {month.label}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-      {members.map((member) => {
-        const memberAssignments = assignments.filter(
-          (assignment) =>
-            assignment.memberId === member.id &&
-            visibleStart &&
-            visibleEnd &&
-            assignment.endDate >= visibleStart &&
-            assignment.startDate <= visibleEnd,
-        );
-        return (
-          <div
-            className={styles.planRow}
-            key={member.id}
-            style={{ minHeight: Math.max(58, memberAssignments.length * 38 + 10) }}
-          >
-            <div className={styles.planMember}>
-              <Avatar member={member} />
-              <span className={styles.entityText}>
-                <strong className={styles.entityName}>{member.name}</strong>
-                <small className={styles.entityMeta}>{member.role}</small>
-              </span>
-            </div>
-            <div className={styles.planTrack}>
-              {memberAssignments.map((assignment, index) => {
-                const position = getAssignmentPosition(assignment, visibleStart!, visibleEnd!);
-                return (
-                  <button
-                    className={`${styles.assignmentBar} ${assignment.status === "draft" ? styles.assignmentDraft : ""}`}
-                    key={assignment.id}
-                    onClick={() => onEdit(assignment)}
-                    style={
-                      {
-                        "--assignment-color": getProjectColor(assignment.projectId),
-                        left: `${position.left}%`,
-                        top: 6 + index * 38,
-                        width: `${position.width}%`,
-                      } as CSSProperties
-                    }
-                    title={`${assignment.projectName} / ${assignment.role} / ${assignment.allocationPercent}%`}
-                    type="button"
-                  >
-                    <strong className={styles.assignmentName}>{assignment.projectName}</strong>
-                    <span className={styles.assignmentMeta}>
-                      {assignment.role} / {assignment.allocationPercent}%
-                    </span>
-                  </button>
-                );
-              })}
+            <div
+              className={styles.planWeekRow}
+              style={{ gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
+            >
+              {weeks.map((week) => (
+                <div className={styles.planWeek} key={week.key}>
+                  {formatWeekNumber(week.start)}
+                </div>
+              ))}
             </div>
           </div>
-        );
-      })}
-      {members.length === 0 ? (
-        <div className={styles.empty}>表示対象のメンバーがいません。</div>
-      ) : null}
+        </div>
+        {members.map((member) => {
+          const memberAssignments = assignments.filter(
+            (assignment) =>
+              assignment.memberId === member.id &&
+              visibleStart &&
+              visibleEnd &&
+              assignment.endDate >= visibleStart &&
+              assignment.startDate <= visibleEnd,
+          );
+          return (
+            <div
+              className={styles.planRow}
+              key={member.id}
+              style={{ minHeight: Math.max(58, memberAssignments.length * 38 + 10) }}
+            >
+              <div className={styles.planMember}>
+                <Avatar member={member} />
+                <span className={styles.entityText}>
+                  <strong className={styles.entityName}>{member.name}</strong>
+                  <small className={styles.entityMeta}>{member.role}</small>
+                </span>
+              </div>
+              <div
+                className={styles.planTrack}
+                style={{ backgroundSize: `${100 / Math.max(weeks.length, 1)}% 100%` }}
+              >
+                {memberAssignments.map((assignment, index) => {
+                  const position = getAssignmentPosition(assignment, visibleStart!, visibleEnd!);
+                  return (
+                    <button
+                      className={`${styles.assignmentBar} ${assignment.status === "draft" ? styles.assignmentDraft : ""}`}
+                      key={assignment.id}
+                      onClick={() => onEdit(assignment)}
+                      style={
+                        {
+                          "--assignment-color": getProjectColor(assignment.projectId),
+                          left: `${position.left}%`,
+                          top: 6 + index * 38,
+                          width: `${position.width}%`,
+                        } as CSSProperties
+                      }
+                      title={`${assignment.projectName} / ${assignment.role} / ${assignment.allocationPercent}%`}
+                      type="button"
+                    >
+                      <strong className={styles.assignmentName}>{assignment.projectName}</strong>
+                      <span className={styles.assignmentMeta}>
+                        {assignment.role} / {assignment.allocationPercent}%
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {members.length === 0 ? (
+          <div className={styles.empty}>表示対象のメンバーがいません。</div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -776,6 +825,39 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
+function TimelineHeader({
+  entityLabel,
+  weeks,
+}: {
+  entityLabel: string;
+  weeks: ReturnType<typeof buildWeekColumns>;
+}) {
+  const monthGroups = buildMonthGroups(weeks);
+  return (
+    <>
+      <div
+        className={`${styles.cell} ${styles.head} ${styles.entityCell} ${styles.timelineEntityHead}`}
+      >
+        {entityLabel}
+      </div>
+      {monthGroups.map((month) => (
+        <div
+          className={`${styles.cell} ${styles.head} ${styles.monthHead}`}
+          key={month.key}
+          style={{ gridColumn: `span ${month.span}` }}
+        >
+          {month.label}
+        </div>
+      ))}
+      {weeks.map((week) => (
+        <div className={`${styles.cell} ${styles.head} ${styles.weekHead}`} key={week.key}>
+          {formatWeekNumber(week.start)}
+        </div>
+      ))}
+    </>
+  );
+}
+
 function MemberGrid({
   onOpenProject,
   rows,
@@ -789,14 +871,9 @@ function MemberGrid({
     <div className={styles.gridScroll}>
       <div
         className={styles.grid}
-        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(126px, 1fr))` }}
+        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(72px, 1fr))` }}
       >
-        <div className={`${styles.cell} ${styles.head} ${styles.entityCell}`}>メンバー</div>
-        {weeks.map((week) => (
-          <div className={`${styles.cell} ${styles.head}`} key={week.key}>
-            {week.label}
-          </div>
-        ))}
+        <TimelineHeader entityLabel="メンバー" weeks={weeks} />
         {rows.map((row) => (
           <MemberGridRow key={row.member.id} onOpenProject={onOpenProject} row={row} />
         ))}
@@ -846,14 +923,9 @@ function TeamGrid({
     <div className={styles.gridScroll}>
       <div
         className={styles.grid}
-        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(126px, 1fr))` }}
+        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(72px, 1fr))` }}
       >
-        <div className={`${styles.cell} ${styles.head} ${styles.entityCell}`}>チーム</div>
-        {weeks.map((week) => (
-          <div className={`${styles.cell} ${styles.head}`} key={week.key}>
-            {week.label}
-          </div>
-        ))}
+        <TimelineHeader entityLabel="チーム" weeks={weeks} />
         {rows.map(({ projectCount, rows: memberRows, team }) => (
           <TeamGridRow
             key={team.id}
@@ -991,7 +1063,42 @@ function getScopedMembers(members: Member[], schedules: ScheduleSnapshot[], team
 
 function formatPeriod(weeks: ReturnType<typeof buildWeekColumns>) {
   if (weeks.length === 0) return "対象期間なし";
-  return `${weeks[0]?.label ?? ""} - ${weeks.at(-1)?.label ?? ""}`;
+  const start = weeks[0]?.start;
+  const end = addDateDays(weeks.at(-1)?.start, 6);
+  return start && end ? `${formatMonthDay(start)} - ${formatMonthDay(end)}` : "対象期間なし";
+}
+
+function buildMonthGroups(weeks: ReturnType<typeof buildWeekColumns>) {
+  return weeks.reduce<Array<{ key: string; label: string; span: number }>>((groups, week) => {
+    const key = week.start?.slice(0, 7) ?? "unknown";
+    const current = groups.at(-1);
+    if (current?.key === key) {
+      current.span += 1;
+      return groups;
+    }
+    const [year, month] = key.split("-");
+    groups.push({
+      key,
+      label: key === "unknown" ? "期間未設定" : `${year}/${Number(month)}`,
+      span: 1,
+    });
+    return groups;
+  }, []);
+}
+
+function formatWeekNumber(dateKey: string | undefined) {
+  if (!dateKey) return "W--";
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((date.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
+  return `W${week}`;
+}
+
+function formatMonthDay(dateKey: string) {
+  const [, month, day] = dateKey.split("-");
+  return `${Number(month)}/${Number(day)}`;
 }
 
 function getProjectAssignments(snapshot: ScheduleSnapshot, members: Member[]): ProjectAssignment[] {
@@ -1012,6 +1119,12 @@ function addDateDays(dateKey: string | undefined, days: number) {
   if (!dateKey) return undefined;
   const date = new Date(`${dateKey}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function addDateMonths(dateKey: string, months: number) {
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  date.setUTCMonth(date.getUTCMonth() + months);
   return date.toISOString().slice(0, 10);
 }
 
