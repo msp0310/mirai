@@ -415,7 +415,7 @@ function AssignmentPlanBoard({
   const visibleStart = weeks[0]?.start;
   const visibleEnd = addDateDays(weeks.at(-1)?.start, 6);
   const monthGroups = buildMonthGroups(weeks);
-  const timelineMinWidth = Math.max(920, weeks.length * 48 + 220);
+  const timelineMinWidth = Math.max(920, weeks.length * 40 + 220);
   return (
     <div className={styles.planBoard} aria-label="アサイン計画ボード">
       <div style={{ minWidth: timelineMinWidth }}>
@@ -847,7 +847,7 @@ function MemberGrid({
     <div className={styles.gridScroll}>
       <div
         className={styles.grid}
-        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(72px, 1fr))` }}
+        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(60px, 1fr))` }}
       >
         <TimelineHeader entityLabel="メンバー" weeks={weeks} />
         {rows.map((row) => (
@@ -899,7 +899,7 @@ function TeamGrid({
     <div className={styles.gridScroll}>
       <div
         className={styles.grid}
-        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(72px, 1fr))` }}
+        style={{ gridTemplateColumns: `220px repeat(${weeks.length}, minmax(60px, 1fr))` }}
       >
         <TimelineHeader entityLabel="チーム" weeks={weeks} />
         {rows.map(({ projectCount, rows: memberRows, team }) => (
