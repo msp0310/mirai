@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useEffect, useMemo, useState } from "react";
 import type {
   Member,
   ProjectIssue,
@@ -40,6 +41,7 @@ type WeeklyTaskGroup = {
 const unassignedMemberId = "__unassigned__";
 const maxDetailTasks = 80;
 const maxVisibleIssues = 40;
+const visibleWeekCount = 3;
 
 const issueStatusLabels: Record<ProjectIssueStatus, string> = {
   blocked: "ブロック",
@@ -115,22 +117,37 @@ export function WeeklyProgressSummary({
   tasks,
   todayKey,
 }: WeeklyProgressSummaryProps) {
-  const [showAllWeeks, setShowAllWeeks] = useState(false);
   const [selectedWeekKey, setSelectedWeekKey] = useState<string | null>(null);
+  const [weekWindowStart, setWeekWindowStart] = useState<number | null>(null);
   const rows = useMemo(
     () => buildWeeklyProgressRows(tasks, projectStart, projectEnd),
     [projectEnd, projectStart, tasks],
   );
-  const visibleRows = showAllWeeks ? rows : rows.slice(-12);
   const actionableTasks = useMemo(
     () => tasks.filter((task) => task.type === "task"),
     [tasks],
   );
   const currentWeek = useMemo(
-    () =>
-      rows.find((row) => row.start <= todayKey && todayKey <= row.end) ??
-      rows[rows.length - 1],
-    [rows, todayKey],
+    () => {
+      const matched = rows.find((row) => row.start <= todayKey && todayKey <= row.end);
+      if (matched) return matched;
+      return todayKey < projectStart ? rows[0] : rows[rows.length - 1];
+    },
+    [projectStart, rows, todayKey],
+  );
+  const currentWeekIndex = currentWeek
+    ? Math.max(rows.findIndex((row) => row.weekKey === currentWeek.weekKey), 0)
+    : 0;
+  const maxWeekWindowStart = Math.max(rows.length - visibleWeekCount, 0);
+  const defaultWeekWindowStart = clampNumber(currentWeekIndex - 1, 0, maxWeekWindowStart);
+  const activeWeekWindowStart = clampNumber(
+    weekWindowStart ?? defaultWeekWindowStart,
+    0,
+    maxWeekWindowStart,
+  );
+  const visibleRows = rows.slice(
+    activeWeekWindowStart,
+    activeWeekWindowStart + visibleWeekCount,
   );
   const selectedWeek = rows.find((row) => row.weekKey === (selectedWeekKey ?? currentWeek?.weekKey)) ?? currentWeek;
   const totalCompleted = actionableTasks.filter((task) => task.status === "done").length;
@@ -174,6 +191,11 @@ export function WeeklyProgressSummary({
   const unresolvedIssueCount = selectedWeekIssues.filter((issue) => !isIssueResolved(issue)).length;
   const resolvedIssueCount = selectedWeekIssues.length - unresolvedIssueCount;
 
+  useEffect(() => {
+    setSelectedWeekKey(null);
+    setWeekWindowStart(null);
+  }, [projectEnd, projectStart]);
+
   return (
     <section className="dashboard-panel weekly-progress-panel" aria-label="週次進捗サマリー">
       <div className="weekly-progress-heading">
@@ -182,8 +204,8 @@ export function WeeklyProgressSummary({
           <p>予定終了週ごとに、完了・進行中・遅延の状況を集計しています。</p>
         </div>
         <div className="weekly-progress-meta">
-          <strong>{rows.length}週</strong>
-          <span>完了 {totalCompleted}件 / 遅延 {delayedCount}件</span>
+          <strong>全{rows.length}週</strong>
+          <span>現在 {currentWeekIndex + 1}週目 / 完了 {totalCompleted}件 / 遅延 {delayedCount}件</span>
         </div>
       </div>
 
@@ -199,6 +221,61 @@ export function WeeklyProgressSummary({
         <div className={completionGap < 0 ? "behind" : completionGap > 0 ? "ahead" : "on-track"}>
           <span>計画との差</span>
           <strong>{completionGap > 0 ? "+" : ""}{completionGap}pt</strong>
+        </div>
+      </div>
+
+      <div className="weekly-progress-navigation" aria-label="表示する週の切り替え">
+        <div>
+          <span>表示中</span>
+          <strong>
+            {activeWeekWindowStart + 1} - {Math.min(activeWeekWindowStart + visibleWeekCount, rows.length)}週目
+          </strong>
+        </div>
+        <div className="weekly-progress-navigation-actions">
+          <button
+            aria-label="前の3週を表示"
+            disabled={activeWeekWindowStart === 0}
+            onClick={() => {
+              const nextStart = clampNumber(
+                activeWeekWindowStart - visibleWeekCount,
+                0,
+                maxWeekWindowStart,
+              );
+              setWeekWindowStart(nextStart);
+              setSelectedWeekKey(rows[Math.min(nextStart + 1, rows.length - 1)]?.weekKey ?? null);
+            }}
+            title="前の3週"
+            type="button"
+          >
+            <ChevronLeftIcon />
+          </button>
+          <button
+            className="weekly-progress-current-week"
+            onClick={() => {
+              setWeekWindowStart(defaultWeekWindowStart);
+              setSelectedWeekKey(currentWeek?.weekKey ?? null);
+            }}
+            type="button"
+          >
+            今週へ
+          </button>
+          <button
+            aria-label="次の3週を表示"
+            disabled={activeWeekWindowStart >= maxWeekWindowStart}
+            onClick={() => {
+              const nextStart = clampNumber(
+                activeWeekWindowStart + visibleWeekCount,
+                0,
+                maxWeekWindowStart,
+              );
+              setWeekWindowStart(nextStart);
+              setSelectedWeekKey(rows[Math.min(nextStart + 1, rows.length - 1)]?.weekKey ?? null);
+            }}
+            title="次の3週"
+            type="button"
+          >
+            <ChevronRightIcon />
+          </button>
         </div>
       </div>
 
@@ -361,15 +438,6 @@ export function WeeklyProgressSummary({
         </div>
       ) : null}
 
-      {rows.length > 12 ? (
-        <button
-          className="weekly-progress-toggle"
-          onClick={() => setShowAllWeeks((current) => !current)}
-          type="button"
-        >
-          {showAllWeeks ? "直近12週のみ表示" : `全${rows.length}週を表示`}
-        </button>
-      ) : null}
       <small className="weekly-progress-note">
         完了率は、その週に終了予定のタスクのうち完了済みの割合です。対象進捗は、その週にかかるタスクの現在値です。
       </small>
@@ -461,4 +529,8 @@ function formatIssueAssignees(issue: ProjectIssue, memberById: Map<string, Membe
   return issue.assigneeIds
     .map((memberId) => memberById.get(memberId)?.name ?? "不明な担当者")
     .join(" / ");
+}
+
+function clampNumber(value: number, minimum: number, maximum: number) {
+  return Math.min(Math.max(value, minimum), maximum);
 }

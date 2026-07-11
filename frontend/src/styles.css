@@ -1765,21 +1765,78 @@ button {
   background: linear-gradient(90deg, #2864ea, #11a7a4);
 }
 
-.weekly-progress-toggle {
-  justify-self: start;
-  border: 0;
-  color: #1649bf;
-  background: transparent;
-  padding: 0;
-  font-size: 11px;
-  font-weight: 900;
+.weekly-progress-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 9px;
+  border: 1px solid #dbe4f1;
+  border-radius: 7px;
+  background: #f8fafd;
 }
 
-.weekly-progress-toggle:hover,
-.weekly-progress-toggle:focus-visible {
-  color: #0c3ca4;
-  text-decoration: underline;
+.weekly-progress-navigation > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.weekly-progress-navigation span {
+  color: #718096;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.weekly-progress-navigation strong {
+  color: #263750;
+  font-size: 12px;
+}
+
+.weekly-progress-navigation-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.weekly-progress-navigation-actions button {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #cfdbea;
+  border-radius: 6px;
+  color: #34506f;
+  background: #fff;
+}
+
+.weekly-progress-navigation-actions button:hover:not(:disabled),
+.weekly-progress-navigation-actions button:focus-visible {
+  border-color: #8baef5;
+  color: #1552c6;
+  background: #f2f6ff;
   outline: 0;
+}
+
+.weekly-progress-navigation-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.weekly-progress-navigation-actions svg {
+  width: 15px;
+  height: 15px;
+}
+
+.weekly-progress-navigation-actions .weekly-progress-current-week {
+  width: auto;
+  min-width: 58px;
+  padding-inline: 9px;
+  color: #1649bf;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .weekly-progress-note {
@@ -5441,6 +5498,15 @@ button.health-row:hover {
 
   .weekly-progress-overview {
     grid-template-columns: 1fr;
+  }
+
+  .weekly-progress-navigation {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .weekly-progress-navigation-actions {
+    justify-content: flex-end;
   }
 
   .weekly-progress-groups {
