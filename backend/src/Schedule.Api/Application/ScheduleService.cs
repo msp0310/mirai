@@ -124,6 +124,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
     public async Task<SaveScheduleResponse?> SaveProjectScheduleAsync(
         string projectId,
         SaveScheduleRequest request,
+        string changedBy,
         CancellationToken cancellationToken)
     {
         var existingProject = await LoadProjectsQuery()
@@ -148,7 +149,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
         ReplaceIssues(existingProject, request.Issues ?? []);
         ReplaceWorkLogs(existingProject, request.WorkLogs ?? []);
         ReplaceTasks(existingProject, request.Tasks);
-        RecordTaskChanges(projectId, oldTasks, request.Tasks, now);
+        RecordTaskChanges(projectId, oldTasks, request.Tasks, now, changedBy);
 
         existingProject.TeamId = request.Project.TeamId;
         existingProject.Name = request.Project.Name;
@@ -483,30 +484,40 @@ public sealed class ScheduleService(ScheduleDbContext db)
         string projectId,
         Dictionary<string, TaskEntity> oldTasks,
         IReadOnlyList<ScheduleTaskDto> nextTasks,
-        string changedAt)
+        string changedAt,
+        string changedBy)
     {
         foreach (var nextTask in nextTasks)
         {
             if (!oldTasks.TryGetValue(nextTask.Id, out var oldTask))
             {
-                db.ScheduleChangeLogs.Add(CreateChange(projectId, nextTask.Id, "created", null, nextTask.Title, null, changedAt));
+                db.ScheduleChangeLogs.Add(CreateChange(
+                    projectId,
+                    nextTask.Id,
+                    "created",
+                    null,
+                    nextTask.Title,
+                    null,
+                    changedAt,
+                    changedBy));
                 continue;
             }
 
-            AddChangeIfDifferent(projectId, nextTask.Id, "start", oldTask.Start, nextTask.Start, changedAt);
-            AddChangeIfDifferent(projectId, nextTask.Id, "end", oldTask.End, nextTask.End, changedAt);
+            AddChangeIfDifferent(projectId, nextTask.Id, "start", oldTask.Start, nextTask.Start, changedAt, changedBy);
+            AddChangeIfDifferent(projectId, nextTask.Id, "end", oldTask.End, nextTask.End, changedAt, changedBy);
             AddChangeIfDifferent(
                 projectId,
                 nextTask.Id,
                 "progress",
                 oldTask.Progress.ToString(CultureInfo.InvariantCulture),
                 nextTask.Progress.ToString(CultureInfo.InvariantCulture),
-                changedAt);
-            AddChangeIfDifferent(projectId, nextTask.Id, "status", oldTask.Status, nextTask.Status, changedAt);
+                changedAt,
+                changedBy);
+            AddChangeIfDifferent(projectId, nextTask.Id, "status", oldTask.Status, nextTask.Status, changedAt, changedBy);
 
             var oldAssignees = string.Join(",", oldTask.Assignments.Select(assignment => assignment.MemberId).Order());
             var nextAssignees = string.Join(",", nextTask.AssigneeIds.Order());
-            AddChangeIfDifferent(projectId, nextTask.Id, "assignees", oldAssignees, nextAssignees, changedAt);
+            AddChangeIfDifferent(projectId, nextTask.Id, "assignees", oldAssignees, nextAssignees, changedAt, changedBy);
         }
     }
 
@@ -517,7 +528,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
         string field,
         string? before,
         string? after,
-        string changedAt)
+        string changedAt,
+        string changedBy)
     {
         if (before == after) return;
         db.ScheduleChangeLogs.Add(CreateChange(
@@ -527,7 +539,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
             before,
             after,
             field is "start" or "end" ? DateDelta(before, after) : null,
-            changedAt));
+            changedAt,
+            changedBy));
     }
 
     /// <summary>タスク変更履歴の永続化エンティティを作成します。</summary>
@@ -538,7 +551,8 @@ public sealed class ScheduleService(ScheduleDbContext db)
         string? before,
         string? after,
         int? deltaDays,
-        string changedAt)
+        string changedAt,
+        string changedBy)
     {
         return new ScheduleChangeLogEntity
         {
@@ -550,7 +564,7 @@ public sealed class ScheduleService(ScheduleDbContext db)
             AfterValue = after,
             DeltaDays = deltaDays,
             ChangedAt = changedAt,
-            ChangedBy = "操作ユーザー",
+            ChangedBy = changedBy,
             Reason = null
         };
     }

@@ -20,6 +20,7 @@ import { BurndownChart } from "./BurndownChart";
 type SummaryStripProps = {
   calendar: CalendarDefinition;
   calendarAware: boolean;
+  onCaptureBaseline: () => void;
   healthReport: ScheduleHealthReport;
   members: Member[];
   onOpenHealthIssue: (issue: ScheduleHealthIssue) => void;
@@ -36,6 +37,7 @@ export function SummaryStrip({
   calendarAware,
   healthReport,
   members,
+  onCaptureBaseline,
   onOpenHealthIssue,
   onSelectTask,
   project,
@@ -94,6 +96,8 @@ export function SummaryStrip({
     ? healthReport.issues
     : healthReport.issues.slice(0, 5);
   const hiddenHealthIssueCount = Math.max(healthReport.issues.length - 5, 0);
+  const baselineCapturedAt = tasks.find((task) => task.baselineCapturedAt)?.baselineCapturedAt;
+  const hasBaseline = tasks.some((task) => task.baselineStart && task.baselineEnd);
 
   return (
     <section className="status-dashboard" aria-label="プロジェクト概要">
@@ -150,6 +154,9 @@ export function SummaryStrip({
         <BurndownChart
           calendar={calendar}
           calendarAware={calendarAware}
+          baselineCapturedAt={baselineCapturedAt}
+          hasBaseline={hasBaseline}
+          onCaptureBaseline={onCaptureBaseline}
           projectEnd={project.rangeEnd}
           projectStart={project.rangeStart}
           tasks={tasks}

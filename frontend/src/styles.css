@@ -1154,6 +1154,103 @@ button {
   padding: 14px;
 }
 
+.schedule-change-analysis {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+}
+
+.schedule-change-analysis-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedule-change-analysis-heading > div {
+  display: grid;
+  gap: 3px;
+}
+
+.schedule-change-analysis-heading strong {
+  color: #172033;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.schedule-change-analysis-heading span {
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.schedule-change-analysis-heading > span {
+  color: #b73b18;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.schedule-change-analysis-list {
+  display: grid;
+  gap: 6px;
+}
+
+.schedule-change-analysis-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  border: 1px solid #edf1f6;
+  border-radius: 7px;
+  background: #fff;
+  padding: 7px 10px;
+  text-align: left;
+}
+
+.schedule-change-analysis-row:hover,
+.schedule-change-analysis-row:focus-visible {
+  border-color: #bad1ff;
+  background: #f8fbff;
+  outline: 0;
+}
+
+.schedule-change-count {
+  color: #b73b18;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.schedule-change-task {
+  min-width: 0;
+  overflow: hidden;
+  color: #25334a;
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-change-detail {
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.schedule-change-analysis-empty {
+  border: 1px dashed #d6dfeb;
+  border-radius: 7px;
+  color: #7a8798;
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
+}
+
 .change-review-heading {
   display: flex;
   align-items: center;
@@ -3229,6 +3326,10 @@ button {
 .burndown-panel .dashboard-panel-header {
   align-items: flex-start;
   margin-bottom: 4px;
+}
+
+.burndown-panel .dashboard-panel-header > .subtle-action {
+  flex: 0 0 auto;
 }
 
 .burndown-panel .dashboard-panel-header p {

@@ -52,6 +52,7 @@ public static class ScheduleEndpoints
 
         api.MapPut("/projects/{projectId}/schedule", async Task<Results<Ok<SaveScheduleResponse>, NotFound, Conflict<object>, BadRequest<object>>> (
             string projectId,
+            HttpContext context,
             SaveScheduleRequest request,
             ScheduleService schedules,
             CancellationToken cancellationToken) =>
@@ -64,7 +65,12 @@ public static class ScheduleEndpoints
 
             try
             {
-                var result = await schedules.SaveProjectScheduleAsync(projectId, request, cancellationToken);
+                var changedBy = (context.Items["CurrentUser"] as AuthUserDto)?.Name ?? "操作ユーザー";
+                var result = await schedules.SaveProjectScheduleAsync(
+                    projectId,
+                    request,
+                    changedBy,
+                    cancellationToken);
                 return result is null ? TypedResults.NotFound() : TypedResults.Ok(result);
             }
             catch (ScheduleConflictException conflict)

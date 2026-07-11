@@ -13,6 +13,9 @@ import {
 type BurndownChartProps = {
   calendar: CalendarDefinition;
   calendarAware: boolean;
+  baselineCapturedAt?: string;
+  hasBaseline: boolean;
+  onCaptureBaseline: () => void;
   projectEnd: string;
   projectStart: string;
   tasks: ScheduleTask[];
@@ -32,6 +35,9 @@ const chartPadding = { bottom: 28, left: 44, right: 16, top: 18 };
 export function BurndownChart({
   calendar,
   calendarAware,
+  baselineCapturedAt,
+  hasBaseline,
+  onCaptureBaseline,
   projectEnd,
   projectStart,
   tasks,
@@ -60,6 +66,14 @@ export function BurndownChart({
           <strong>{formatTasks(currentRemaining)}</strong>
           <span>現在の残タスク</span>
         </div>
+        <button
+          className="subtle-action"
+          onClick={onCaptureBaseline}
+          title={hasBaseline ? "基準計画を現在の日程で更新" : "現在の日程を基準計画として保存"}
+          type="button"
+        >
+          {hasBaseline ? "基準計画を更新" : "基準計画を設定"}
+        </button>
       </div>
       <div className="burndown-legend" aria-label="バーンダウンの凡例">
         <span><i className="burndown-legend-line planned" />計画</span>
@@ -116,7 +130,12 @@ export function BurndownChart({
           })}
         </svg>
       </div>
-      <small className="burndown-note">現在のタスク進捗をもとに残タスク数を表示しています。実績履歴は順次蓄積します。</small>
+      <small className="burndown-note">
+        現在のタスク進捗をもとに残タスク数を表示しています。
+        {baselineCapturedAt
+          ? " 基準計画: " + formatShortDate(baselineCapturedAt.slice(0, 10))
+          : " 基準計画は未設定です。"}
+      </small>
     </section>
   );
 }

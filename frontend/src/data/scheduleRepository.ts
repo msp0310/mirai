@@ -5,6 +5,7 @@ import type {
   Project,
   ProjectIssue,
   ProjectWorkLog,
+  ScheduleChangeLog,
   ScheduleTask,
   Team,
 } from "../types/schedule";
@@ -12,6 +13,7 @@ import type {
 export type ScheduleSnapshot = {
   attachments?: Attachment[];
   calendar: CalendarDefinition;
+  changeLogs?: ScheduleChangeLog[];
   issues?: ProjectIssue[];
   members: Member[];
   project: Project;

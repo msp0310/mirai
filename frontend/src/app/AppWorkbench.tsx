@@ -2301,6 +2301,46 @@ export function AppWorkbench({
     setSaveRequestId((value) => value + 1);
   }
 
+  /** 現在の日程を全タスクの基準計画として保存します。 */
+  function captureBaseline() {
+    const targetTasks = tasks.filter((task) => task.type !== "summary");
+    if (targetTasks.length === 0) {
+      addToast({ title: "基準計画を設定できるタスクがありません", tone: "warning" });
+      return;
+    }
+    if (
+      !window.confirm(
+        "現在の開始日・終了日を基準計画として保存します。既存の基準計画は更新されます。",
+      )
+    ) {
+      return;
+    }
+    const capturedAt = new Date().toISOString();
+    commitTasks((current) =>
+      current.map((task) =>
+        task.type === "summary"
+          ? task
+          : {
+              ...task,
+              baselineCapturedAt: capturedAt,
+              baselineEnd: task.end,
+              baselineStart: task.start,
+            },
+      ),
+    );
+    recordActivity({
+      category: "task",
+      detail: targetTasks.length + "件の開始日・終了日を基準計画として保存しました。",
+      title: "基準計画を設定しました",
+      tone: "success",
+    });
+    addToast({
+      detail: targetTasks.length + "件のタスクを対象にしました。保存するとAPIへ反映されます。",
+      title: "基準計画を設定しました",
+      tone: "success",
+    });
+  }
+
   /** ローカル下書きを破棄して再読み込みします。 */
   function resetDraft() {
     clearLocalScheduleDraft();
@@ -2582,6 +2622,7 @@ export function AppWorkbench({
               calendarAware={calendarAware}
               members={projectMembers}
               healthReport={healthReport}
+              onCaptureBaseline={captureBaseline}
               onOpenHealthIssue={openHealthIssue}
               onSelectTask={selectTaskFromSecondaryView}
               project={schedule.project}
@@ -2688,12 +2729,14 @@ export function AppWorkbench({
           {showMainProjectViews && activeTab === "Activity" ? (
             <ActivityPanel
               changeReview={taskChangeReview}
+              changeLogs={schedule.changeLogs ?? []}
               configReview={configChangeReview}
               entries={activeActivityEntries}
               hasUnsavedChanges={hasUnsavedChanges}
               onSaveDraft={requestSaveDraft}
               onSelectTask={selectTaskFromSecondaryView}
               project={schedule.project}
+              tasks={tasks}
             />
           ) : null}
         </Suspense>

@@ -233,6 +233,19 @@ export type TaskDateChange = {
   start: string;
 };
 
+export type ScheduleChangeLog = {
+  afterValue?: string;
+  beforeValue?: string;
+  changedAt: string;
+  changedBy: string;
+  deltaDays?: number;
+  field: string;
+  id: string;
+  projectId: string;
+  reason?: string;
+  taskId: string;
+};
+
 export type TaskInspectorFocusTarget =
   | "assignees"
   | "allocations"

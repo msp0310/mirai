@@ -8,6 +8,7 @@ import type {
   ScheduleWorkspaceSummary,
   ProjectSummary,
 } from "./scheduleRepository";
+import type { ScheduleChangeLog } from "../types/schedule";
 import { authRepository } from "./authRepository";
 import { requestJson } from "./apiClient";
 import { getProjectAttachments } from "./attachmentRepository";
@@ -50,13 +51,16 @@ export const apiScheduleRepository: ScheduleRepository = {
 
   /** 指定案件の詳細スケジュールを取得します。 */
   async getProjectSchedule(projectId) {
-    const [schedule, attachments] = await Promise.all([
+    const [schedule, attachments, changeLogs] = await Promise.all([
       requestAuthenticatedJson<ScheduleSnapshot>(
         `/projects/${encodeURIComponent(projectId)}/schedule`,
       ),
       getProjectAttachments(projectId),
+      requestAuthenticatedJson<ScheduleChangeLog[]>(
+        "/projects/" + encodeURIComponent(projectId) + "/changes",
+      ),
     ]);
-    return { ...schedule, attachments };
+    return { ...schedule, attachments, changeLogs };
   },
 
   /** APIのヘルスチェックを行い、同期表示用の状態を返します。 */
