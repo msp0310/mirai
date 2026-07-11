@@ -1,9 +1,17 @@
 import { useMemo, useState } from "react";
-import type { Member, ScheduleTask } from "../../../types/schedule";
+import type {
+  Member,
+  ProjectIssue,
+  ProjectIssuePriority,
+  ProjectIssueStatus,
+  ScheduleTask,
+} from "../../../types/schedule";
 import { addDays, formatShortDate, parseDate, statusLabels, toDateKey } from "../../../lib/schedule";
 
 type WeeklyProgressSummaryProps = {
+  issues: ProjectIssue[];
   members: Member[];
+  onOpenIssues: () => void;
   onSelectTask: (taskId: string) => void;
   projectEnd: string;
   projectStart: string;
@@ -31,6 +39,22 @@ type WeeklyTaskGroup = {
 
 const unassignedMemberId = "__unassigned__";
 const maxDetailTasks = 80;
+const maxVisibleIssues = 40;
+
+const issueStatusLabels: Record<ProjectIssueStatus, string> = {
+  blocked: "ブロック",
+  closed: "クローズ",
+  inProgress: "対応中",
+  open: "未対応",
+  resolved: "解決",
+};
+
+const issuePriorityLabels: Record<ProjectIssuePriority, string> = {
+  critical: "緊急",
+  high: "高",
+  low: "低",
+  medium: "中",
+};
 
 /** 案件期間を週単位に区切り、現在のタスク状態を集計します。 */
 export function buildWeeklyProgressRows(
@@ -67,9 +91,24 @@ export function buildWeeklyProgressRows(
   }));
 }
 
+/** 選択週までに期限を迎える課題を、未解消と優先度を考慮して並べます。 */
+export function getIssuesDueByWeek(issues: ProjectIssue[], weekEnd: string) {
+  return issues
+    .filter((issue) => issue.dueDate && issue.dueDate <= weekEnd)
+    .sort((left, right) => {
+      const leftResolved = isIssueResolved(left);
+      const rightResolved = isIssueResolved(right);
+      if (leftResolved !== rightResolved) return leftResolved ? 1 : -1;
+      return (left.dueDate ?? "").localeCompare(right.dueDate ?? "") ||
+        getIssuePriorityOrder(left.priority) - getIssuePriorityOrder(right.priority);
+    });
+}
+
 /** 週次の完了状況を、期間の長い案件でも読みやすく表示します。 */
 export function WeeklyProgressSummary({
+  issues,
   members,
+  onOpenIssues,
   onSelectTask,
   projectEnd,
   projectStart,
@@ -124,6 +163,16 @@ export function WeeklyProgressSummary({
       totalCount,
     };
   }, [actionableTasks, members, selectedWeek]);
+  const memberById = useMemo(
+    () => new Map(members.map((member) => [member.id, member])),
+    [members],
+  );
+  const selectedWeekIssues = useMemo(() => {
+    if (!selectedWeek) return [];
+    return getIssuesDueByWeek(issues, selectedWeek.end);
+  }, [issues, selectedWeek]);
+  const unresolvedIssueCount = selectedWeekIssues.filter((issue) => !isIssueResolved(issue)).length;
+  const resolvedIssueCount = selectedWeekIssues.length - unresolvedIssueCount;
 
   return (
     <section className="dashboard-panel weekly-progress-panel" aria-label="週次進捗サマリー">
@@ -266,6 +315,52 @@ export function WeeklyProgressSummary({
         </div>
       ) : null}
 
+      {selectedWeek ? (
+        <div className="weekly-progress-issues">
+          <div className="weekly-progress-issues-heading">
+            <div>
+              <h3>{formatWeekLabel(selectedWeek.start)}までに解消予定の課題</h3>
+              <p>期限が{formatShortDate(selectedWeek.end)}以前の課題を、持ち越しも含めて表示します。</p>
+            </div>
+            <div className="weekly-progress-issues-summary">
+              <span>未解消 <strong>{unresolvedIssueCount}件</strong></span>
+              <span>解消済み {resolvedIssueCount}件</span>
+              <button onClick={onOpenIssues} type="button">課題一覧へ</button>
+            </div>
+          </div>
+          <div className="weekly-progress-issue-list">
+            {selectedWeekIssues.slice(0, maxVisibleIssues).map((issue) => {
+              const resolved = isIssueResolved(issue);
+              const carriedOver = !resolved && Boolean(issue.dueDate && issue.dueDate < selectedWeek.start);
+              return (
+                <div className={`weekly-progress-issue-row ${resolved ? "resolved" : "unresolved"}`} key={issue.id}>
+                  <div className="weekly-progress-issue-badges">
+                    <span className={`priority ${issue.priority}`}>{issuePriorityLabels[issue.priority]}</span>
+                    <span className={`status ${issue.status}`}>{issueStatusLabels[issue.status]}</span>
+                    {carriedOver ? <span className="carry-over">持ち越し</span> : null}
+                  </div>
+                  <div className="weekly-progress-issue-copy">
+                    <strong>{issue.title}</strong>
+                    <small>
+                      {formatIssueAssignees(issue, memberById)} / 関連タスク {issue.taskIds.length}件
+                    </small>
+                  </div>
+                  <span className="weekly-progress-issue-due">期限 {formatShortDate(issue.dueDate ?? selectedWeek.end)}</span>
+                </div>
+              );
+            })}
+            {selectedWeekIssues.length === 0 ? (
+              <div className="weekly-progress-detail-empty">この週までに期限を迎える課題はありません。</div>
+            ) : null}
+          </div>
+          {selectedWeekIssues.length > maxVisibleIssues ? (
+            <small className="weekly-progress-detail-note">
+              先頭{maxVisibleIssues}件を表示しています。全{selectedWeekIssues.length}件は課題一覧で確認できます。
+            </small>
+          ) : null}
+        </div>
+      ) : null}
+
       {rows.length > 12 ? (
         <button
           className="weekly-progress-toggle"
@@ -351,4 +446,19 @@ function buildWeeklyTaskGroups(
     if (right.memberId === unassignedMemberId) return 1;
     return (left.member?.name ?? "").localeCompare(right.member?.name ?? "");
   });
+}
+
+function isIssueResolved(issue: ProjectIssue) {
+  return issue.status === "resolved" || issue.status === "closed";
+}
+
+function getIssuePriorityOrder(priority: ProjectIssuePriority) {
+  return { critical: 0, high: 1, medium: 2, low: 3 }[priority];
+}
+
+function formatIssueAssignees(issue: ProjectIssue, memberById: Map<string, Member>) {
+  if (issue.assigneeIds.length === 0) return "担当未設定";
+  return issue.assigneeIds
+    .map((memberId) => memberById.get(memberId)?.name ?? "不明な担当者")
+    .join(" / ");
 }

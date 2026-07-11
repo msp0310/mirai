@@ -1592,6 +1592,164 @@ button {
   line-height: 1.5;
 }
 
+.weekly-progress-issues {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid #e3eaf3;
+  padding-top: 12px;
+}
+
+.weekly-progress-issues-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.weekly-progress-issues-heading > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.weekly-progress-issues-heading h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.weekly-progress-issues-heading p {
+  margin: 0;
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.weekly-progress-issues-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #728096;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.weekly-progress-issues-summary strong {
+  color: #c4521d;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.weekly-progress-issues-summary button {
+  border: 1px solid #cbdafa;
+  border-radius: 5px;
+  color: #1649bf;
+  background: #fff;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.weekly-progress-issues-summary button:hover,
+.weekly-progress-issues-summary button:focus-visible {
+  border-color: #2864ea;
+  background: #f3f7ff;
+  outline: 0;
+}
+
+.weekly-progress-issue-list {
+  display: grid;
+  gap: 5px;
+}
+
+.weekly-progress-issue-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border: 1px solid #e7ecf3;
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 9px;
+}
+
+.weekly-progress-issue-row.unresolved {
+  border-left: 3px solid #e46d2c;
+}
+
+.weekly-progress-issue-row.resolved {
+  border-left: 3px solid #11a7a4;
+  background: #fbfdfd;
+}
+
+.weekly-progress-issue-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 126px;
+}
+
+.weekly-progress-issue-badges > span {
+  border-radius: 4px;
+  padding: 3px 5px;
+  color: #66758b;
+  background: #f0f3f7;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.weekly-progress-issue-badges .priority.critical,
+.weekly-progress-issue-badges .priority.high,
+.weekly-progress-issue-badges .carry-over {
+  color: #b73b18;
+  background: #fff1e9;
+}
+
+.weekly-progress-issue-badges .status.inProgress {
+  color: #1649bf;
+  background: #eaf1ff;
+}
+
+.weekly-progress-issue-badges .status.blocked {
+  color: #765b09;
+  background: #fff8db;
+}
+
+.weekly-progress-issue-badges .status.resolved,
+.weekly-progress-issue-badges .status.closed {
+  color: #008d8b;
+  background: #e4f8f4;
+}
+
+.weekly-progress-issue-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.weekly-progress-issue-copy strong {
+  overflow: hidden;
+  color: #25334a;
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekly-progress-issue-copy small,
+.weekly-progress-issue-due {
+  color: #8a96a7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.weekly-progress-issue-due {
+  white-space: nowrap;
+}
+
 .weekly-progress-meter {
   display: block;
   height: 6px;
@@ -5259,8 +5417,22 @@ button.health-row:hover {
   }
 
   .weekly-progress-heading,
-  .weekly-progress-detail-heading {
+  .weekly-progress-detail-heading,
+  .weekly-progress-issues-heading {
     flex-direction: column;
+  }
+
+  .weekly-progress-issues-summary {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+
+  .weekly-progress-issue-row {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-progress-issue-badges {
+    max-width: none;
   }
 
   .weekly-progress-meta {

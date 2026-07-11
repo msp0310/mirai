@@ -1,13 +1,16 @@
 import type {
   Member,
   Project,
+  ProjectIssue,
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../../../types/schedule";
 import { WeeklyProgressSummary } from "./WeeklyProgressSummary";
 
 type WeeklyReportPanelProps = {
+  issues: ProjectIssue[];
   members: Member[];
+  onOpenIssues: () => void;
   onSelectTask: (
     taskId: string,
     focusTarget?: TaskInspectorFocusTarget,
@@ -20,7 +23,9 @@ type WeeklyReportPanelProps = {
 
 /** 定例会で確認する週次の作業予定と、プロジェクト全体の到達状況を表示します。 */
 export function WeeklyReportPanel({
+  issues,
   members,
+  onOpenIssues,
   onSelectTask,
   project,
   tasks,
@@ -41,7 +46,9 @@ export function WeeklyReportPanel({
       </header>
 
       <WeeklyProgressSummary
+        issues={issues}
         members={members}
+        onOpenIssues={onOpenIssues}
         onSelectTask={onSelectTask}
         projectEnd={project.rangeEnd}
         projectStart={project.rangeStart}

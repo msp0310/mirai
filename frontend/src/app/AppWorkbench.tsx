@@ -2657,7 +2657,9 @@ export function AppWorkbench({
           ) : null}
           {showMainProjectViews && activeTab === "WeeklyReport" ? (
             <WeeklyReportPanel
+              issues={activeIssues}
               members={projectMembers}
+              onOpenIssues={() => changeTab("Issues")}
               onSelectTask={selectTaskFromSecondaryView}
               project={schedule.project}
               tasks={tasks}

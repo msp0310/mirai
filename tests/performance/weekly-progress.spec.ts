@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { buildWeeklyProgressRows } from "../../frontend/src/features/analysis/components/WeeklyProgressSummary";
+import {
+  buildWeeklyProgressRows,
+  getIssuesDueByWeek,
+} from "../../frontend/src/features/analysis/components/WeeklyProgressSummary";
 import { addDays, parseDate, toDateKey } from "../../frontend/src/lib/schedule";
-import type { ScheduleTask } from "../../frontend/src/types/schedule";
+import type { ProjectIssue, ScheduleTask } from "../../frontend/src/types/schedule";
 
 function createTasks(count: number): ScheduleTask[] {
   const projectStart = parseDate("2026-01-05");
@@ -36,3 +39,36 @@ test("10,000タスクの週次進捗集計を1秒以内に完了する", () => {
   expect(rows.some((row) => row.delayed > 0)).toBe(true);
   expect(elapsedMs, `週次進捗集計が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1_000);
 });
+
+test("選択週までの未解消課題を優先して抽出する", () => {
+  const issues = [
+    createIssue("open-high", "open", "high", "2026-01-09"),
+    createIssue("resolved", "resolved", "critical", "2026-01-06"),
+    createIssue("future", "open", "critical", "2026-01-20"),
+  ];
+
+  const dueIssues = getIssuesDueByWeek(issues, "2026-01-11");
+
+  expect(dueIssues.map((issue) => issue.id)).toEqual(["open-high", "resolved"]);
+});
+
+function createIssue(
+  id: string,
+  status: ProjectIssue["status"],
+  priority: ProjectIssue["priority"],
+  dueDate: string,
+): ProjectIssue {
+  return {
+    assigneeIds: [],
+    body: "",
+    createdAt: "2026-01-01T00:00:00Z",
+    dueDate,
+    id,
+    priority,
+    status,
+    taskIds: [],
+    title: id,
+    type: "risk",
+    updatedAt: "2026-01-01T00:00:00Z",
+  };
+}
