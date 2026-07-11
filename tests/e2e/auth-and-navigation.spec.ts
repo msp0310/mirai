@@ -46,6 +46,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(workload.getByText("表示メンバー")).toBeVisible();
     await expect(workload.getByRole("combobox", { name: "表示チーム" })).toHaveValue("all");
     await expect(workload.getByText("2025/5 - 2026/4")).toBeVisible();
+    await expect(workload.getByLabel("要員判断")).toContainText("要員不足");
+    await expect(workload.getByLabel("要員判断")).toContainText("過負荷");
+    await expect(workload.getByLabel("要員判断")).toContainText("アサイン候補");
     await expect(workload.getByLabel("月・週の時間軸").getByText("2025/5")).toBeVisible();
     await expect(workload.getByLabel("月・週の時間軸").getByText("W1")).toHaveCount(12);
     await expect(page.getByRole("button", { name: "ガント", exact: true })).toHaveCount(0);
@@ -80,8 +83,11 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await demandEditor.getByLabel("配分率").fill("60");
     await demandEditor.getByRole("button", { name: "要求を追加" }).click();
 
-    const demand = workload.getByRole("button", { name: /インフラ 1名/ });
+    const demand = workload.getByRole("button", {
+      name: /CRM連携基盤構築 \/ インフラ 1名/,
+    });
     await expect(demand).toBeVisible();
+    await expect(workload.getByLabel("要員判断")).toContainText("インフラ 1名");
     await expect(workload.getByLabel("月別の要員不足")).toContainText("インフラ 1名");
     await demand.click();
     const assignmentEditor = page.getByRole("complementary", { name: "アサイン編集" });

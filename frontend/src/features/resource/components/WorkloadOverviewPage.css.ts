@@ -269,6 +269,81 @@ export const empty = style({
 });
 
 export const planActions = style({ display: "flex", alignItems: "center", gap: 8 });
+export const decisionPanel = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  borderTop: "1px solid #dce4ef",
+  borderBottom: "1px solid #dce4ef",
+  background: "#fff",
+});
+export const decisionColumn = style({
+  minWidth: 0,
+  padding: "10px 12px 12px",
+  borderRight: "1px solid #e2e8f0",
+  selectors: { "&:last-child": { borderRight: 0 } },
+});
+export const decisionHeader = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 7,
+  color: "#40516a",
+  fontSize: 11,
+});
+export const decisionHeaderTitle = style({ fontWeight: 900 });
+export const decisionHeaderCount = style({ color: "#6c7a90", fontWeight: 800 });
+export const decisionList = style({
+  display: "grid",
+  gap: 5,
+  maxHeight: 148,
+  overflowY: "auto",
+});
+export const decisionAction = style({
+  display: "grid",
+  minWidth: 0,
+  gap: 2,
+  border: "1px solid #e0e7f0",
+  borderRadius: 5,
+  color: "#31435e",
+  background: "#f9fbfd",
+  padding: "7px 8px",
+  cursor: "pointer",
+  textAlign: "left",
+});
+export const decisionItem = style({
+  display: "flex",
+  minWidth: 0,
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  border: "1px solid #f0d0cb",
+  borderRadius: 5,
+  color: "#8f342e",
+  background: "#fff5f3",
+  padding: "7px 8px",
+});
+export const decisionTitle = style({
+  overflow: "hidden",
+  fontSize: 10,
+  fontWeight: 900,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+export const decisionDetail = style({
+  overflow: "hidden",
+  color: "#77859a",
+  fontSize: 9,
+  fontWeight: 700,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+export const decisionValue = style({ flex: "0 0 auto", fontSize: 10, fontWeight: 900 });
+export const decisionEmpty = style({
+  color: "#8a97a9",
+  fontSize: 10,
+  fontWeight: 700,
+  padding: "8px 2px",
+});
 export const primaryAction = style({
   height: 34,
   border: 0,
