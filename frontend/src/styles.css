@@ -1157,6 +1157,192 @@ button {
   color: #c4521d;
 }
 
+.weekly-progress-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.weekly-progress-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.weekly-progress-heading > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.weekly-progress-heading h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.weekly-progress-heading p,
+.weekly-progress-meta span,
+.weekly-progress-note {
+  margin: 0;
+  color: #728096;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.weekly-progress-meta {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.weekly-progress-meta strong {
+  color: #1649bf;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.weekly-progress-table-wrap {
+  max-height: 430px;
+  overflow: auto;
+  border: 1px solid #edf1f6;
+  border-radius: 7px;
+}
+
+.weekly-progress-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #25334a;
+  font-size: 12px;
+}
+
+.weekly-progress-table th,
+.weekly-progress-table td {
+  height: 44px;
+  border-bottom: 1px solid #edf1f6;
+  padding: 7px 10px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.weekly-progress-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 34px;
+  color: #66758b;
+  background: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weekly-progress-table thead th:first-child,
+.weekly-progress-table tbody th {
+  text-align: left;
+}
+
+.weekly-progress-table tbody tr:last-child th,
+.weekly-progress-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.weekly-progress-table tbody tr.has-delay {
+  background: #fffaf6;
+}
+
+.weekly-progress-table tbody th {
+  width: 190px;
+  font-weight: 850;
+}
+
+.weekly-progress-table tbody th strong,
+.weekly-progress-table tbody th small {
+  display: block;
+}
+
+.weekly-progress-table tbody th strong {
+  color: #25334a;
+  font-size: 12px;
+}
+
+.weekly-progress-table tbody th small {
+  margin-top: 2px;
+  color: #8a96a7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.weekly-progress-completed {
+  color: #008d8b;
+  font-weight: 900;
+}
+
+.weekly-progress-delayed {
+  color: #c4521d;
+  font-weight: 900;
+}
+
+.weekly-progress-cell {
+  display: grid;
+  grid-template-columns: 38px minmax(78px, 1fr) 62px;
+  align-items: center;
+  gap: 7px;
+  min-width: 250px;
+  text-align: left;
+}
+
+.weekly-progress-cell > span:first-child {
+  color: #1649bf;
+  font-weight: 900;
+  text-align: right;
+}
+
+.weekly-progress-cell small {
+  color: #8a96a7;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.weekly-progress-meter {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5ebf4;
+}
+
+.weekly-progress-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2864ea, #11a7a4);
+}
+
+.weekly-progress-toggle {
+  justify-self: start;
+  border: 0;
+  color: #1649bf;
+  background: transparent;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weekly-progress-toggle:hover,
+.weekly-progress-toggle:focus-visible {
+  color: #0c3ca4;
+  text-decoration: underline;
+  outline: 0;
+}
+
+.weekly-progress-note {
+  display: block;
+  line-height: 1.5;
+}
+
 .analysis-main-grid,
 .analysis-bottom-grid {
   display: grid;

@@ -9,6 +9,7 @@ import type {
 import { getProgressStats } from "../../../lib/schedule";
 import { BurndownChart } from "../../status/components/BurndownChart";
 import { ScheduleChangeAnalysis } from "./ScheduleChangeAnalysis";
+import { WeeklyProgressSummary } from "./WeeklyProgressSummary";
 
 type AnalysisPanelProps = {
   calendar: CalendarDefinition;
@@ -91,6 +92,12 @@ export function AnalysisPanel({
         <AnalysisKpi label="日程変更" value={`${scheduleChanges.length}件`} detail={`${changedTaskCount}タスクに変更`} tone={scheduleChanges.length > 0 ? "orange" : "teal"} />
         <AnalysisKpi label="要確認タスク" value={`${riskTasks.length}件`} detail={`遅延 ${delayedTasks.length} / 前提未完了 ${blockedTasks.length}`} tone={riskTasks.length > 0 ? "orange" : "teal"} />
       </div>
+
+      <WeeklyProgressSummary
+        projectEnd={project.rangeEnd}
+        projectStart={project.rangeStart}
+        tasks={tasks}
+      />
 
       <div className="analysis-main-grid">
         <BurndownChart
