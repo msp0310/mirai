@@ -12,6 +12,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:performance": "playwright test tests/performance",
+    "performance:fixture": "node scripts/generate-performance-fixture.mjs",
     "test:types": "tsc -p tests/tsconfig.json --noEmit"
   },
   "devDependencies": {
