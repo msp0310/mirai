@@ -96,6 +96,8 @@ export const navGroupLabel = style({
 
 export const navItem = style({
   display: "grid",
+  width: "100%",
+  boxSizing: "border-box",
   minHeight: 50,
   placeItems: "center",
   gap: 4,
@@ -108,6 +110,7 @@ export const navItem = style({
   "@media": {
     "(max-width: 760px)": {
       flex: "0 0 64px",
+      width: "64px",
     },
   },
 });
@@ -120,9 +123,11 @@ export const navItemActive = style({
 
 export const navItemWithChildren = style({
   position: "relative",
+  width: "100%",
   "@media": {
     "(max-width: 760px)": {
       flex: "0 0 64px",
+      width: "64px",
     },
   },
 });
