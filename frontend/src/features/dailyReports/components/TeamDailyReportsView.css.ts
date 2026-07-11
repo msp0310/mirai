@@ -140,6 +140,24 @@ export const openButton = style({
 });
 export const rowActions = style({ display: "flex", alignItems: "center", gap: 4 });
 export const commentRow = style({ background: "#f5f8fd" });
+export const reportReview = style({ display: "grid", gap: 12, padding: "8px 4px 10px" });
+export const reviewContent = style({
+  display: "grid",
+  gridTemplateColumns: "1.4fr 1fr 1fr",
+  gap: 8,
+});
+export const reviewEntries = style({
+  display: "grid",
+  gap: 5,
+  borderTop: "1px solid #dfe6f0",
+  paddingTop: 9,
+});
+export const reviewComments = style({
+  display: "grid",
+  gap: 6,
+  borderTop: "1px solid #dfe6f0",
+  paddingTop: 9,
+});
 export const quickComment = style({
   display: "grid",
   gridTemplateColumns: "180px minmax(0, 1fr) auto",
@@ -270,3 +288,51 @@ globalStyle(`${quickComment} > button`, {
   cursor: "pointer",
 });
 globalStyle(`${quickComment} > button:disabled`, { cursor: "default", opacity: 0.45 });
+globalStyle(`${reviewContent} > section`, {
+  minWidth: 0,
+  minHeight: 92,
+  overflow: "auto",
+  border: "1px solid #dde5ef",
+  borderRadius: 6,
+  background: "#fff",
+  padding: "9px 10px",
+});
+globalStyle(`${reviewContent} > section > strong`, {
+  display: "block",
+  marginBottom: 6,
+  color: "#40516a",
+  fontSize: 9,
+});
+globalStyle(`${reviewContent} p`, { margin: "3px 0", fontSize: 10, lineHeight: 1.5 });
+globalStyle(`${reviewEntries} > strong, ${reviewComments} > strong`, {
+  color: "#40516a",
+  fontSize: 9,
+});
+globalStyle(`${reviewEntries} > div`, {
+  display: "grid",
+  gridTemplateColumns: "180px minmax(0, 1fr) 50px",
+  alignItems: "center",
+  gap: 8,
+  borderRadius: 5,
+  background: "#fff",
+  padding: "7px 9px",
+});
+globalStyle(`${reviewEntries} span`, { color: "#53657e", fontSize: 9, fontWeight: 800 });
+globalStyle(`${reviewEntries} p`, { margin: 0, color: "#33435b", fontSize: 10 });
+globalStyle(`${reviewEntries} b`, { color: "#2057c6", fontSize: 10, textAlign: "right" });
+globalStyle(`${reviewComments} article`, {
+  display: "grid",
+  gap: 4,
+  borderRadius: 5,
+  background: "#fff",
+  padding: "8px 9px",
+});
+globalStyle(`${reviewComments} article > header`, {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  color: "#53657e",
+  fontSize: 8,
+});
+globalStyle(`${reviewComments} time`, { color: "#8995a6" });
+globalStyle(`${reviewComments} p`, { margin: "2px 0", fontSize: 10, lineHeight: 1.5 });

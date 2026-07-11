@@ -300,6 +300,29 @@ export const message = style({
   fontSize: 10,
   fontWeight: 800,
 });
+export const dialogOverlay = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 100,
+  display: "grid",
+  placeItems: "center",
+  background: "rgba(20, 31, 49, 0.38)",
+  padding: 20,
+});
+export const deleteDialog = style({
+  display: "grid",
+  width: "min(430px, 100%)",
+  overflow: "hidden",
+  border: "1px solid #d7e0ec",
+  borderRadius: 7,
+  background: "#fff",
+  boxShadow: "0 20px 55px rgba(20, 34, 55, 0.22)",
+});
+export const deleteConfirmButton = style({
+  color: "#fff !important",
+  borderColor: "#d64747 !important",
+  background: "#d64747 !important",
+});
 
 globalStyle(`${iconButton} > svg`, { width: 15, height: 15 });
 globalStyle(`${viewSwitch} > button`, {
@@ -358,3 +381,57 @@ globalStyle(`${comment} > header`, {
   fontSize: 9,
 });
 globalStyle(`${comment} time`, { color: "#8a96a8" });
+globalStyle(`${deleteDialog} > header`, {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  borderBottom: "1px solid #e4e9f0",
+  padding: "14px 16px",
+});
+globalStyle(`${deleteDialog} > header > div`, { display: "grid", gap: 3 });
+globalStyle(`${deleteDialog} > header strong`, { color: "#24334c", fontSize: 13 });
+globalStyle(`${deleteDialog} > header span`, { color: "#7a8799", fontSize: 9, fontWeight: 700 });
+globalStyle(`${deleteDialog} > header button`, {
+  display: "grid",
+  width: 28,
+  height: 28,
+  placeItems: "center",
+  border: 0,
+  color: "#66758b",
+  background: "transparent",
+  cursor: "pointer",
+});
+globalStyle(`${deleteDialog} > header svg`, { width: 16, height: 16 });
+globalStyle(`${deleteDialog} > section`, {
+  display: "grid",
+  gridTemplateColumns: "28px minmax(0, 1fr)",
+  gap: 10,
+  margin: 14,
+  border: "1px solid #f0c7c7",
+  borderRadius: 6,
+  color: "#8f3030",
+  background: "#fff7f7",
+  padding: 12,
+});
+globalStyle(`${deleteDialog} > section > svg`, { width: 20, height: 20 });
+globalStyle(`${deleteDialog} > section strong`, { fontSize: 10 });
+globalStyle(`${deleteDialog} > section p`, { margin: "4px 0 0", color: "#765b5b", fontSize: 9 });
+globalStyle(`${deleteDialog} > footer`, {
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: 7,
+  borderTop: "1px solid #e4e9f0",
+  padding: "11px 14px",
+});
+globalStyle(`${deleteDialog} > footer button`, {
+  height: 32,
+  border: "1px solid #ccd7e5",
+  borderRadius: 6,
+  color: "#4d5e76",
+  background: "#fff",
+  padding: "0 12px",
+  fontSize: 9,
+  fontWeight: 900,
+  cursor: "pointer",
+});

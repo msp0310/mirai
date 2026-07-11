@@ -1,4 +1,11 @@
-import { EyeIcon, PencilSquareIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  EyeIcon,
+  ExclamationTriangleIcon,
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "../../../data/authRepository";
 import {
@@ -305,6 +312,7 @@ function DailyReportEditor({
   report: DailyReport;
   schedules: ScheduleSnapshot[];
 }) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const update = (patch: Partial<DailyReport>) => onChange({ ...report, ...patch });
   const updateEntry = (entryId: string, patch: Partial<DailyReportEntry>) =>
     update({
@@ -361,7 +369,7 @@ function DailyReportEditor({
             aria-label="日報を削除"
             className={styles.iconButton}
             disabled={readOnly}
-            onClick={onDelete}
+            onClick={() => setDeleteConfirmOpen(true)}
             type="button"
           >
             <TrashIcon />
@@ -574,6 +582,51 @@ function DailyReportEditor({
           </section>
         </aside>
       </div>
+      {deleteConfirmOpen ? (
+        <div className={styles.dialogOverlay} role="presentation">
+          <aside
+            aria-label="日報の削除確認"
+            aria-modal="true"
+            className={styles.deleteDialog}
+            role="dialog"
+          >
+            <header>
+              <div>
+                <strong>日報を削除しますか？</strong>
+                <span>
+                  {formatReportDate(report.date)} /{" "}
+                  {members.find((member) => member.id === report.memberId)?.name}
+                </span>
+              </div>
+              <button aria-label="閉じる" onClick={() => setDeleteConfirmOpen(false)} type="button">
+                <XMarkIcon />
+              </button>
+            </header>
+            <section>
+              <ExclamationTriangleIcon />
+              <div>
+                <strong>案件実績も同時に取り消されます</strong>
+                <p>日報に紐づく作業時間とコメントは元に戻せません。</p>
+              </div>
+            </section>
+            <footer>
+              <button onClick={() => setDeleteConfirmOpen(false)} type="button">
+                キャンセル
+              </button>
+              <button
+                className={styles.deleteConfirmButton}
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  onDelete();
+                }}
+                type="button"
+              >
+                削除する
+              </button>
+            </footer>
+          </aside>
+        </div>
+      ) : null}
     </article>
   );
 }

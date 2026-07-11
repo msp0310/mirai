@@ -12,6 +12,7 @@ import { Fragment, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import type { DailyReport, Member } from "../../../types/schedule";
+import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import * as styles from "./TeamDailyReportsView.css";
 
 type TeamDailyReportsViewProps = {
@@ -283,24 +284,62 @@ export function TeamDailyReportsView({
                   {report && commentReportId === report.id ? (
                     <tr className={styles.commentRow}>
                       <td colSpan={7}>
-                        <div className={styles.quickComment}>
-                          <div>
-                            <strong>{member.name}の日報へコメント</strong>
-                            <span>Markdownで入力できます</span>
+                        <div className={styles.reportReview}>
+                          <div className={styles.reviewContent}>
+                            <section>
+                              <strong>本日のまとめ</strong>
+                              <MarkdownPreview content={report.summary || "_未入力_"} />
+                            </section>
+                            <section>
+                              <strong>課題・相談事項</strong>
+                              <MarkdownPreview content={report.blockers || "_なし_"} />
+                            </section>
+                            <section>
+                              <strong>翌日の予定</strong>
+                              <MarkdownPreview content={report.nextPlan || "_未入力_"} />
+                            </section>
                           </div>
-                          <textarea
-                            aria-label={`${member.name}へのコメント`}
-                            onChange={(event) => setQuickComment(event.target.value)}
-                            placeholder="確認事項やフィードバックを入力"
-                            value={quickComment}
-                          />
-                          <button
-                            disabled={!quickComment.trim() || commenting}
-                            onClick={submitComment}
-                            type="button"
-                          >
-                            コメントを送信
-                          </button>
+                          <div className={styles.reviewEntries}>
+                            <strong>作業明細</strong>
+                            {report.entries.map((entry) => (
+                              <div key={entry.id}>
+                                <span>{projectName(entry.projectId, schedules)}</span>
+                                <p>{entry.summary}</p>
+                                <b>{entry.hours}h</b>
+                              </div>
+                            ))}
+                          </div>
+                          <div className={styles.reviewComments}>
+                            <strong>コメント {report.comments.length}件</strong>
+                            {report.comments.map((item) => (
+                              <article key={item.id}>
+                                <header>
+                                  <strong>{item.authorName}</strong>
+                                  <time>{new Date(item.createdAt).toLocaleString("ja-JP")}</time>
+                                </header>
+                                <MarkdownPreview content={item.body} />
+                              </article>
+                            ))}
+                          </div>
+                          <div className={styles.quickComment}>
+                            <div>
+                              <strong>{member.name}の日報へコメント</strong>
+                              <span>内容を確認してフィードバックできます</span>
+                            </div>
+                            <textarea
+                              aria-label={`${member.name}へのコメント`}
+                              onChange={(event) => setQuickComment(event.target.value)}
+                              placeholder="確認事項やフィードバックをMarkdownで入力"
+                              value={quickComment}
+                            />
+                            <button
+                              disabled={!quickComment.trim() || commenting}
+                              onClick={submitComment}
+                              type="button"
+                            >
+                              コメントを送信
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>

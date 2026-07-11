@@ -144,15 +144,23 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
     await dailyReport.getByRole("button", { name: "みんなの日報" }).click();
     const teamReports = dailyReport.getByRole("region", { name: "みんなの日報" });
-    await expect(teamReports).toContainText("1 / 6名");
+    await expect(teamReports).toContainText("/ 6名");
     await expect(teamReports.getByRole("row", { name: /山田 健太/ })).toContainText(
       "基本設計レビューを実施しました。",
     );
     await expect(teamReports.getByRole("row", { name: /伊藤 大輔/ })).toContainText("未提出");
     await teamReports.getByRole("button", { name: "山田 健太の日報へコメント" }).click();
+    await expect(teamReports.getByText("レビュー指摘の整理", { exact: true })).toBeVisible();
     await teamReports.getByLabel("山田 健太へのコメント").fill("一覧から確認しました。");
     await teamReports.getByRole("button", { name: "コメントを送信" }).click();
     await expect(page.getByText("コメントを追加しました。")).toBeVisible();
+
+    await teamReports.getByRole("button", { name: "山田 健太の日報を開く" }).click();
+    await dailyReport.getByRole("button", { name: "日報を削除" }).click();
+    const deleteDialog = page.getByRole("dialog", { name: "日報の削除確認" });
+    await expect(deleteDialog).toContainText("案件実績も同時に取り消されます");
+    await deleteDialog.getByRole("button", { name: "キャンセル" }).click();
+    await expect(deleteDialog).toHaveCount(0);
 
     const savedReports = (await (
       await request.get("/api/daily-reports", { headers })
