@@ -518,6 +518,12 @@ export function GanttWorkbench({
     scrollTimelineToLeft(slotIndex * dayWidth - body.clientWidth * align);
   }
 
+  function focusTimelineTaskStart(taskId: string) {
+    const task = tasks.find((item) => item.id === taskId);
+    if (!task) return;
+    scrollTimelineToSlot(getTimelineSlotIndex(task.start, timeline), 0.14);
+  }
+
   function handleTimelineNavigate(direction: -1 | 1) {
     const body = timelineBodyRef.current;
     if (!body) return;
@@ -1045,6 +1051,7 @@ export function GanttWorkbench({
             onTaskContextMenu={openTaskContextMenu}
             onMoveTask={onMoveTask}
             onMoveSelectedTasks={onBulkDateShift}
+            onFocusTaskStart={focusTimelineTaskStart}
             onOpenTaskInspector={onOpenTaskInspector}
             onResizeTask={onResizeTask}
             onSelectTask={onSelectTask}

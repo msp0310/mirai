@@ -34,6 +34,7 @@ type TimelineGridProps = {
   onTaskContextMenu: (taskId: string, event: MouseEvent<HTMLElement>) => void;
   onMoveTask: (taskId: string, deltaDays: number) => void;
   onMoveSelectedTasks: (deltaDays: number) => void;
+  onFocusTaskStart: (taskId: string) => void;
   onOpenTaskInspector: (taskId: string) => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSelectTask: (taskId: string, options?: { additive?: boolean; range?: boolean }) => void;
@@ -62,6 +63,7 @@ export function TimelineGrid({
   onTaskContextMenu,
   onMoveTask,
   onMoveSelectedTasks,
+  onFocusTaskStart,
   onOpenTaskInspector,
   onResizeTask,
   onSelectTask,
@@ -172,6 +174,7 @@ export function TimelineGrid({
               key={task.id}
               onMoveTask={onMoveTask}
               onMoveSelectedTasks={onMoveSelectedTasks}
+              onFocusTaskStart={() => onFocusTaskStart(task.id)}
               onResizeTask={onResizeTask}
               onContextMenu={(event) => onTaskContextMenu(task.id, event)}
               onOpenInspector={() => onOpenTaskInspector(task.id)}
@@ -252,6 +255,7 @@ type TimelineRowProps = {
   members: Member[];
   onMoveTask: (taskId: string, deltaDays: number) => void;
   onMoveSelectedTasks: (deltaDays: number) => void;
+  onFocusTaskStart: () => void;
   onContextMenu: (event: MouseEvent<HTMLElement>) => void;
   onOpenInspector: () => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
@@ -272,6 +276,7 @@ function TimelineRow({
   members,
   onMoveTask,
   onMoveSelectedTasks,
+  onFocusTaskStart,
   onContextMenu,
   onOpenInspector,
   onResizeTask,
@@ -501,9 +506,15 @@ function TimelineRow({
       applyPointerPosition(latestClientX);
       updateAutoScroll();
     };
+    const suppressFollowingClick = () => {
+      element.dataset.suppressTaskClick = "true";
+      window.setTimeout(() => delete element.dataset.suppressTaskClick, 0);
+    };
     const handleUp = () => {
+      const didDrag = active;
       cleanup();
-      if (!active || latestDelta === 0) return;
+      if (didDrag) suppressFollowingClick();
+      if (!didDrag || latestDelta === 0) return;
       if (mode === "move") {
         const deltaDays = getDateDeltaForTimeUnit(task.start, timeUnit, latestDelta);
         if (moveSelectionTogether) onMoveSelectedTasks(deltaDays);
@@ -519,6 +530,7 @@ function TimelineRow({
     const handleCancel = (keyEvent: globalThis.KeyboardEvent) => {
       if (keyEvent.key !== "Escape") return;
       keyEvent.preventDefault();
+      suppressFollowingClick();
       cleanup();
     };
 
@@ -535,7 +547,12 @@ function TimelineRow({
   }
 
   function handleTaskClick(event: MouseEvent<HTMLElement>) {
-    onSelect(getSelectionOptions(event));
+    if (event.currentTarget.dataset.suppressTaskClick === "true") return;
+    const selectionOptions = getSelectionOptions(event);
+    onSelect(selectionOptions);
+    if (!selectionOptions.additive && !selectionOptions.range && event.detail === 1) {
+      onFocusTaskStart();
+    }
     if (event.detail >= 2) {
       handleOpenInspector(event);
     }

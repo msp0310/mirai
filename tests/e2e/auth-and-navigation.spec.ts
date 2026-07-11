@@ -137,7 +137,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     );
   });
 
-  test("ガントバーの選択は位置を維持しドラッグをEscで取り消せる", async ({ page }) => {
+  test("ガントバーの選択で開始日に移動しドラッグをEscで取り消せる", async ({ page }) => {
     await login(page);
     const projectCard = page.locator("article.portfolio-card").filter({
       hasText: "販売管理システム刷新",
@@ -148,6 +148,10 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     const timelineBody = page.locator(".timeline-body");
     const taskBar = page.locator('.timeline-canvas .gantt-bar[data-task-id="db-if-design"]');
     await expect(taskBar).toBeVisible();
+    await timelineBody.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    await expect.poll(() => timelineBody.evaluate((element) => element.scrollLeft)).toBe(0);
 
     const initialBox = await taskBar.boundingBox();
     if (!initialBox) throw new Error("操作対象のガントバーが見つかりません。");
@@ -155,30 +159,39 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     const centerX = initialBox.x + initialBox.width / 2;
     const centerY = initialBox.y + initialBox.height / 2;
 
-    // クリック時の手ぶれではドラッグを開始せず、表示位置も変えない。
+    // クリック時の手ぶれではドラッグせず、開始日を左側の基準位置へ寄せる。
     await page.mouse.move(centerX, centerY);
     await page.mouse.down();
     await page.mouse.move(centerX + 3, centerY);
     await page.mouse.up();
 
     await expect(taskBar).not.toHaveClass(/is-dragging/);
-    const selectedBox = await taskBar.boundingBox();
-    expect(selectedBox?.x).toBeCloseTo(initialBox.x, 0);
     await expect
       .poll(() => timelineBody.evaluate((element) => element.scrollLeft))
-      .toBe(initialScrollLeft);
+      .toBeGreaterThan(initialScrollLeft);
+    const bodyBoxAfterSelection = await timelineBody.boundingBox();
+    const selectedBox = await taskBar.boundingBox();
+    if (!bodyBoxAfterSelection || !selectedBox) {
+      throw new Error("選択後の開始日位置を取得できません。");
+    }
+    expect(selectedBox.x - bodyBoxAfterSelection.x).toBeCloseTo(
+      bodyBoxAfterSelection.width * 0.14 + 7,
+      0,
+    );
 
     // 意図して動かし始めても、Escで確定せず元の位置へ戻せる。
-    await page.mouse.move(centerX, centerY);
+    const selectedCenterX = selectedBox.x + selectedBox.width / 2;
+    const selectedCenterY = selectedBox.y + selectedBox.height / 2;
+    await page.mouse.move(selectedCenterX, selectedCenterY);
     await page.mouse.down();
-    await page.mouse.move(centerX + 18, centerY);
+    await page.mouse.move(selectedCenterX + 18, selectedCenterY);
     await expect(taskBar).toHaveClass(/is-dragging/);
     await page.keyboard.press("Escape");
     await page.mouse.up();
 
     await expect(taskBar).not.toHaveClass(/is-dragging/);
     const cancelledBox = await taskBar.boundingBox();
-    expect(cancelledBox?.x).toBeCloseTo(initialBox.x, 0);
+    expect(cancelledBox?.x).toBeCloseTo(selectedBox.x, 0);
 
     const bodyBox = await timelineBody.boundingBox();
     const scrollableBarBox = await taskBar.boundingBox();
