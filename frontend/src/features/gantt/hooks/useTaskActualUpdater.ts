@@ -1,8 +1,8 @@
 import { type Dispatch, type SetStateAction, useCallback } from "react";
 
-import { mergeScheduleIntoWorkspace } from "../../../app/projectLoading";
 import { apiScheduleRepository } from "../../../data/apiScheduleRepository";
 import type { ScheduleWorkspace } from "../../../data/scheduleRepository";
+import { mergeScheduleIntoWorkspace } from "../../../lib/scheduleWorkspace";
 import type { ScheduleTask } from "../../../types/schedule";
 
 type UseTaskActualUpdaterOptions = {

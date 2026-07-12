@@ -204,6 +204,9 @@ docker run --rm \
 | フロントエンド型検査     | `npm run check`                            |
 | フロントエンド本番ビルド | `npm run build`                            |
 | 静的検査                 | `npm run lint`                             |
+| 全テスト                 | `npm run test:all`                         |
+| Unit                     | `npm run test:unit`                        |
+| API統合                  | `npm run test:integration`                 |
 | E2E                      | `npm run test:e2e`                         |
 | E2E UIモード             | `npm run test:e2e:ui`                      |
 | 性能テスト               | `npm run test:performance`                 |

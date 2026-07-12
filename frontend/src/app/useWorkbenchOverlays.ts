@@ -1,9 +1,6 @@
 import { atom, useAtom } from "jotai";
 
-import type {
-  PendingProjectImport,
-  PendingTaskCsvImport,
-} from "../features/projects/types/projectImport";
+import type { PendingProjectImport, PendingTaskCsvImport } from "../types/projectImport";
 
 const showCreateSheetAtom = atom(false);
 const showProjectCreateSheetAtom = atom(false);

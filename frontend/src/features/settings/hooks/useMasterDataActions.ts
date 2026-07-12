@@ -3,21 +3,8 @@ import { type Dispatch, type SetStateAction, useCallback } from "react";
 import { apiScheduleRepository } from "../../../data/apiScheduleRepository";
 import type { ProjectSummary, ScheduleWorkspace } from "../../../data/scheduleRepository";
 import type { ToastInput } from "../../../hooks/useToastQueue";
-import type {
-  ActivityCategory,
-  ActivityTone,
-  CalendarDefinition,
-  Member,
-  Team,
-} from "../../../types/schedule";
-
-type ActivityInput = {
-  category: ActivityCategory;
-  detail: string;
-  taskId?: string;
-  title: string;
-  tone?: ActivityTone;
-};
+import type { ActivityInput } from "../../../types/activity";
+import type { CalendarDefinition, Member, Team } from "../../../types/schedule";
 
 type UseMasterDataActionsOptions = {
   activeTeam?: Team | null;

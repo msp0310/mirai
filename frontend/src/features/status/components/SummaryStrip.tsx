@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { BurndownChart } from "../../../components/charts/BurndownChart";
 import {
   daysInclusive,
   formatDateWithWeekday,
@@ -16,7 +17,6 @@ import type {
   ResourceRowModel,
   ScheduleTask,
 } from "../../../types/schedule";
-import { BurndownChart } from "./BurndownChart";
 
 type SummaryStripProps = {
   calendar: CalendarDefinition;

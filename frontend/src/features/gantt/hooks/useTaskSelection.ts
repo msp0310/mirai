@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
-import type { TaskFocusRequest, TaskSelectionOptions } from "../../../app/appTypes";
 import type { TaskInspectorFocusTarget } from "../../../types/schedule";
+import type { TaskFocusRequest, TaskSelectionOptions } from "../types/ganttState";
 
 type SelectionRow = { id: string };
 

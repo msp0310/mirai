@@ -3,8 +3,9 @@ import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import type { ViewTab } from "../components/layout/ViewTabs";
 import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import type { ProjectSummary, ScheduleWorkspace } from "../data/scheduleRepository";
+import { mergeScheduleIntoWorkspace } from "../lib/scheduleWorkspace";
 import type { ResourceScope } from "../types/schedule";
-import { findMissingProjectIds, mergeScheduleIntoWorkspace } from "./projectLoading";
+import { findMissingProjectIds } from "./projectLoading";
 
 type UseTeamScheduleLoadingOptions = {
   activeTab: ViewTab;

@@ -18,6 +18,14 @@ export const projectLifecycleOptions: {
 export function getProjectLifecycleStatus(project: Project): ProjectLifecycleStatus {
   return project.lifecycleStatus ?? "inProgress";
 }
+/** 通常の運用画面からアーカイブ済みプロジェクトを除外します。 */
+export function isProjectArchived(project: Project) {
+  return project.status === "archived";
+}
+/** 内部のライフサイクル値を、画面表示用ラベルへ変換します。 */
+export function getOperationalProjectStatus(project: Project) {
+  return projectLifecycleLabels[getProjectLifecycleStatus(project)];
+}
 export function getProjectMemberIds(project: Project, team?: Team) {
   return project.memberIds ?? team?.memberIds ?? [];
 }

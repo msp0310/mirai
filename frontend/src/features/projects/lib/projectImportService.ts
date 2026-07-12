@@ -6,12 +6,12 @@ import {
 } from "../../../data/scheduleImportExport";
 import type { ScheduleSnapshot, ScheduleWorkspace } from "../../../data/scheduleRepository";
 import { normalizeSummaryTasks } from "../../../lib/taskOperations";
-import type { Member, Project, ScheduleTask, Team } from "../../../types/schedule";
 import type {
   PendingProjectImport,
   PendingTaskCsvImport,
   TaskCsvImportOptions,
-} from "../types/projectImport";
+} from "../../../types/projectImport";
+import type { Member, Project, ScheduleTask, Team } from "../../../types/schedule";
 
 type CreatePendingTaskImportInput = {
   calendar: ScheduleSnapshot["calendar"];

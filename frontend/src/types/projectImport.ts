@@ -3,8 +3,8 @@ import type {
   ProjectImportValidation,
   TaskCsvImportData,
   TaskCsvImportDraft,
-} from "../../../data/scheduleImportExport";
-import type { Member } from "../../../types/schedule";
+} from "../data/scheduleImportExport";
+import type { Member } from "./schedule";
 
 export type PendingProjectImport = {
   data: ProjectImportData;

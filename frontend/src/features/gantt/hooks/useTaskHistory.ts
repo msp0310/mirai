@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 
-import type { TaskHistory } from "../../../app/appTypes";
 import { normalizeSummaryTasks } from "../../../lib/taskOperations";
 import type { ActivityCategory, ActivityTone, ScheduleTask } from "../../../types/schedule";
+import type { TaskHistory } from "../types/ganttState";
 
 type UseTaskHistoryOptions = {
   initialHistories: Record<string, TaskHistory>;

@@ -8,8 +8,8 @@ import {
   getWorkingDays,
   parseDate,
   toDateKey,
-} from "../../../lib/schedule";
-import type { CalendarDefinition, ScheduleTask } from "../../../types/schedule";
+} from "../../lib/schedule";
+import type { CalendarDefinition, ScheduleTask } from "../../types/schedule";
 
 type BurndownChartProps = {
   calendar: CalendarDefinition;

@@ -10,8 +10,8 @@ import {
   taskCsvColumnLabels,
   taskCsvRequiredColumns,
 } from "../../../data/scheduleImportExport";
+import type { TaskCsvImportOptions } from "../../../types/projectImport";
 import type { Member, Project } from "../../../types/schedule";
-import type { TaskCsvImportOptions } from "../../projects/types/projectImport";
 
 type TaskCsvImportSheetProps = {
   draft: TaskCsvImportDraft;

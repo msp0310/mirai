@@ -1,17 +1,6 @@
-export type TourId = "basic" | "gantt" | "member" | "planner" | "admin";
+import type { TourId, TourScenario } from "../../types/tour";
 
-export type TourStep = {
-  body: string;
-  selector: string;
-  title: string;
-};
-
-export type TourScenario = {
-  description: string;
-  id: TourId;
-  steps: TourStep[];
-  title: string;
-};
+export type { TourId, TourScenario } from "../../types/tour";
 
 export const tourScenarios: Record<TourId, TourScenario> = {
   basic: {

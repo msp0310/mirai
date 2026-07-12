@@ -1,6 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import type { TaskClipboard } from "../../../app/appTypes";
 import { statusLabels } from "../../../lib/schedule";
 import {
   type TaskInsertionResult,
@@ -35,6 +34,7 @@ import type {
   TaskAssigneeAllocation,
   TaskStatus,
 } from "../../../types/schedule";
+import type { TaskClipboard } from "../types/ganttState";
 
 type CollapsedIdUpdate = Set<string> | ((current: Set<string>) => Set<string>);
 

@@ -1,8 +1,9 @@
 import type { ViewTab } from "../components/layout/ViewTabs";
 import { loadLocalScheduleDraft } from "../data/localScheduleStorage";
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
+import type { TaskHistory } from "../features/gantt/types/ganttState";
 import type { ConfigChangeReview } from "../lib/changeReview";
-import { getProjectLifecycleStatus, projectLifecycleLabels } from "../lib/projects";
+import { isProjectArchived } from "../lib/projects";
 import { defaultResourceDisplaySettings } from "../lib/resourceDisplaySettings";
 import { addDays, parseDate, toDateKey } from "../lib/schedule";
 import type { ScheduleHealthIssue } from "../lib/scheduleHealth";
@@ -16,7 +17,7 @@ import type {
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../types/schedule";
-import type { AppInitialState, PersistableDraft, TaskHistory } from "./appTypes";
+import type { AppInitialState, PersistableDraft } from "./appTypes";
 import { getMiraiRouteState, getProjectIdFromCurrentRoute } from "./routing/miraiRouteState";
 
 /** ローカル表示設定がない場合に使う既定のフィルター状態です。 */
@@ -222,16 +223,6 @@ export function createLocalDraftChangeSummary(
   ].filter((label): label is string => label !== null);
 
   return { count: labels.length, detail: labels.join(" / "), labels };
-}
-
-/** 通常の運用画面からアーカイブ済みプロジェクトを除外します。 */
-export function isProjectArchived(project: Project) {
-  return project.status === "archived";
-}
-
-/** 内部のライフサイクル値を、シェルで使う日本語ラベルへ変換します。 */
-export function getOperationalProjectStatus(project: Project) {
-  return projectLifecycleLabels[getProjectLifecycleStatus(project)];
 }
 
 /** Reactの各状態から、保存対象となる唯一の正規ドラフトを作成します。 */

@@ -2,7 +2,7 @@ import { MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/outline
 import { useEffect, useMemo, useState } from "react";
 
 import { type HelpDocument, type HelpDocumentId, helpDocuments } from "../../../help/helpDocuments";
-import { type TourId, tourScenarios } from "../../onboarding/tourScenarios";
+import type { TourId, TourScenario } from "../../../types/tour";
 
 import * as styles from "./HelpPage.css";
 
@@ -13,13 +13,13 @@ type HelpBlock =
   | { text: string; type: "paragraph" };
 
 type HelpPageProps = {
-  availableTourIds: TourId[];
+  availableTours: TourScenario[];
   initialDocumentId: HelpDocumentId;
   onStartTour: (tourId: TourId) => void;
 };
 
 /** 操作方法と製品の補足情報を表示するヘルプページです。 */
-export function HelpPage({ availableTourIds, initialDocumentId, onStartTour }: HelpPageProps) {
+export function HelpPage({ availableTours, initialDocumentId, onStartTour }: HelpPageProps) {
   const [activeId, setActiveId] = useState<HelpDocumentId>(initialDocumentId);
   const [query, setQuery] = useState("");
 
@@ -69,21 +69,18 @@ export function HelpPage({ availableTourIds, initialDocumentId, onStartTour }: H
           <strong>操作ツアー</strong>
         </div>
         <div className={styles.tourList}>
-          {availableTourIds.map((tourId) => {
-            const scenario = tourScenarios[tourId];
-            return (
-              <button
-                className={styles.tourButton}
-                key={tourId}
-                onClick={() => onStartTour(tourId)}
-                title={scenario.description}
-                type="button"
-              >
-                <PlayCircleIcon />
-                <span>{scenario.title}</span>
-              </button>
-            );
-          })}
+          {availableTours.map((scenario) => (
+            <button
+              className={styles.tourButton}
+              key={scenario.id}
+              onClick={() => onStartTour(scenario.id)}
+              title={scenario.description}
+              type="button"
+            >
+              <PlayCircleIcon />
+              <span>{scenario.title}</span>
+            </button>
+          ))}
         </div>
       </section>
 

@@ -2,8 +2,8 @@ import { useMemo } from "react";
 
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import type { TourId } from "../features/onboarding/tourScenarios";
-import { isProjectArchived } from "./appState";
-import { createProjectSummaryFromSnapshot } from "./workbenchHelpers";
+import { isProjectArchived } from "../lib/projects";
+import { createProjectSummaryFromSnapshot } from "../lib/projectSummary";
 
 type UseWorkbenchProjectContextOptions = {
   activeProjectId: string;

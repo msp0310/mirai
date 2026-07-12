@@ -7,7 +7,7 @@ import type {
 } from "../../frontend/src/data/scheduleRepository";
 import { createProjectExportFile } from "../../frontend/src/features/projects/lib/projectExportService";
 import { prepareProjectImport } from "../../frontend/src/features/projects/lib/projectImportService";
-import type { PendingProjectImport } from "../../frontend/src/features/projects/types/projectImport";
+import type { PendingProjectImport } from "../../frontend/src/types/projectImport";
 
 const schedule: ScheduleSnapshot = {
   calendar,

@@ -2,10 +2,10 @@ import { useMemo } from "react";
 
 import type { ScheduleSnapshot } from "../data/scheduleRepository";
 import { isMemberActive } from "../lib/members";
+import { isProjectArchived } from "../lib/projects";
 import { buildCrossProjectResourceRows } from "../lib/resourceCalculations";
 import { buildResourceMatrix, buildTimeline, buildWeekColumns } from "../lib/schedule";
 import type { Member, ResourceScope, ScheduleTask, Team, TimelineColumn } from "../types/schedule";
-import { isProjectArchived } from "./appState";
 
 type UseWorkbenchResourcesOptions = {
   activeTeam: Team | undefined;

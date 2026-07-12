@@ -1,0 +1,55 @@
+# フロントエンド構造化方針
+
+## 目的
+
+Miraiのフロントエンドは、画面数と業務機能の増加に耐えられるように、変更理由ごとに責務を分離します。
+単にファイルを小さくするのではなく、依存方向と状態変更の所有者を明確にすることを優先します。
+
+## 依存方向
+
+依存は次の一方向に揃えます。
+
+```text
+app -> features -> components / hooks -> lib / data -> types
+```
+
+- `app`: ルーティング、認証後シェル、複数featureの調停
+- `features`: Gantt、案件、日報、課題、分析、管理設定などの業務単位
+- `components`: featureに依存しない共通UI
+- `hooks`: featureに依存しない共通Reactライフサイクル
+- `lib`: Reactを参照しない純粋なドメイン計算
+- `data`: API、保存、取込形式などのI/O境界
+- `types`: 複数層で共有するドメイン型
+
+featureから`app`への逆依存は禁止します。複数featureで必要な処理は`lib`または`data`へ移します。
+Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依存方向も検証します。
+
+## 状態の所有
+
+- URLで復元すべき状態はTanStack Routerで管理する
+- 表示設定はワークベンチ単位のJotai Storeで管理する
+- APIから取得した案件データはワークスペース状態で管理する
+- feature固有の一時状態はfeature Hookまたはfeature Atomで管理する
+- 派生値は保存せず、入力状態から`useMemo`または純粋関数で導出する
+- API保存、履歴追加、通知を伴う更新はController Hookを唯一の入口にする
+
+## 現在の技術的債務
+
+| 優先度 | 債務                                            | 影響                               | 対応方針                                                    |
+| ------ | ----------------------------------------------- | ---------------------------------- | ----------------------------------------------------------- |
+| P0     | `AppWorkbench`に複数featureの状態変更が残る     | 変更影響が広く、レビューが難しい   | 案件、取込、保存、ナビゲーション単位のController Hookへ分離 |
+| P0     | 1,000行を超えるGantt UIがある                   | 操作回帰と再描画範囲を把握しにくい | Toolbar、Table、Timeline、Interaction Layerの境界で分割     |
+| P1     | `scheduleImportExport.ts`が複数形式を扱う       | CSV、JSON、Brabio変更が干渉する    | format別adapterと共通validationへ分割                       |
+| P1     | `taskOperations.ts`に編集操作が集中する         | 単体テストと権限境界が不鮮明       | hierarchy、date、clipboard、dependencyへ分割                |
+| P1     | API DTOと画面モデルの変換がrepositoryへ集中する | API変更がUIへ波及する              | mapperをAPI feature境界へ分離                               |
+| P2     | 一部CSSがglobal CSSとVanilla Extractに分散する  | 上書き関係を追いにくい             | 新規画面からVanilla Extractへ統一                           |
+| P2     | 巨大コンポーネントのpropsが多い                 | 呼び出し側と子画面が密結合になる   | feature ControllerとView Modelで受け渡す                    |
+
+## 分割の完了条件
+
+- featureから`app`へのimportが0件
+- `AppWorkbench`はルーティング、レイアウト、feature間調停を中心にする
+- 状態変更は名前付きController Hookまたは純粋関数を経由する
+- 取込や計算ロジックはDOMなしでテストできる
+- Unit、Integration、E2E、Performanceを個別に実行できる
+- 分割前後で型検査、Lint、ビルド、全テスト、ブラウザ確認が成功する

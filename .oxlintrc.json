@@ -27,5 +27,39 @@
     "unicorn/no-null": "off",
     "unicorn/prefer-global-this": "off"
   },
+  "overrides": [
+    {
+      "files": ["frontend/src/features/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/app/**"],
+                "message": "feature層からapp層へ依存できません。共有処理はlibまたはdataへ移してください。"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["frontend/src/{components,data,hooks,lib}/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/app/**", "**/features/**"],
+                "message": "共有層からappまたはfeature層へ依存できません。"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
   "ignorePatterns": ["dist/**", "node_modules/**", "captures/**"]
 }

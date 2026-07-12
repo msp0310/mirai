@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { BurndownChart } from "../../../components/charts/BurndownChart";
 import { getProgressStats } from "../../../lib/schedule";
 import type {
   CalendarDefinition,
@@ -8,7 +9,6 @@ import type {
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../../../types/schedule";
-import { BurndownChart } from "../../status/components/BurndownChart";
 import { ScheduleChangeAnalysis } from "./ScheduleChangeAnalysis";
 
 type AnalysisPanelProps = {

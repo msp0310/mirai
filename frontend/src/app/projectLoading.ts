@@ -39,22 +39,6 @@ export function createInitialScheduleWorkspace(
   };
 }
 
-/** 取得済み案件を重複なくワークスペースへ追加または置換します。 */
-export function mergeScheduleIntoWorkspace(
-  workspace: ScheduleWorkspace,
-  schedule: ScheduleSnapshot,
-): ScheduleWorkspace {
-  const exists = workspace.schedules.some((item) => item.project.id === schedule.project.id);
-  return {
-    ...workspace,
-    schedules: exists
-      ? workspace.schedules.map((item) =>
-          item.project.id === schedule.project.id ? schedule : item,
-        )
-      : [...workspace.schedules, schedule],
-  };
-}
-
 /** 指定チームでまだ詳細を取得していない案件IDだけを返します。 */
 export function findMissingProjectIds(
   summaries: ProjectSummary[],
