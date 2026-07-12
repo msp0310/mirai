@@ -110,6 +110,20 @@ APIアクセスは専用Hookに閉じ込め、表示コンポーネントからr
 共通レイアウトは業務データを更新せず、親から渡された名前付き操作だけを呼び出します。
 案件検索のキーボードリスナーは専用コンポーネントが所有し、アンマウント時に解除します。
 
+## 日報の責務境界
+
+- `DailyReportPage`: 自分・チーム表示と子領域の構成だけを調停する
+- `useDailyReportsController`: 取得、選択、保存、提出、削除、コメント、リマインドを管理する
+- `DailyReportList`: 自分の日報の選択一覧を表示する
+- `DailyReportEditor`: 基本情報、本文、明細、コメント、削除確認を構成する
+- `DailyReportEntries`: 案件・タスク別の作業時間明細を編集する
+- `DailyReportSidebar`: 案件実績への反映見込みとコメントを表示する
+- `DailyReportMarkdownField`: Markdown編集とプレビューを提供する
+- `dailyReports`: メンバー解決、権限判定、下書き生成、工数集計を純粋関数として提供する
+
+repository呼び出しはController Hookだけが行い、編集コンポーネントはdraftと名前付き操作だけを受け取ります。
+純粋モデルはrepository型に依存せず、必要最小限の構造型でテストできる状態を保ちます。
+
 ## 現在の技術的債務
 
 | 優先度 | 債務                                            | 影響                             | 対応方針                                                    |

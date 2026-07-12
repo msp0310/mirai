@@ -1,12 +1,11 @@
-import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import { isWorkingDay, parseDate } from "../../../lib/schedule";
-import type { Member } from "../../../types/schedule";
+import type { CalendarDefinition, Member } from "../../../types/schedule";
 
 /** チームカレンダーと個人休暇を合わせ、日報の提出対象か判定します。 */
 export function isDailyReportRequired(
   member: Pick<Member, "availabilityOverrides">,
   date: string,
-  schedules: Pick<ScheduleSnapshot, "calendar">[],
+  schedules: { calendar: CalendarDefinition }[],
 ) {
   if (member.availabilityOverrides?.some((override) => override.date === date)) {
     return false;
