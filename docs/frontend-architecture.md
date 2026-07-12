@@ -81,6 +81,15 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 
 添付I/Oは共通`AttachmentPanel`へ委譲し、課題featureはowner情報と更新通知だけを渡します。
 
+## 案件一覧の責務境界
+
+- `ProjectPortfolioPanel`: チーム選択、案件一覧、横断状況の構成だけを行う
+- `useProjectPortfolio`: 検索条件と案件・マイルストーン・残作業の共有View Modelを構築する
+- `PortfolioHeader`: 選択チーム、チーム切替、案件追加導線を表示する
+- `PortfolioSummary`: 進行中案件を基準にチーム状況を要約する
+- `PortfolioControls`: 検索、状態絞り込み、並び替えを管理する
+- `PortfolioSidePanels`: 要対応、直近マイルストーン、担当者別残作業を表示する
+
 ## 管理設定の責務境界
 
 - `MasterSettingsPage`: 設定カテゴリと編集中チームの選択だけを管理する
