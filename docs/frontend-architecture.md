@@ -90,6 +90,14 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 - `PortfolioControls`: 検索、状態絞り込み、並び替えを管理する
 - `PortfolioSidePanels`: 要対応、直近マイルストーン、担当者別残作業を表示する
 
+## 案件設定の責務境界
+
+- `ProjectSettingsPage`: 案件基本情報、要員権限、整理操作の構成だけを行う
+- `useProjectSettingsEditor`: 案件draft、所属チーム変更、要員権限、保存時正規化を管理する
+- `ProjectBasicSettings`: 識別情報、期間、次のマイルストーンを編集する
+- `ProjectMemberSettings`: 所属チーム内の要員と案件権限を編集する
+- `ProjectArchiveSettings`: アーカイブの影響説明と二段階確認を提供する
+
 ## カレンダーの責務境界
 
 - `CalendarPanel`: 月グリッドと編集サイドバーの構成だけを行う
