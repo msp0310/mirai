@@ -30,6 +30,7 @@ import type {
   TimelineColumn,
   TimelineDay,
 } from "../../../types/schedule";
+import "./GanttViewport.css";
 import type { TaskSiblingReorderPlacement } from "../../../lib/taskOperations";
 import type { DependencyIssue } from "../../../lib/schedule";
 import { getDependencyIssues, getTimelineSlotIndex, statusLabels } from "../../../lib/schedule";

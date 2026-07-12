@@ -281,6 +281,26 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(page.getByText("選択範囲を上下に広げる", { exact: true })).toBeVisible();
   });
 
+  test("フルHDではガントが画面下端まで表示領域を利用する", async ({ page }) => {
+    await page.setViewportSize({ height: 1080, width: 1920 });
+    await login(page);
+    const projectCard = page.locator("article.portfolio-card").filter({
+      hasText: "販売管理システム刷新",
+    });
+    await projectCard.getByRole("button", { name: "Ganttへ" }).click();
+
+    const timeline = page.locator(".timeline-body");
+    const taskTable = page.locator(".task-table");
+    await expect(timeline).toBeVisible();
+    const timelineBox = await timeline.boundingBox();
+    const taskTableBox = await taskTable.boundingBox();
+    expect(timelineBox).not.toBeNull();
+    expect(taskTableBox).not.toBeNull();
+    expect(timelineBox?.height ?? 0).toBeGreaterThanOrEqual(820);
+    expect((timelineBox?.y ?? 0) + (timelineBox?.height ?? 0)).toBeGreaterThanOrEqual(1040);
+    expect(Math.abs((timelineBox?.height ?? 0) - (taskTableBox?.height ?? 0))).toBeLessThan(2);
+  });
+
   test("週次進捗でタスク件数と完了件数を確認できる", async ({ page }) => {
     await login(page);
     const projectCard = page.locator("article.portfolio-card").filter({
