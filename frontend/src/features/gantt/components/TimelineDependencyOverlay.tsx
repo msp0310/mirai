@@ -1,8 +1,7 @@
-import { getTaskTimelineSpan } from "../../../lib/schedule";
-import type { DependencyIssue } from "../../../lib/schedule";
+import { type DependencyIssue, getTaskTimelineSpan } from "../../../lib/schedule";
 import type { TaskRow, TimelineDay } from "../../../types/schedule";
-import type { VisibleTimelineSlotWindow } from "../types/ganttState";
 import { buildDependencyPath } from "../lib/timelineGeometry";
+import type { VisibleTimelineSlotWindow } from "../types/ganttState";
 import { rowHeight } from "./constants";
 
 type TimelineDependencyOverlayProps = {

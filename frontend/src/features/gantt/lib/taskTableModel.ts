@@ -63,8 +63,7 @@ export function getReorderRootIds(
   const selectedIds = new Set(taskIds);
   return tasks
     .filter(
-      (task) =>
-        selectedIds.has(task.id) && !hasSelectedAncestor(task.id, selectedIds, taskById),
+      (task) => selectedIds.has(task.id) && !hasSelectedAncestor(task.id, selectedIds, taskById),
     )
     .map((task) => task.id);
 }

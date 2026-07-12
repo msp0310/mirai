@@ -1,14 +1,7 @@
-import {
-  type CSSProperties,
-  useMemo,
-  useState,
-} from "react";
+import { type CSSProperties, useMemo, useState } from "react";
 
 import "./GanttViewport.css";
-import {
-  type DependencyIssue,
-  getDependencyIssues,
-} from "../../../lib/schedule";
+import { type DependencyIssue, getDependencyIssues } from "../../../lib/schedule";
 import type { TaskSiblingReorderPlacement } from "../../../lib/taskOperations";
 import type {
   CalendarDefinition,
@@ -24,13 +17,6 @@ import type {
   TimelineColumn,
   TimelineDay,
 } from "../../../types/schedule";
-import { rowHeight } from "./constants";
-import { FilterPanel } from "./FilterPanel";
-import { GanttTimelinePane } from "./GanttTimelinePane";
-import { GanttToolbar } from "./GanttToolbar";
-import { TaskContextMenu } from "./TaskContextMenu";
-import { TaskTableHeader } from "./TaskTableHeader";
-import { TaskTableViewport } from "./TaskTableViewport";
 import { useGanttViewport } from "../hooks/useGanttViewport";
 import { useSuppressedTableClick } from "../hooks/useSuppressedTableClick";
 import { useTaskContextMenu } from "../hooks/useTaskContextMenu";
@@ -38,6 +24,13 @@ import { useTaskDragSelection } from "../hooks/useTaskDragSelection";
 import { useTaskRowReorder } from "../hooks/useTaskRowReorder";
 import { sortTaskRowsPreservingHierarchy } from "../lib/taskTableModel";
 import type { TaskTableSortKey, TaskTableSortState } from "../types/ganttState";
+import { rowHeight } from "./constants";
+import { FilterPanel } from "./FilterPanel";
+import { GanttTimelinePane } from "./GanttTimelinePane";
+import { GanttToolbar } from "./GanttToolbar";
+import { TaskContextMenu } from "./TaskContextMenu";
+import { TaskTableHeader } from "./TaskTableHeader";
+import { TaskTableViewport } from "./TaskTableViewport";
 
 type GanttWorkbenchProps = {
   activeFilterCount: number;
@@ -312,14 +305,13 @@ export function GanttWorkbench({
   );
   const { handleClickCapture: handleTableClickCapture, suppressNextClick } =
     useSuppressedTableClick();
-  const { clearDragSelection, dragSelectionBox, handleTablePointerDown } =
-    useTaskDragSelection({
-      displayRows,
-      onInteractionStart: closeContextMenu,
-      onSelectTaskRange,
-      suppressNextClick,
-      tableRef,
-    });
+  const { clearDragSelection, dragSelectionBox, handleTablePointerDown } = useTaskDragSelection({
+    displayRows,
+    onInteractionStart: closeContextMenu,
+    onSelectTaskRange,
+    suppressNextClick,
+    tableRef,
+  });
   const { handleRowReorderPointerDown, rowReorder, rowReorderGuide } = useTaskRowReorder({
     clearDragSelection,
     displayMode,

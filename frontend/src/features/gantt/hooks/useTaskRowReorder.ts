@@ -19,10 +19,7 @@ import {
   getTaskRowReorderMode,
   getVisibleSubtreeEndIndex,
 } from "../lib/taskTableModel";
-import type {
-  TaskRowReorderState,
-  TaskTableSortKey,
-} from "../types/ganttState";
+import type { TaskRowReorderState, TaskTableSortKey } from "../types/ganttState";
 
 type RowReorderSession = {
   active: boolean;

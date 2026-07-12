@@ -73,7 +73,9 @@ export function TaskChecklistSection({
     <section className="task-detail-section">
       <div className="task-detail-heading">
         <span>完了条件</span>
-        <small>{doneCount} / {checklist.length}</small>
+        <small>
+          {doneCount} / {checklist.length}
+        </small>
       </div>
       <div className="inline-create-control task-detail-create">
         <input
@@ -95,7 +97,12 @@ export function TaskChecklistSection({
       <div className="task-checklist">
         {checklist.map((item) => (
           <label className={item.done ? "done" : ""} key={item.id}>
-            <input checked={item.done} disabled={disabled} onChange={() => toggleItem(item.id)} type="checkbox" />
+            <input
+              checked={item.done}
+              disabled={disabled}
+              onChange={() => toggleItem(item.id)}
+              type="checkbox"
+            />
             <span>{item.label}</span>
             <button
               disabled={disabled}

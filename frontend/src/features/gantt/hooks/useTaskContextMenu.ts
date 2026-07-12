@@ -12,10 +12,7 @@ type UseTaskContextMenuOptions = {
 };
 
 /** タスクメニューの表示位置と、外側クリック・Escによる終了を管理します。 */
-export function useTaskContextMenu({
-  onSelectTask,
-  selectedTaskIds,
-}: UseTaskContextMenuOptions) {
+export function useTaskContextMenu({ onSelectTask, selectedTaskIds }: UseTaskContextMenuOptions) {
   const [contextMenu, setContextMenu] = useState<TaskContextMenuState | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
 

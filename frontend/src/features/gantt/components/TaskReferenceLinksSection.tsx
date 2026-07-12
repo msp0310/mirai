@@ -66,8 +66,18 @@ export function TaskReferenceLinksSection({
         <small>{links.length}件</small>
       </div>
       <div className="task-link-form">
-        <input disabled={disabled} onChange={(event) => setLabel(event.target.value)} placeholder="表示名" value={label} />
-        <input disabled={disabled} onChange={(event) => setUrl(event.target.value)} placeholder="https://..." value={url} />
+        <input
+          disabled={disabled}
+          onChange={(event) => setLabel(event.target.value)}
+          placeholder="表示名"
+          value={label}
+        />
+        <input
+          disabled={disabled}
+          onChange={(event) => setUrl(event.target.value)}
+          placeholder="https://..."
+          value={url}
+        />
         <button disabled={!url.trim() || disabled} onClick={addLink} type="button">
           追加
         </button>
@@ -78,7 +88,12 @@ export function TaskReferenceLinksSection({
             <a href={link.url} rel="noreferrer" target="_blank">
               {link.label}
             </a>
-            <button disabled={disabled} onClick={() => deleteLink(link.id)} title="削除" type="button">
+            <button
+              disabled={disabled}
+              onClick={() => deleteLink(link.id)}
+              title="削除"
+              type="button"
+            >
               <TrashIcon />
             </button>
           </div>

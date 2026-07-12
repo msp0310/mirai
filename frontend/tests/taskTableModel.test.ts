@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { Member, ScheduleTask, TaskRow } from "../src/types/schedule.ts";
 import {
   buildTaskChildrenMap,
   getDescendantTaskIds,
@@ -10,6 +9,7 @@ import {
   sortTaskRowsPreservingHierarchy,
 } from "../src/features/gantt/lib/taskTableModel.ts";
 import { buildDependencyPath } from "../src/features/gantt/lib/timelineGeometry.ts";
+import type { Member, ScheduleTask, TaskRow } from "../src/types/schedule.ts";
 
 function task(id: string, parentId: string | null): ScheduleTask {
   return { id, parentId } as ScheduleTask;
@@ -64,10 +64,10 @@ test("子孫探索はすべての深さを収集する", () => {
     task("other", null),
   ];
 
-  assert.deepEqual(
-    [...getDescendantTaskIds("root", buildTaskChildrenMap(tasks))].sort(),
-    ["child", "grandchild"],
-  );
+  assert.deepEqual([...getDescendantTaskIds("root", buildTaskChildrenMap(tasks))].toSorted(), [
+    "child",
+    "grandchild",
+  ]);
 });
 
 test("横方向の移動量から階層操作を判定する", () => {

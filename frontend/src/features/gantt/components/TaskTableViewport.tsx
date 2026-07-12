@@ -25,10 +25,7 @@ type TaskTableViewportProps = {
   dragSelectionBox: { height: number; top: number } | null;
   onClickCapture: (event: MouseEvent<HTMLDivElement>) => void;
   onContextMenu: (taskId: string, event: MouseEvent<HTMLElement>) => void;
-  onDragHandlePointerDown: (
-    taskId: string,
-    event: ReactPointerEvent<HTMLButtonElement>,
-  ) => void;
+  onDragHandlePointerDown: (taskId: string, event: ReactPointerEvent<HTMLButtonElement>) => void;
   onFocusTaskStart: (taskId: string) => void;
   onOpenTaskInspector: (taskId: string) => void;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
