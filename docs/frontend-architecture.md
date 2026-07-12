@@ -70,6 +70,17 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 ページは集計規則や保存規則を持たず、Hookが返すView Modelと操作だけを子コンポーネントへ渡します。
 要員計画の純粋計算はDOMを使わない単体テストで境界値を検証します。
 
+## 課題管理の責務境界
+
+- `ProjectIssuePanel`: 一覧、詳細、編集ダイアログの表示切り替えだけを行う
+- `useProjectIssueController`: 検索条件、選択課題、編集draft、返信追加を管理する
+- `IssueListView`: サマリー、検索、状態フィルター、課題表を表示する
+- `IssueDetailPage`: 本文、関連タスク、添付、返信を構成する
+- `IssueEditorDialog`: 課題属性とMarkdown本文の編集だけを行う
+- `projectIssues`: 検索、集計、表示形式、draft正規化を純粋関数として提供する
+
+添付I/Oは共通`AttachmentPanel`へ委譲し、課題featureはowner情報と更新通知だけを渡します。
+
 ## 現在の技術的債務
 
 | 優先度 | 債務                                            | 影響                             | 対応方針                                                    |
