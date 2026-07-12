@@ -1,7 +1,6 @@
 import type { ProjectSummary, ScheduleSnapshot } from "../data/scheduleRepository";
 import { getProgressStats } from "../lib/schedule";
-import type { ActivityLogEntry, Member } from "../types/schedule";
-import type { PendingTaskCsvImport } from "./useWorkbenchOverlays";
+import type { ActivityLogEntry } from "../types/schedule";
 
 /** 表示履歴に記録する操作ユーザー名です。認証ユーザー表示への切替点を固定します。 */
 export const activityActor = "操作ユーザー";
@@ -30,12 +29,6 @@ export function focusTaskTitleEditor(taskId: string) {
   window.requestAnimationFrame(focusInput);
 }
 
-/** CSV出力用に値をエスケープします。 */
-export function escapeCsv(value: string) {
-  const escaped = value.replaceAll('"', '""');
-  return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
-}
-
 /** テキストファイルをブラウザからダウンロードします。 */
 export function downloadTextFile(filename: string, content: string, type: string) {
   const blob = new Blob([content], { type });
@@ -47,22 +40,6 @@ export function downloadTextFile(filename: string, content: string, type: string
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
-}
-
-/** 取込データ用の重複しないIDを生成します。 */
-export function createUniqueImportedId(baseId: string, existingIds: Set<string>) {
-  const base = baseId.trim() || "imported-project";
-  if (!existingIds.has(base)) {
-    return base;
-  }
-
-  let suffix = 2;
-  let candidate = `${base}-import`;
-  while (existingIds.has(candidate)) {
-    candidate = `${base}-import-${suffix}`;
-    suffix += 1;
-  }
-  return candidate;
 }
 
 /** 遅延ロード中のプロジェクトビューに表示する共通プレースホルダーです。 */
@@ -94,29 +71,4 @@ export function appendActivityLogEntry(
     ...logs,
     [entry.projectId]: [entry, ...(logs[entry.projectId] ?? [])].slice(0, 160),
   };
-}
-
-/** 文字列配列の重複を除去します。 */
-export function uniqueStrings(values: string[]) {
-  return [...new Set(values)];
-}
-
-/** 担当者未設定の警告が任意項目か判定します。 */
-export function isOptionalAssigneeWarning(message: string) {
-  return message.endsWith("に担当者が設定されていません。");
-}
-
-/** 取込データに必要なメンバーを追加します。 */
-export function addMissingMembers(currentMembers: Member[], membersToCreate: Member[]) {
-  if (membersToCreate.length === 0) {
-    return currentMembers;
-  }
-  const currentIds = new Set(currentMembers.map((member) => member.id));
-  const additions = membersToCreate.filter((member) => !currentIds.has(member.id));
-  return additions.length === 0 ? currentMembers : [...currentMembers, ...additions];
-}
-
-/** 取込元の表示名を返します。 */
-export function getTaskImportSourceLabel(sourceKind: PendingTaskCsvImport["sourceKind"]) {
-  return sourceKind === "brabio" ? "Brabio XLSX" : "タスクCSV";
 }

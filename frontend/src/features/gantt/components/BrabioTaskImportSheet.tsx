@@ -6,7 +6,7 @@ import type {
   TaskCsvImportData,
 } from "../../../data/scheduleImportExport";
 import type { Member, Project } from "../../../types/schedule";
-import type { TaskCsvImportOptions } from "./TaskCsvImportSheet";
+import type { TaskCsvImportOptions } from "../../projects/types/projectImport";
 
 type BrabioTaskImportSheetProps = {
   fileName: string;

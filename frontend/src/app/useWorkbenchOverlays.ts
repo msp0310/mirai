@@ -1,29 +1,9 @@
 import { atom, useAtom } from "jotai";
 
 import type {
-  ProjectImportData,
-  ProjectImportValidation,
-  TaskCsvImportData,
-  TaskCsvImportDraft,
-} from "../data/scheduleImportExport";
-import type { Member } from "../types/schedule";
-
-// 取込データの型は画面本体から切り離し、オーバーレイの状態と一緒に管理します。
-export type PendingProjectImport = {
-  data: ProjectImportData;
-  fileName: string;
-  validation: ProjectImportValidation;
-};
-
-export type PendingTaskCsvImport = {
-  data: TaskCsvImportData | null;
-  draft: TaskCsvImportDraft;
-  fileName: string;
-  membersToCreate: Member[];
-  sourceKind: "brabio" | "csv";
-  sourceWarnings: string[];
-  validation: ProjectImportValidation;
-};
+  PendingProjectImport,
+  PendingTaskCsvImport,
+} from "../features/projects/types/projectImport";
 
 const showCreateSheetAtom = atom(false);
 const showProjectCreateSheetAtom = atom(false);

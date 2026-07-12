@@ -11,10 +11,7 @@ import {
   taskCsvRequiredColumns,
 } from "../../../data/scheduleImportExport";
 import type { Member, Project } from "../../../types/schedule";
-
-export type TaskCsvImportOptions = {
-  expandProjectRange: boolean;
-};
+import type { TaskCsvImportOptions } from "../../projects/types/projectImport";
 
 type TaskCsvImportSheetProps = {
   draft: TaskCsvImportDraft;

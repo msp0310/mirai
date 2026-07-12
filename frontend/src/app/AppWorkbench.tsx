@@ -12,19 +12,15 @@ import { clearLocalScheduleDraft, saveLocalScheduleDraft } from "../data/localSc
 import { createProjectFromTemplate } from "../data/projectTemplates";
 import {
   ProjectImportError,
-  type TaskCsvImportDraft,
   type TaskCsvImportMapping,
   createBrabioXlsxImportDraft,
   createTaskCsvImportDraft,
   parseProjectImportJson,
-  parseTaskCsvImportFromDraft,
   validateProjectImportData,
-  validateTaskCsvImportData,
 } from "../data/scheduleImportExport";
 import { type ScheduleSnapshot } from "../data/scheduleRepository";
 import { todayKey } from "../features/gantt/components/constants";
 import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
-import type { TaskCsvImportOptions } from "../features/gantt/components/TaskCsvImportSheet";
 import { useGanttKeyboardShortcuts } from "../features/gantt/hooks/useGanttKeyboardShortcuts";
 import { useTaskActions } from "../features/gantt/hooks/useTaskActions";
 import { useTaskActualUpdater } from "../features/gantt/hooks/useTaskActualUpdater";
@@ -39,6 +35,16 @@ import {
 import type { CreateProjectTemplateInput } from "../features/projects/components/ProjectCreateSheet";
 import type { ProjectImportMode } from "../features/projects/components/ProjectImportSheet";
 import { useProjectActivityActions } from "../features/projects/hooks/useProjectActivityActions";
+import { createProjectExportFile } from "../features/projects/lib/projectExportService";
+import {
+  createPendingTaskImport,
+  getTaskImportSourceLabel,
+  mergeTaskImportIntoWorkspace,
+  prepareProjectImport,
+  prepareTaskImport,
+} from "../features/projects/lib/projectImportService";
+import type { TaskCsvImportOptions } from "../features/projects/types/projectImport";
+import { useMasterDataActions } from "../features/settings/hooks/useMasterDataActions";
 import type { HelpDocumentId } from "../help/helpDocuments";
 import { useToastQueue } from "../hooks/useToastQueue";
 import {
@@ -72,7 +78,6 @@ import type {
   StaffingDemand,
   TaskInspectorFocusTarget,
   TaskStatus,
-  Team,
 } from "../types/schedule";
 import {
   createConfigChangeReviewFromRows,
@@ -82,7 +87,6 @@ import {
   getGanttTimelineRange,
   getHealthIssueFocusTarget,
   getOperationalProjectStatus,
-  getTaskRange,
   initialFilters,
   isProjectArchived,
   mergeProjectScopedSavedDraft,
@@ -94,21 +98,15 @@ import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresent
 import { useScheduleSync } from "./useScheduleSync";
 import { useTeamScheduleLoading } from "./useTeamScheduleLoading";
 import { useWorkbenchNotifications } from "./useWorkbenchNotifications";
-import { type PendingTaskCsvImport, useWorkbenchOverlays } from "./useWorkbenchOverlays";
+import { useWorkbenchOverlays } from "./useWorkbenchOverlays";
 import { useWorkbenchProjectContext } from "./useWorkbenchProjectContext";
 import { useWorkbenchResources } from "./useWorkbenchResources";
 import {
   activityActor,
-  addMissingMembers,
   appendActivityLogEntry,
   createProjectSummaryFromSnapshot,
-  createUniqueImportedId,
   downloadTextFile,
-  escapeCsv,
   focusTaskTitleEditor,
-  getTaskImportSourceLabel,
-  isOptionalAssigneeWarning,
-  uniqueStrings,
   ViewLoading,
 } from "./workbenchHelpers";
 import {
@@ -451,6 +449,23 @@ function AppWorkbenchContent({
     projectName: schedule.project.workspace,
     selectedTaskId,
     setWorkspace,
+  });
+  const {
+    createMember,
+    createTeam,
+    toggleTeamMember,
+    updateMember,
+    updateMemberLifecycle,
+    updateTeam,
+    updateTeamCalendarMaster,
+  } = useMasterDataActions({
+    activeTeam,
+    onActivity: recordActivity,
+    onToast: addToast,
+    projectSummaries,
+    scheduleMembers: schedule.members,
+    setWorkspace,
+    workspace,
   });
   const { activeTeamReviewSchedules, displayedResourceRows, displayedResourceWeeks, resourceRows } =
     useWorkbenchResources({
@@ -1335,283 +1350,6 @@ function AppWorkbenchContent({
     });
   }
 
-  /** チームマスターを更新します。 */
-  async function updateTeam(team: Team) {
-    team = {
-      ...team,
-      memberships: team.memberIds.map(
-        (memberId) =>
-          team.memberships?.find((item) => item.memberId === memberId) ?? {
-            memberId,
-            role: "member",
-          },
-      ),
-    };
-    try {
-      team = await apiScheduleRepository.saveTeam(team);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "保存できませんでした。",
-        title: "チーム設定の保存に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    setWorkspace((current) => ({
-      ...current,
-      teams: current.teams.map((item) => (item.id === team.id ? team : item)),
-    }));
-    addToast({ detail: team.name, title: "チーム設定を保存しました" });
-    recordActivity({
-      category: "team",
-      detail: `${team.memberIds.length}名のメンバー構成`,
-      title: "チーム設定を更新しました",
-      tone: "success",
-    });
-  }
-
-  /** チームマスターを追加します。 */
-  async function createTeam(team: Team) {
-    try {
-      team = await apiScheduleRepository.saveTeam(team);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "追加できませんでした。",
-        title: "チームの追加に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    setWorkspace((current) => ({
-      ...current,
-      teams: [...current.teams, team],
-    }));
-    addToast({ detail: team.name, title: "チームを追加しました" });
-    recordActivity({
-      category: "team",
-      detail: team.description || `${team.memberIds.length}名`,
-      title: `チームを追加: ${team.name}`,
-      tone: "success",
-    });
-  }
-
-  /** メンバー情報を更新します。 */
-  async function updateMember(member: Member) {
-    try {
-      member = await apiScheduleRepository.saveMember(member);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "保存できませんでした。",
-        title: "メンバーの保存に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    setWorkspace((current) => ({
-      ...current,
-      schedules: current.schedules.map((snapshot) => ({
-        ...snapshot,
-        members: snapshot.members.map((item) => (item.id === member.id ? member : item)),
-      })),
-    }));
-    recordActivity({
-      category: "team",
-      detail: `${member.role} / ${member.capacityHours}h / 休暇${
-        member.availabilityOverrides?.length ?? 0
-      }日`,
-      title: `メンバーを更新: ${member.name}`,
-      tone: "info",
-    });
-  }
-
-  /** メンバーの有効・無効状態を更新します。 */
-  function updateMemberLifecycle(memberId: string, status: "active" | "inactive") {
-    const inactiveAt = status === "inactive" ? new Date().toISOString() : undefined;
-    const member = schedule.members.find((item) => item.id === memberId);
-    setWorkspace((current) => ({
-      ...current,
-      schedules: current.schedules.map((snapshot) => ({
-        ...snapshot,
-        members: snapshot.members.map((item) =>
-          item.id === memberId
-            ? {
-                ...item,
-                inactiveAt,
-                status,
-              }
-            : item,
-        ),
-      })),
-    }));
-    addToast({
-      detail: member?.name ?? memberId,
-      title: status === "inactive" ? "メンバーを休止しました" : "メンバーを復帰しました",
-      tone: status === "inactive" ? "warning" : "success",
-    });
-    recordActivity({
-      category: "team",
-      detail:
-        status === "inactive"
-          ? "新しい担当候補から外しました。既存の担当履歴は残ります。"
-          : "新しい担当候補に戻しました。",
-      title: `${status === "inactive" ? "メンバーを休止" : "メンバーを復帰"}: ${
-        member?.name ?? memberId
-      }`,
-      tone: status === "inactive" ? "warning" : "success",
-    });
-  }
-
-  /** メンバーを追加します。 */
-  async function createMember(member: Member, teamId: string | null) {
-    try {
-      member = await apiScheduleRepository.saveMember(member);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "追加できませんでした。",
-        title: "メンバーの追加に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    setWorkspace((current) => ({
-      ...current,
-      schedules: current.schedules.map((snapshot) => ({
-        ...snapshot,
-        members: snapshot.members.some((item) => item.id === member.id)
-          ? snapshot.members
-          : [...snapshot.members, member],
-      })),
-      teams:
-        teamId == null
-          ? current.teams
-          : current.teams.map((team) =>
-              team.id === teamId
-                ? {
-                    ...team,
-                    memberIds: team.memberIds.includes(member.id)
-                      ? team.memberIds
-                      : [...team.memberIds, member.id],
-                  }
-                : team,
-            ),
-    }));
-    addToast({ detail: member.name, title: "メンバーを追加しました" });
-    recordActivity({
-      category: "team",
-      detail: `${member.role} / ${member.capacityHours}h / 休暇${
-        member.availabilityOverrides?.length ?? 0
-      }日`,
-      title: `メンバーを追加: ${member.name}`,
-      tone: "success",
-    });
-    if (teamId) {
-      const targetTeam = workspace.teams.find((item) => item.id === teamId);
-      if (targetTeam) {
-        await updateTeam({
-          ...targetTeam,
-          memberIds: [...new Set([...targetTeam.memberIds, member.id])],
-        });
-      }
-    }
-  }
-
-  /** チームとメンバーの所属を切り替えます。 */
-  async function toggleTeamMember(teamId: string, memberId: string, enabled: boolean) {
-    const target = workspace.teams.find((team) => team.id === teamId);
-    if (!target) {
-      return;
-    }
-    const savedTeam = {
-      ...target,
-      memberIds: enabled
-        ? [...new Set([...target.memberIds, memberId])]
-        : target.memberIds.filter((id) => id !== memberId),
-    };
-    try {
-      await apiScheduleRepository.saveTeam(savedTeam);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "保存できませんでした。",
-        title: "チーム所属の更新に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    setWorkspace((current) => ({
-      ...current,
-      teams: current.teams.map((team) => {
-        if (team.id !== teamId) {
-          return team;
-        }
-        return {
-          ...team,
-          memberIds: enabled
-            ? [...new Set([...team.memberIds, memberId])]
-            : team.memberIds.filter((id) => id !== memberId),
-        };
-      }),
-    }));
-    const member = schedule.members.find((item) => item.id === memberId);
-    recordActivity({
-      category: "team",
-      detail: `${member?.name ?? memberId} を${enabled ? "チームに追加" : "チームから外し"}ました。`,
-      title: "チーム所属を更新しました",
-      tone: "info",
-    });
-  }
-
-  /** チームの標準カレンダーを更新します。 */
-  async function updateTeamCalendarMaster(calendar: CalendarDefinition) {
-    if (!activeTeam) {
-      addToast({ title: "未所属案件にはチーム標準カレンダーがありません", tone: "warning" });
-      return;
-    }
-    const teamId = activeTeam.id;
-    try {
-      calendar = await apiScheduleRepository.saveTeamCalendar(teamId, calendar);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "保存できませんでした。",
-        title: "標準カレンダーの保存に失敗しました",
-        tone: "warning",
-      });
-      return;
-    }
-    const targetProjectCount = projectSummaries.filter(
-      (summary) => summary.project.teamId === teamId,
-    ).length;
-    setWorkspace((current) => ({
-      ...current,
-      schedules: current.schedules.map((snapshot) =>
-        snapshot.project.teamId === teamId
-          ? {
-              ...snapshot,
-              calendar,
-              project: { ...snapshot.project, version: (snapshot.project.version ?? 0) + 1 },
-            }
-          : snapshot,
-      ),
-      projectSummaries: (current.projectSummaries ?? []).map((summary) =>
-        summary.project.teamId === teamId
-          ? {
-              ...summary,
-              project: { ...summary.project, version: (summary.project.version ?? 0) + 1 },
-            }
-          : summary,
-      ),
-    }));
-    addToast({
-      detail: `${activeTeam.name} / ${targetProjectCount}件`,
-      title: "チーム標準カレンダーを保存しました",
-    });
-    recordActivity({
-      category: "calendar",
-      detail: `${activeTeam.name} / 稼働曜日 ${calendar.workWeek.length}件 / 休日 ${calendar.holidays.length}件`,
-      title: "チーム標準カレンダーを更新しました",
-      tone: "info",
-    });
-  }
-
   /** 案件カレンダーを更新します。 */
   function updateCalendar(calendar: CalendarDefinition) {
     const projectId = schedule.project.id;
@@ -1824,72 +1562,13 @@ function AppWorkbenchContent({
 
   /** プロジェクトデータを指定形式で出力します。 */
   function exportProject(format: ExportFormat) {
-    const exportDate = new Date().toISOString().slice(0, 10);
-    const fileBase = `${schedule.project.workspace}-${exportDate}`;
-    if (format === "json") {
-      downloadTextFile(
-        `${fileBase}.json`,
-        JSON.stringify(
-          {
-            calendar: schedule.calendar,
-            members: schedule.members,
-            project: schedule.project,
-            tasks,
-            team: activeTeam,
-          },
-          null,
-          2,
-        ),
-        "application/json",
-      );
-      addToast({ detail: `${fileBase}.json`, title: "JSONを書き出しました" });
-      recordActivity({
-        category: "import",
-        detail: `${fileBase}.json`,
-        title: "プロジェクトJSONを書き出しました",
-        tone: "info",
-      });
-      return;
-    }
-
-    const header = [
-      "ID",
-      "親ID",
-      "種別",
-      "タスク名",
-      "状態",
-      "開始日",
-      "終了日",
-      "進捗",
-      "担当者",
-      "工数",
-      "依存",
-    ];
-    const rows = tasks.map((task) => [
-      task.id,
-      task.parentId ?? "",
-      task.type,
-      task.title,
-      task.status,
-      task.start,
-      task.end,
-      String(task.progress),
-      task.assigneeIds
-        .map((id) => schedule.members.find((member) => member.id === id)?.name ?? id)
-        .join(" / "),
-      task.effortHours != null ? String(task.effortHours) : "",
-      (task.dependencies ?? []).join(" / "),
-    ]);
-    downloadTextFile(
-      `${fileBase}.csv`,
-      [header, ...rows].map((row) => row.map((value) => escapeCsv(value)).join(",")).join("\n"),
-      "text/csv;charset=utf-8",
-    );
-    addToast({ detail: `${fileBase}.csv`, title: "CSVを書き出しました" });
+    const file = createProjectExportFile(format, schedule, tasks, activeTeam);
+    downloadTextFile(file.fileName, file.content, file.mimeType);
+    addToast({ detail: file.fileName, title: file.toastTitle });
     recordActivity({
       category: "import",
-      detail: `${fileBase}.csv`,
-      title: "タスク一覧CSVを書き出しました",
+      detail: file.fileName,
+      title: file.activityTitle,
       tone: "info",
     });
   }
@@ -1921,7 +1600,15 @@ function AppWorkbenchContent({
   async function importTaskCsv(file: File) {
     try {
       const draft = createTaskCsvImportDraft(await file.text());
-      setPendingTaskCsvImport(createPendingTaskCsvImport(file.name, draft));
+      setPendingTaskCsvImport(
+        createPendingTaskImport({
+          calendar: schedule.calendar,
+          draft,
+          fileName: file.name,
+          members: schedule.members,
+          project: schedule.project,
+        }),
+      );
       setPendingProjectImport(null);
       setShowCreateSheet(false);
       setShowProjectCreateSheet(false);
@@ -1942,8 +1629,13 @@ function AppWorkbenchContent({
     try {
       const result = await createBrabioXlsxImportDraft(file);
       setPendingTaskCsvImport(
-        createPendingTaskCsvImport(file.name, result.draft, {
+        createPendingTaskImport({
+          calendar: schedule.calendar,
+          draft: result.draft,
+          fileName: file.name,
+          members: schedule.members,
           membersToCreate: result.members,
+          project: schedule.project,
           sourceKind: "brabio",
           warnings: result.warnings,
         }),
@@ -1964,102 +1656,25 @@ function AppWorkbenchContent({
     }
   }
 
-  /** 取込ファイルを解析し、確認用の保留データを作成します。 */
-  function createPendingTaskCsvImport(
-    fileName: string,
-    draft: TaskCsvImportDraft,
-    options: {
-      membersToCreate?: Member[];
-      sourceKind?: "brabio" | "csv";
-      warnings?: string[];
-    } = {},
-  ): PendingTaskCsvImport {
-    const sourceKind = options.sourceKind ?? "csv";
-    const membersToCreate = dedupeImportMembers(options.membersToCreate ?? []);
-    const importMembers = [...schedule.members, ...membersToCreate];
-    const sourceWarnings = options.warnings ?? [];
-    try {
-      const imported = parseTaskCsvImportFromDraft(draft, {
-        members: importMembers,
-      });
-      const validation = validateTaskCsvImportData(imported, {
-        calendar: schedule.calendar,
-        members: importMembers,
-        project: schedule.project,
-      });
-      return {
-        data: imported,
-        draft,
-        fileName,
-        membersToCreate,
-        sourceKind,
-        sourceWarnings,
-        validation: {
-          ...validation,
-          warnings: uniqueStrings([
-            ...(sourceKind === "brabio"
-              ? validation.warnings.filter((message) => !isOptionalAssigneeWarning(message))
-              : validation.warnings),
-            ...sourceWarnings,
-            ...(membersToCreate.length > 0
-              ? [`Brabioから未登録メンバー${membersToCreate.length}名を追加します。`]
-              : []),
-          ]),
-        },
-      };
-    } catch (error) {
-      return {
-        data: null,
-        draft,
-        fileName,
-        membersToCreate,
-        sourceKind,
-        sourceWarnings,
-        validation: {
-          errors: [
-            error instanceof ProjectImportError || error instanceof Error
-              ? error.message
-              : "ファイルの内容を確認してください。",
-          ],
-          warnings: sourceWarnings,
-        },
-      };
-    }
-  }
-
-  /** 取込メンバーの重複を除去します。 */
-  function dedupeImportMembers(members: Member[]) {
-    const existingIds = new Set(schedule.members.map((member) => member.id));
-    const nextMembers: Member[] = [];
-    const nextIds = new Set<string>();
-    members.forEach((member) => {
-      if (existingIds.has(member.id) || nextIds.has(member.id)) {
-        return;
-      }
-      nextIds.add(member.id);
-      nextMembers.push(member);
-    });
-    return nextMembers;
-  }
-
   /** 取込確認画面の列対応を更新します。 */
   function updatePendingTaskCsvMapping(mapping: TaskCsvImportMapping) {
     setPendingTaskCsvImport((current) => {
       if (!current) {
         return current;
       }
-      return createPendingTaskCsvImport(
-        current.fileName,
-        {
+      return createPendingTaskImport({
+        calendar: schedule.calendar,
+        draft: {
           ...current.draft,
           mapping,
         },
-        {
-          membersToCreate: current.membersToCreate,
-          sourceKind: current.sourceKind,
-          warnings: current.sourceWarnings,
-        },
-      );
+        fileName: current.fileName,
+        members: schedule.members,
+        membersToCreate: current.membersToCreate,
+        project: schedule.project,
+        sourceKind: current.sourceKind,
+        warnings: current.sourceWarnings,
+      });
     });
   }
 
@@ -2068,7 +1683,8 @@ function AppWorkbenchContent({
     if (!pendingTaskCsvImport) {
       return;
     }
-    if (pendingTaskCsvImport.validation.errors.length > 0 || pendingTaskCsvImport.data === null) {
+    const prepared = prepareTaskImport(pendingTaskCsvImport, options, schedule.project);
+    if (!prepared) {
       addToast({
         detail: "インポート確認のエラーを解消してください。",
         title: `${getTaskImportSourceLabel(pendingTaskCsvImport.sourceKind)}を読み込めませんでした`,
@@ -2077,54 +1693,18 @@ function AppWorkbenchContent({
       return;
     }
 
-    const sourceLabel = getTaskImportSourceLabel(pendingTaskCsvImport.sourceKind);
-    const { membersToCreate } = pendingTaskCsvImport;
-    const nextTasks = normalizeSummaryTasks(pendingTaskCsvImport.data.tasks);
-    const csvRange = getTaskRange(nextTasks, schedule.project);
-    const shouldExpandProjectRange =
-      options.expandProjectRange &&
-      csvRange !== null &&
-      (csvRange.start !== schedule.project.rangeStart ||
-        csvRange.end !== schedule.project.rangeEnd);
-    const nextProject =
-      shouldExpandProjectRange && csvRange
-        ? {
-            ...schedule.project,
-            rangeEnd: csvRange.end,
-            rangeStart: csvRange.start,
-          }
-        : schedule.project;
+    const { membersToCreate, nextProject, nextTasks, sourceLabel } = prepared;
     commitTasks(() => nextTasks);
     if (nextProject !== schedule.project || membersToCreate.length > 0) {
-      setWorkspace((current) => ({
-        ...current,
-        schedules: current.schedules.map((snapshot) =>
-          snapshot.project.id === schedule.project.id
-            ? {
-                ...snapshot,
-                members: addMissingMembers(snapshot.members, membersToCreate),
-                project: nextProject,
-              }
-            : {
-                ...snapshot,
-                members: addMissingMembers(snapshot.members, membersToCreate),
-              },
+      setWorkspace((current) =>
+        mergeTaskImportIntoWorkspace(
+          current,
+          schedule.project.id,
+          nextProject,
+          membersToCreate,
+          activeTeam?.id,
         ),
-        teams:
-          membersToCreate.length === 0
-            ? current.teams
-            : current.teams.map((team) =>
-                team.id === activeTeam?.id
-                  ? {
-                      ...team,
-                      memberIds: uniqueStrings([
-                        ...team.memberIds,
-                        ...membersToCreate.map((member) => member.id),
-                      ]),
-                    }
-                  : team,
-              ),
-      }));
+      );
     }
     void setActiveTab("Gantt");
     setCollapsedIds(new Set());
@@ -2163,48 +1743,15 @@ function AppWorkbenchContent({
       return;
     }
 
-    const imported = pendingProjectImport.data;
-    const existingSchedule = workspace.schedules.find(
-      (snapshot) => snapshot.project.id === imported.project.id,
-    );
-    const replaceExisting = mode === "replace" && existingSchedule != null;
-    const existingProjectIds = new Set(workspace.schedules.map((snapshot) => snapshot.project.id));
-    const importedProjectId = replaceExisting
-      ? imported.project.id
-      : createUniqueImportedId(imported.project.id, existingProjectIds);
-    const projectIdChanged = importedProjectId !== imported.project.id;
-    const existingTeamIds = new Set(workspace.teams.map((team) => team.id));
-    const importedTeamId = imported.team?.id ?? imported.project.teamId;
-    const teamExists = importedTeamId != null && existingTeamIds.has(importedTeamId);
-    const nextTeamId = teamExists
-      ? importedTeamId
-      : imported.team
-        ? createUniqueImportedId(imported.team.id, existingTeamIds)
-        : (existingSchedule?.project.teamId ?? activeTeamId);
-    const nextTeam =
-      imported.team && !teamExists
-        ? {
-            ...imported.team,
-            id: nextTeamId ?? imported.team.id,
-          }
-        : null;
-    const nextTasks = normalizeSummaryTasks(imported.tasks);
-    const nextSchedule: ScheduleSnapshot = {
-      calendar: imported.calendar,
-      members: imported.members,
-      project: {
-        ...imported.project,
-        archivedAt: undefined,
-        id: importedProjectId,
-        name: projectIdChanged ? `${imported.project.name}（インポート）` : imported.project.name,
-        status: "active",
-        teamId: nextTeamId,
-        workspace: projectIdChanged
-          ? `${imported.project.workspace}（インポート）`
-          : imported.project.workspace,
-      },
-      tasks: nextTasks,
-    };
+    const {
+      importedProjectId,
+      nextSchedule,
+      nextTasks,
+      nextTeam,
+      nextTeamId,
+      projectIdChanged,
+      replaceExisting,
+    } = prepareProjectImport(pendingProjectImport, mode, workspace, activeTeamId);
 
     setWorkspace((current) => ({
       ...current,
@@ -2221,7 +1768,7 @@ function AppWorkbenchContent({
         return current;
       }
       const next = new Set(current);
-      next.delete(imported.project.id);
+      next.delete(pendingProjectImport.data.project.id);
       return next;
     });
     setActiveTeamId(nextTeamId ?? "");
