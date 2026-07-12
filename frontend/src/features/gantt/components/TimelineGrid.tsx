@@ -42,6 +42,8 @@ type TimelineGridProps = {
   onOpenTaskInspector: (taskId: string) => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSelectTask: (taskId: string, options?: { additive?: boolean; range?: boolean }) => void;
+  projectRangeEnd: string;
+  projectRangeStart: string;
   dependencyIssueByTaskId: Map<string, DependencyIssue[]>;
   query: string;
   rowIndexOffset: number;
@@ -73,6 +75,8 @@ export function TimelineGrid({
   onOpenTaskInspector,
   onResizeTask,
   onSelectTask,
+  projectRangeEnd,
+  projectRangeStart,
   dependencyIssueByTaskId,
   query,
   rowIndexOffset,
@@ -90,6 +94,7 @@ export function TimelineGrid({
   const timelineWidth = timeline.length * dayWidth;
   const bodyHeight = Math.max(totalRows * rowHeight, viewportHeight);
   const todayOffset = getExactTimelineSlotIndex(todayKey, timeline);
+  const projectEndOffset = getExactTimelineSlotIndex(projectRangeEnd, timeline);
   const showToday = todayOffset >= visibleSlotWindow.start && todayOffset < visibleSlotWindow.end;
   const visibleMonths = getVisibleColumns(months, visibleSlotWindow);
   const visibleWeeks = getVisibleColumns(weeks, visibleSlotWindow);
@@ -104,6 +109,14 @@ export function TimelineGrid({
           <div
             className="today-header-band"
             style={{ left: todayOffset * dayWidth, width: dayWidth }}
+          />
+        ) : null}
+        {projectEndOffset >= visibleSlotWindow.start && projectEndOffset < visibleSlotWindow.end ? (
+          <div
+            aria-label={`当初計画の終了日 ${formatShortDate(projectRangeEnd)}`}
+            className="project-range-end-header"
+            style={{ left: (projectEndOffset + 1) * dayWidth }}
+            title={`当初計画の終了日 ${formatShortDate(projectRangeEnd)}`}
           />
         ) : null}
         <div className="month-row" style={{ width: timelineWidth }}>
@@ -169,6 +182,8 @@ export function TimelineGrid({
             bodyHeight={bodyHeight}
             dayWidth={dayWidth}
             days={timeline}
+            projectRangeEnd={projectRangeEnd}
+            projectRangeStart={projectRangeStart}
             todayOffset={todayOffset}
             visibleSlotWindow={visibleSlotWindow}
           />
@@ -215,6 +230,8 @@ type CalendarBackdropProps = {
   bodyHeight: number;
   dayWidth: number;
   days: TimelineDay[];
+  projectRangeEnd: string;
+  projectRangeStart: string;
   todayOffset: number;
   visibleSlotWindow: VisibleSlotWindow;
 };
@@ -223,6 +240,8 @@ function CalendarBackdrop({
   bodyHeight,
   dayWidth,
   days,
+  projectRangeEnd,
+  projectRangeStart,
   todayOffset,
   visibleSlotWindow,
 }: CalendarBackdropProps) {
@@ -231,17 +250,31 @@ function CalendarBackdrop({
     <div className="calendar-backdrop" style={{ height: bodyHeight }}>
       {visibleDays.map((day) => {
         const isToday = day.index === todayOffset;
+        const isOutsideProjectRange =
+          day.end < projectRangeStart || day.start > projectRangeEnd;
+        const includesProjectEnd =
+          projectRangeEnd >= day.start && projectRangeEnd <= day.end;
         const className = [
           "day-column",
           day.isNonWorking ? "non-working" : "",
           isToday ? "today" : "",
+          isOutsideProjectRange ? "outside-project-range" : "",
+          includesProjectEnd ? "project-range-end" : "",
         ]
           .filter(Boolean)
           .join(" ");
-        const title = [isToday ? "今日" : "", day.holiday?.name ?? ""].filter(Boolean).join(" / ");
+        const title = [
+          isToday ? "今日" : "",
+          day.holiday?.name ?? "",
+          isOutsideProjectRange ? "当初計画期間外" : "",
+          includesProjectEnd ? "当初計画の終了" : "",
+        ]
+          .filter(Boolean)
+          .join(" / ");
 
         return (
           <div
+            aria-hidden="true"
             className={className}
             key={day.key}
             style={{ left: day.index * dayWidth, width: dayWidth }}

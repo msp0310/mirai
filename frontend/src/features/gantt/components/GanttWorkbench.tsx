@@ -103,6 +103,8 @@ type GanttWorkbenchProps = {
   onToggleCollapsed: (taskId: string) => void;
   onUpdateTask: (taskId: string, patch: Partial<ScheduleTask>) => void;
   rows: TaskRow[];
+  projectRangeEnd: string;
+  projectRangeStart: string;
   scale: GanttScale;
   selectedTaskCount: number;
   selectedTaskId: string | null;
@@ -259,6 +261,8 @@ export function GanttWorkbench({
   onToggleCollapsed,
   onUpdateTask,
   rows,
+  projectRangeEnd,
+  projectRangeStart,
   scale,
   selectedTaskCount,
   selectedTaskId,
@@ -450,7 +454,7 @@ export function GanttWorkbench({
   useEffect(() => {
     const offset = getTimelineSlotIndex(todayKey, timeline);
     scrollTimelineToSlot(offset);
-  }, [dayWidth, timeline, todaySignal]);
+  }, [dayWidth, projectRangeEnd, projectRangeStart, todaySignal]);
 
   useEffect(() => {
     if (taskStartFocusSignal === 0 || !selectedTaskId) return;
@@ -1052,6 +1056,8 @@ export function GanttWorkbench({
             dayWidth={dayWidth}
             headerRef={timelineHeaderRef}
             members={members}
+            projectRangeEnd={projectRangeEnd}
+            projectRangeStart={projectRangeStart}
             months={months}
             onBodyScroll={handleTimelineScroll}
             onTaskContextMenu={openTaskContextMenu}

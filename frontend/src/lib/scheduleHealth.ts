@@ -166,7 +166,7 @@ export function buildScheduleHealthReport({
         id: `${task.id}-outside-range`,
         severity: "warning",
         taskId: task.id,
-        title: `${task.title} がプロジェクト期間外です`,
+        title: `${task.title} が当初計画期間を超過しています`,
       });
     }
 

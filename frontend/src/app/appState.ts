@@ -2,6 +2,7 @@ import type { ConfigChangeReview } from "../lib/changeReview";
 import { loadLocalScheduleDraft } from "../data/localScheduleStorage";
 import { defaultResourceDisplaySettings } from "../lib/resourceDisplaySettings";
 import { getProjectLifecycleStatus, projectLifecycleLabels } from "../lib/projects";
+import { addDays, parseDate, toDateKey } from "../lib/schedule";
 import type { ScheduleHealthIssue } from "../lib/scheduleHealth";
 import { normalizeSummaryTasks } from "../lib/taskOperations";
 import type {
@@ -114,6 +115,18 @@ export function getTaskRange(tasks: ScheduleTask[], project: Project) {
       (earliest, task) => (task.start < earliest ? task.start : earliest),
       project.rangeStart,
     ),
+  };
+}
+
+/** 当初計画を残しつつ、期間外へタスクを動かせるガント表示範囲を返します。 */
+export function getGanttTimelineRange(tasks: ScheduleTask[], project: Project) {
+  const taskRange = getTaskRange(tasks, project) ?? {
+    end: project.rangeEnd,
+    start: project.rangeStart,
+  };
+  return {
+    end: toDateKey(addDays(parseDate(taskRange.end), 42)),
+    start: toDateKey(addDays(parseDate(taskRange.start), -14)),
   };
 }
 

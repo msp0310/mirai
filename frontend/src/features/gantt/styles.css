@@ -371,6 +371,16 @@
   pointer-events: none;
 }
 
+.project-range-end-header {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 2px;
+  background: rgba(114, 126, 145, 0.68);
+  pointer-events: none;
+}
+
 .task-table,
 .timeline-body {
   height: clamp(360px, calc(100vh - 273px), 720px);
@@ -529,6 +539,22 @@
 
 .day-column.non-working.today {
   background: linear-gradient(90deg, rgba(246, 144, 75, 0.07), rgba(40, 100, 234, 0.08));
+}
+
+.day-column.outside-project-range {
+  background: rgba(116, 130, 153, 0.055);
+}
+
+.day-column.outside-project-range.non-working {
+  background: rgba(153, 125, 109, 0.085);
+}
+
+.day-column.outside-project-range.today {
+  background: rgba(40, 100, 234, 0.065);
+}
+
+.day-column.project-range-end {
+  border-right: 2px solid rgba(114, 126, 145, 0.68);
 }
 
 .task-table-row {

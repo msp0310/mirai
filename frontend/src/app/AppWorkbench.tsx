@@ -76,6 +76,7 @@ import {
   createPersistableDraft,
   getOperationalProjectStatus,
   getProjectIdFromHash,
+  getGanttTimelineRange,
   getHealthIssueFocusTarget,
   getTaskRange,
   initialFilters,
@@ -494,27 +495,31 @@ export function AppWorkbench({
     [taskHistories, workspace.schedules],
   );
 
+  const ganttTimelineRange = useMemo(
+    () => getGanttTimelineRange(tasks, schedule.project),
+    [schedule.project, tasks],
+  );
   const timeline = useMemo(
     () =>
       buildTimeline(
-        schedule.project.rangeStart,
-        schedule.project.rangeEnd,
+        ganttTimelineRange.start,
+        ganttTimelineRange.end,
         schedule.calendar,
         calendarAware,
         timeUnit,
       ),
-    [calendarAware, schedule, timeUnit],
+    [calendarAware, ganttTimelineRange.end, ganttTimelineRange.start, schedule.calendar, timeUnit],
   );
   const dayTimeline = useMemo(
     () =>
       buildTimeline(
-        schedule.project.rangeStart,
-        schedule.project.rangeEnd,
+        ganttTimelineRange.start,
+        ganttTimelineRange.end,
         schedule.calendar,
         calendarAware,
         "day",
       ),
-    [calendarAware, schedule],
+    [calendarAware, ganttTimelineRange.end, ganttTimelineRange.start, schedule.calendar],
   );
   const ganttColumns = useMemo(
     () => buildGanttHeaderColumns(timeline, timeUnit),
@@ -2872,6 +2877,8 @@ export function AppWorkbench({
               activeFilterCount={activeFilterCount}
               calendar={schedule.calendar}
               calendarAware={calendarAware}
+              projectRangeEnd={schedule.project.rangeEnd}
+              projectRangeStart={schedule.project.rangeStart}
               canEditPlan={canEditPlan}
               columnVisibility={columnVisibility}
               collapsedIds={collapsedIds}
