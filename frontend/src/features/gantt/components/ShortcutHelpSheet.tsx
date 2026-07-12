@@ -104,7 +104,10 @@ export function ShortcutHelpSheet({ onClose }: ShortcutHelpSheetProps) {
               <h3>{group.title}</h3>
               <dl>
                 {group.items.map((item) => (
-                  <div className="shortcut-row" key={`${group.title}-${item.label}`}>
+                  <div
+                    className="shortcut-row"
+                    key={`${group.title}-${item.keys.join("+")}-${item.label}`}
+                  >
                     <dt>
                       {item.keys.map((key) => (
                         <kbd key={key}>{key}</kbd>

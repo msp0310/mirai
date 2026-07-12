@@ -88,7 +88,7 @@ flowchart LR
 
 | 領域           | 技術                                  |
 | -------------- | ------------------------------------- |
-| フロントエンド | React 19 / TypeScript 7 / Vite 6      |
+| フロントエンド | React 19 / TypeScript 7 / Vite 8      |
 | スタイリング   | Vanilla Extract / CSS                 |
 | API            | ASP.NET Core 10 Minimal API           |
 | 永続化         | SQLite / Entity Framework Core 10     |

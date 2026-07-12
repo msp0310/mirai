@@ -8,7 +8,7 @@ export default defineConfig({
   build: {
     // Brabio取込時だけ遅延ロードするXLSXチャンクは約500KBのため、初期バンドルと分けて監視します。
     chunkSizeWarningLimit: 550,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         // 画面コードの更新時にRouterとReactのキャッシュを再利用できるよう分離します。
         manualChunks(id) {
