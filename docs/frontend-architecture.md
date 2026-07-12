@@ -28,10 +28,21 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 
 - URLで復元すべき状態はTanStack Routerで管理する
 - 表示設定はワークベンチ単位のJotai Storeで管理する
-- APIから取得した案件データはワークスペース状態で管理する
+- APIから取得した認証・案件・日報などのサーバー状態はTanStack Queryで管理する
+- Queryから取得した案件スナップショットを初期値として、未保存のガント編集はワークスペースdraftで管理する
 - feature固有の一時状態はfeature Hookまたはfeature Atomで管理する
 - 派生値は保存せず、入力状態から`useMemo`または純粋関数で導出する
 - API保存、履歴追加、通知を伴う更新はController Hookを唯一の入口にする
+
+### TanStack Query境界
+
+- `app/query/queryClient.ts`で鮮度、再試行、再取得の既定値を管理する
+- featureの`api/*Queries.ts`でQuery KeyとQuery Optionsを定義する
+- 案件詳細のQuery Keyは案件IDを必ず含め、全案件詳細を一つのキャッシュへ詰め込まない
+- Mutation成功時は応答を案件キャッシュへ反映し、案件サマリーなど関連Queryだけを無効化する
+- Queryのバックグラウンド再取得で未保存draftを上書きしない
+- ログアウト、パスワード変更、セッション失効時は利用者固有のQueryキャッシュを破棄する
+- Router contextへQueryClientを渡し、route loaderから`ensureQueryData`を利用できる構成を保つ
 
 ## Ganttの責務境界
 

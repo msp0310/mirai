@@ -4,12 +4,13 @@ import {
   ClockIcon,
   FolderOpenIcon,
 } from "@heroicons/react/24/outline";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import type { AuthUser } from "../../../data/authRepository";
-import { listDailyReports } from "../../../data/dailyReportRepository";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
-import type { DailyReport, WorkLogCategory } from "../../../types/schedule";
+import type { WorkLogCategory } from "../../../types/schedule";
+import { dailyReportsQueryOptions } from "../../dailyReports/api/dailyReportQueries";
 
 import * as styles from "./PersonalAnalyticsPage.css";
 
@@ -60,12 +61,7 @@ export function PersonalAnalyticsPage({
   const [selectedMemberId, setSelectedMemberId] = useState(currentMember?.id ?? "");
   const selectedMember =
     members.find((item) => item.id === selectedMemberId) ?? currentMember ?? members[0];
-  const [dailyReports, setDailyReports] = useState<DailyReport[]>([]);
-  useEffect(() => {
-    listDailyReports()
-      .then(setDailyReports)
-      .catch(() => setDailyReports([]));
-  }, []);
+  const dailyReports = useQuery(dailyReportsQueryOptions()).data ?? [];
   useEffect(() => {
     if (!selectedMemberId && currentMember?.id) {
       setSelectedMemberId(currentMember.id);

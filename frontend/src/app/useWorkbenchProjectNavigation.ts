@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 
 import type { ViewTab } from "../components/layout/ViewTabs";
@@ -8,6 +9,10 @@ import type {
   ScheduleSnapshot,
   ScheduleWorkspace,
 } from "../data/scheduleRepository";
+import {
+  projectQueryKeys,
+  projectScheduleQueryOptions,
+} from "../features/projects/api/projectQueries";
 import type { CreateProjectTemplateInput } from "../features/projects/components/ProjectCreateSheet";
 import type { ToastInput } from "../hooks/useToastQueue";
 import { getActiveMembers } from "../lib/members";
@@ -80,6 +85,7 @@ export function useWorkbenchProjectNavigation({
   setWorkspace,
   workspace,
 }: UseWorkbenchProjectNavigationOptions) {
+  const queryClient = useQueryClient();
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
   const [favoriteProjectIds, setFavoriteProjectIds] = useState<Set<string>>(
     () => new Set(initialFavoriteProjectIds),
@@ -93,6 +99,16 @@ export function useWorkbenchProjectNavigation({
       ).length + 1,
     [activeTeamId, projectSummaries],
   );
+  const { mutateAsync: createProjectOnServer } = useMutation({
+    mutationFn: (newSchedule: ScheduleSnapshot) => apiScheduleRepository.createProject(newSchedule),
+    onSuccess: async (createdSchedule) => {
+      queryClient.setQueryData(
+        projectQueryKeys.schedule(createdSchedule.project.id),
+        createdSchedule,
+      );
+      await queryClient.invalidateQueries({ queryKey: projectQueryKeys.workspaceSummary });
+    },
+  });
 
   const activateProject = useCallback(
     (projectId: string, options: ActivateProjectOptions = {}) => {
@@ -142,8 +158,8 @@ export function useWorkbenchProjectNavigation({
           return true;
         }
         setLoadingProjectId(projectId);
-        apiScheduleRepository
-          .getProjectSchedule(projectId)
+        queryClient
+          .fetchQuery(projectScheduleQueryOptions(projectId))
           .then(completeActivation)
           .catch((error: unknown) => {
             if (projectLoadRequestIdRef.current !== requestId) {
@@ -172,6 +188,7 @@ export function useWorkbenchProjectNavigation({
       navigateToProjectView,
       persistNavigationState,
       projectSummaries,
+      queryClient,
       setActiveProjectId,
       setActiveTeamId,
       setFilterOpen,
@@ -228,16 +245,14 @@ export function useWorkbenchProjectNavigation({
         templateId: input.templateId,
         workspace: input.workspace,
       });
-      const createdSchedule = await apiScheduleRepository
-        .createProject(nextSchedule)
-        .catch((error) => {
-          addToast({
-            detail: error instanceof Error ? error.message : "作成できませんでした。",
-            title: "プロジェクトの追加に失敗しました",
-            tone: "warning",
-          });
-          return null;
+      const createdSchedule = await createProjectOnServer(nextSchedule).catch((error) => {
+        addToast({
+          detail: error instanceof Error ? error.message : "作成できませんでした。",
+          title: "プロジェクトの追加に失敗しました",
+          tone: "warning",
         });
+        return null;
+      });
       if (!createdSchedule) {
         return;
       }
@@ -272,6 +287,7 @@ export function useWorkbenchProjectNavigation({
       addToast,
       calendarAware,
       closeTransientUi,
+      createProjectOnServer,
       navigateToProjectView,
       nextProjectIndex,
       recordActivity,

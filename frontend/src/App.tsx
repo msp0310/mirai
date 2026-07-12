@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import { createInitialAppState } from "./app/appState";
-import type { AppBootState, AuthState } from "./app/appTypes";
 import { AppWorkbench } from "./app/AppWorkbench";
-import { createInitialScheduleWorkspace, selectInitialProject } from "./app/projectLoading";
-import { getProjectIdFromCurrentRoute } from "./app/routing/miraiRouteState";
-import { ApiRequestError, apiScheduleRepository } from "./data/apiScheduleRepository";
-import { AuthRequestError, authRepository } from "./data/authRepository";
-import { clearLocalScheduleDraft, loadLocalScheduleDraft } from "./data/localScheduleStorage";
+import { useAppBootstrap } from "./app/useAppBootstrap";
+import { ApiRequestError } from "./data/apiClient";
 import { LoginScreen } from "./features/auth/components/LoginScreen";
 import { PasswordChangeScreen } from "./features/auth/components/PasswordChangeScreen";
+import { useAuthSession } from "./features/auth/hooks/useAuthSession";
 
 /** 認証状態とAPI初期化中に表示する共通プレースホルダーです。 */
 function AppBootScreen({
@@ -43,174 +39,57 @@ function AppBootScreen({
 
 /** 認証状態とAPI初期化を管理し、ログイン画面とワークベンチを切り替えます。 */
 export function App() {
-  const [authState, setAuthState] = useState<AuthState>({ status: "checking" });
-  const [bootState, setBootState] = useState<AppBootState>({ status: "loading" });
-  const [reloadRequestId, setReloadRequestId] = useState(0);
-  const [loginSubmitting, setLoginSubmitting] = useState(false);
-  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
+  const auth = useAuthSession();
+  const bootState = useAppBootstrap(auth.user);
+  const bootError = bootState.status === "failed" ? bootState.error : null;
 
   useEffect(() => {
-    let cancelled = false;
-    authRepository
-      .getCurrentUser()
-      .then((user) => {
-        if (cancelled) {
-          return;
-        }
-        if (!user) {
-          clearLocalScheduleDraft();
-        }
-        setAuthState(user ? { status: "signedIn", user } : { error: null, status: "signedOut" });
-      })
-      .catch((error: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        setAuthState({
-          error:
-            error instanceof Error
-              ? error.message
-              : "認証状態を確認できませんでした。ログインしてください。",
-          status: "signedOut",
-        });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (authState.status !== "signedIn") {
-      return;
+    if (bootError instanceof ApiRequestError && bootError.status === 401) {
+      auth.expireSession();
     }
+  }, [auth.expireSession, bootError]);
 
-    let cancelled = false;
-    setBootState({ status: "loading" });
-    async function loadInitialWorkspace() {
-      const summary = await apiScheduleRepository.getWorkspaceSummary();
-      const draft = loadLocalScheduleDraft();
-      const initialProject = selectInitialProject(summary, {
-        draftProjectId: draft?.activeProjectId,
-        hashProjectId: getProjectIdFromCurrentRoute(),
-      });
-      if (!initialProject) {
-        throw new Error("APIからプロジェクトが取得できませんでした。");
-      }
-      const schedule = await apiScheduleRepository.getProjectSchedule(initialProject.id);
-      return createInitialScheduleWorkspace(summary, schedule);
-    }
-
-    loadInitialWorkspace()
-      .then((workspace) => {
-        if (cancelled) {
-          return;
-        }
-        setBootState({
-          initialAppState: createInitialAppState(workspace),
-          loadId: Date.now(),
-          status: "ready",
-        });
-      })
-      .catch((error: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        if (error instanceof ApiRequestError && error.status === 401) {
-          authRepository.clearSession();
-          clearLocalScheduleDraft();
-          setAuthState({
-            error: "セッションが切れました。もう一度ログインしてください。",
-            status: "signedOut",
-          });
-          return;
-        }
-        setBootState({
-          error:
-            error instanceof Error ? error.message : "APIから初期データを取得できませんでした。",
-          status: "failed",
-        });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authState.status, reloadRequestId]);
-
-  async function login(email: string, password: string) {
-    setLoginSubmitting(true);
-    try {
-      const session = await authRepository.login(email, password);
-      setAuthState({ status: "signedIn", user: session.user });
-    } catch (error) {
-      setAuthState({
-        error:
-          error instanceof AuthRequestError && error.status === 401
-            ? "メールアドレスまたはパスワードが違います。"
-            : error instanceof Error
-              ? error.message
-              : "ログインできませんでした。",
-        status: "signedOut",
-      });
-    } finally {
-      setLoginSubmitting(false);
-    }
-  }
-
-  async function logout() {
-    await authRepository.logout().catch(() => undefined);
-    // 共有端末で前利用者の表示状態を引き継がないよう、認証終了時に端末設定を破棄します。
-    clearLocalScheduleDraft();
-    setAuthState({ error: null, status: "signedOut" });
-    setBootState({ status: "loading" });
-  }
-
-  async function changePassword(currentPassword: string, newPassword: string) {
-    setLoginSubmitting(true);
-    setPasswordChangeError(null);
-    try {
-      await authRepository.changePassword(currentPassword, newPassword);
-      clearLocalScheduleDraft();
-      setAuthState({
-        error: "パスワードを変更しました。もう一度ログインしてください。",
-        status: "signedOut",
-      });
-    } catch (error) {
-      setPasswordChangeError(
-        error instanceof Error ? error.message : "パスワードを変更できませんでした。",
-      );
-    } finally {
-      setLoginSubmitting(false);
-    }
-  }
-
-  if (authState.status === "checking") {
+  if (auth.checking) {
     return <AppBootScreen title="認証状態を確認中" />;
   }
 
-  if (authState.status === "signedOut") {
-    return <LoginScreen error={authState.error} loading={loginSubmitting} onLogin={login} />;
-  }
-
-  if (authState.user.passwordResetRequired) {
+  if (!auth.user) {
     return (
-      <PasswordChangeScreen
-        error={passwordChangeError}
-        loading={loginSubmitting}
-        onChangePassword={changePassword}
+      <LoginScreen
+        error={auth.loginError}
+        loading={auth.loginSubmitting}
+        onLogin={async (email, password) => {
+          await auth.login(email, password).catch(() => undefined);
+        }}
       />
     );
   }
 
-  if (bootState.status === "loading") {
+  if (auth.user.passwordResetRequired) {
+    return (
+      <PasswordChangeScreen
+        error={auth.passwordChangeError}
+        loading={auth.passwordChangeSubmitting}
+        onChangePassword={async (currentPassword, newPassword) => {
+          await auth.changePassword(currentPassword, newPassword).catch(() => undefined);
+        }}
+      />
+    );
+  }
+
+  if (bootState.status === "loading" || bootState.status === "idle") {
     return <AppBootScreen title="ワークスペースを読み込み中" />;
   }
 
   if (bootState.status === "failed") {
     return (
       <AppBootScreen
-        error={bootState.error}
-        onRetry={() => setReloadRequestId((value) => value + 1)}
+        error={
+          bootState.error instanceof Error
+            ? bootState.error.message
+            : "APIから初期データを取得できませんでした。"
+        }
+        onRetry={() => void bootState.reload()}
         title="APIに接続できません"
       />
     );
@@ -219,10 +98,10 @@ export function App() {
   return (
     <AppWorkbench
       key={bootState.loadId}
-      currentUser={authState.user}
+      currentUser={auth.user}
       initialAppState={bootState.initialAppState}
-      onLogout={logout}
-      onReloadWorkspace={() => setReloadRequestId((value) => value + 1)}
+      onLogout={auth.logout}
+      onReloadWorkspace={() => void bootState.reload()}
     />
   );
 }

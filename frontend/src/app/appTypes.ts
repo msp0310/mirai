@@ -1,5 +1,4 @@
 import type { ViewTab } from "../components/layout/ViewTabs";
-import type { AuthUser } from "../data/authRepository";
 import type { LocalSchedulePreferences } from "../data/localScheduleStorage";
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import type { TaskHistory } from "../features/gantt/types/ganttState";
@@ -44,18 +43,6 @@ export type AppInitialState = {
   timeUnit: GanttTimeUnit;
   workspace: ScheduleWorkspace;
 };
-
-/** 認証後のワークスペース初期取得状態です。 */
-export type AppBootState =
-  | { status: "loading" }
-  | { error: string; status: "failed" }
-  | { initialAppState: AppInitialState; loadId: number; status: "ready" };
-
-/** アプリケーションシェルで使う認証状態です。 */
-export type AuthState =
-  | { status: "checking" }
-  | { error: string | null; status: "signedOut" }
-  | { status: "signedIn"; user: AuthUser };
 
 /** API送信状態を表示層へ渡すための状態モデルです。 */
 export type ApiSyncState = {

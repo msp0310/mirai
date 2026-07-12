@@ -1,8 +1,10 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 
 import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import { saveLocalScheduleDraft } from "../data/localScheduleStorage";
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
+import { projectQueryKeys } from "../features/projects/api/projectQueries";
 import { createDraftSignature } from "./appState";
 import type { ApiSyncState, PersistableDraft } from "./appTypes";
 
@@ -40,6 +42,21 @@ export function useScheduleSync({
   setSavedWorkspace,
   setWorkspace,
 }: UseScheduleSyncOptions) {
+  const queryClient = useQueryClient();
+  const { mutateAsync: saveWorkspace } = useMutation({
+    mutationFn: ({ changeReason, draft }: { changeReason?: string; draft: PersistableDraft }) =>
+      apiScheduleRepository.saveWorkspace(
+        draft.workspace,
+        {
+          activeProjectId: draft.activeProjectId,
+          activeTeamId: draft.activeTeamId,
+          changeReason,
+          reason: "manual",
+        },
+        savedDraftRef.current.workspace,
+      ),
+  });
+
   /** 指定時点の案件データをAPIへ送信し、成功した応答を保存基準にします。 */
   async function scheduleApiSync(
     draftToSync: PersistableDraft,
@@ -60,21 +77,22 @@ export function useScheduleSync({
     }));
 
     try {
-      const result = await apiScheduleRepository.saveWorkspace(
-        draftToSync.workspace,
-        {
-          activeProjectId: draftToSync.activeProjectId,
-          activeTeamId: draftToSync.activeTeamId,
-          changeReason,
-          reason: "manual",
-        },
-        savedDraftRef.current.workspace,
-      );
+      const result = await saveWorkspace({ changeReason, draft: draftToSync });
       if (saveOperationIdRef.current !== operationId) {
         return;
       }
       const successAt = new Date().toISOString();
       const syncedDraft = { ...draftToSync, workspace: result.workspace };
+      const savedSchedule = result.workspace.schedules.find(
+        (snapshot) => snapshot.project.id === draftToSync.activeProjectId,
+      );
+      if (savedSchedule) {
+        queryClient.setQueryData(
+          projectQueryKeys.schedule(draftToSync.activeProjectId),
+          savedSchedule,
+        );
+      }
+      void queryClient.invalidateQueries({ queryKey: projectQueryKeys.workspaceSummary });
       const saved = saveLocalScheduleDraft(syncedDraft);
       savedDraftRef.current = syncedDraft;
       setWorkspace(result.workspace);

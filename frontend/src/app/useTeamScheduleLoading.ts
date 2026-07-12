@@ -1,8 +1,9 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
 import type { ViewTab } from "../components/layout/ViewTabs";
-import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import type { ProjectSummary, ScheduleWorkspace } from "../data/scheduleRepository";
+import { projectScheduleQueryOptions } from "../features/projects/api/projectQueries";
 import { mergeScheduleIntoWorkspace } from "../lib/scheduleWorkspace";
 import type { ResourceScope } from "../types/schedule";
 import { findMissingProjectIds } from "./projectLoading";
@@ -29,6 +30,7 @@ export function useTeamScheduleLoading({
   setWorkspace,
   workspace,
 }: UseTeamScheduleLoadingOptions) {
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -55,7 +57,9 @@ export function useTeamScheduleLoading({
     let cancelled = false;
     setLoading(true);
     Promise.all(
-      missingProjectIds.map((projectId) => apiScheduleRepository.getProjectSchedule(projectId)),
+      missingProjectIds.map((projectId) =>
+        queryClient.fetchQuery(projectScheduleQueryOptions(projectId)),
+      ),
     )
       .then((schedules) => {
         if (!cancelled) {
@@ -83,6 +87,7 @@ export function useTeamScheduleLoading({
     onError,
     onLoaded,
     projectSummaries,
+    queryClient,
     resourceScope,
     setWorkspace,
     workspace.schedules,

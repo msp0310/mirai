@@ -1,12 +1,14 @@
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import {
   Outlet,
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
   redirect,
 } from "@tanstack/react-router";
 
 import { App } from "../../App";
+import { queryClient } from "../query/queryClient";
 
 /** 認証・ワークスペースを維持したまま、子ルートの変更だけを反映します。 */
 function AppRouteRoot() {
@@ -26,7 +28,11 @@ function NestedRoute() {
   return <Outlet />;
 }
 
-const rootRoute = createRootRoute({ component: AppRouteRoot });
+type MiraiRouterContext = {
+  queryClient: QueryClient;
+};
+
+const rootRoute = createRootRouteWithContext<MiraiRouterContext>()({ component: AppRouteRoot });
 const indexRoute = createRoute({
   beforeLoad: () => {
     throw redirect({ to: "/projects" });
@@ -148,7 +154,16 @@ const routeTree = rootRoute.addChildren([
   helpRoute,
 ]);
 
-export const router = createRouter({ defaultPreload: "intent", routeTree });
+export const router = createRouter({
+  context: { queryClient },
+  defaultPreload: "intent",
+  // Query側で鮮度と重複排除を管理するため、Routerはloaderを毎回Queryへ委譲できます。
+  defaultPreloadStaleTime: 0,
+  routeTree,
+  Wrap: ({ children }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  ),
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
