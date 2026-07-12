@@ -1,15 +1,10 @@
 import {
-  ChatBubbleLeftRightIcon,
   ExclamationTriangleIcon,
-  LinkIcon,
   MagnifyingGlassIcon,
-  PlusIcon,
-  TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
-import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 import { MemberChecklist } from "../../../components/ui/MemberChecklist";
 import {
   addDays,
@@ -28,11 +23,11 @@ import type {
   CalendarDefinition,
   Member,
   ScheduleTask,
-  TaskChecklistItem,
-  TaskComment,
   TaskInspectorFocusTarget,
-  TaskReferenceLink,
 } from "../../../types/schedule";
+import { TaskChecklistSection } from "./TaskChecklistSection";
+import { TaskCollaborationSection } from "./TaskCollaborationSection";
+import { TaskReferenceLinksSection } from "./TaskReferenceLinksSection";
 
 type TaskInspectorProps = {
   attachments: Attachment[];
@@ -86,20 +81,12 @@ export function TaskInspector({
   task,
 }: TaskInspectorProps) {
   const [activeSection, setActiveSection] = useState<InspectorSection>("basic");
-  const [checklistText, setChecklistText] = useState("");
-  const [commentText, setCommentText] = useState("");
   const [dependencyQuery, setDependencyQuery] = useState("");
-  const [linkLabel, setLinkLabel] = useState("");
-  const [linkUrl, setLinkUrl] = useState("");
   const inspectorRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setActiveSection("basic");
-    setChecklistText("");
-    setCommentText("");
     setDependencyQuery("");
-    setLinkLabel("");
-    setLinkUrl("");
   }, [task?.id]);
 
   useEffect(() => {
@@ -205,10 +192,7 @@ export function TaskInspector({
     }))
     .filter((warning) => warning.incomplete || warning.dateConflict);
 
-  const checklist = currentTask.checklist ?? [];
-  const doneChecklistCount = checklist.filter((item) => item.done).length;
   const comments = currentTask.comments ?? [];
-  const links = currentTask.links ?? [];
   const baseline =
     currentTask.baselineStart && currentTask.baselineEnd
       ? {
@@ -312,91 +296,6 @@ export function TaskInspector({
       `${formatShortDate(currentTask.end)} から ${formatShortDate(end)} へ調整しました。`,
       "info",
     );
-  }
-
-  function addChecklistItem() {
-    const label = checklistText.trim();
-    if (!label) {
-      return;
-    }
-    const nextItem: TaskChecklistItem = {
-      done: false,
-      id: createTaskDetailId(currentTask.id, "check"),
-      label,
-    };
-    onUpdateTask(currentTask.id, { checklist: [...checklist, nextItem] });
-    setChecklistText("");
-    onTaskActivity(currentTask.id, "完了条件を追加しました", label, "info");
-  }
-
-  function toggleChecklistItem(itemId: string) {
-    const item = checklist.find((candidate) => candidate.id === itemId);
-    const next = checklist.map((candidate) =>
-      candidate.id === itemId ? { ...candidate, done: !candidate.done } : candidate,
-    );
-    onUpdateTask(currentTask.id, { checklist: next });
-    if (item) {
-      onTaskActivity(
-        currentTask.id,
-        item.done ? "完了条件を未完了に戻しました" : "完了条件を完了しました",
-        item.label,
-        item.done ? "warning" : "success",
-      );
-    }
-  }
-
-  function deleteChecklistItem(itemId: string) {
-    const item = checklist.find((candidate) => candidate.id === itemId);
-    onUpdateTask(currentTask.id, {
-      checklist: checklist.filter((candidate) => candidate.id !== itemId),
-    });
-    if (item) {
-      onTaskActivity(currentTask.id, "完了条件を削除しました", item.label, "warning");
-    }
-  }
-
-  function addComment() {
-    const body = commentText.trim();
-    if (!body) {
-      return;
-    }
-    const nextComment: TaskComment = {
-      author: "操作ユーザー",
-      body,
-      createdAt: new Date().toISOString(),
-      id: createTaskDetailId(currentTask.id, "comment"),
-    };
-    onUpdateTask(currentTask.id, { comments: [nextComment, ...comments] });
-    setCommentText("");
-    onTaskActivity(currentTask.id, "コメントを追加しました", body, "success");
-  }
-
-  function addLink() {
-    const url = normalizeUrl(linkUrl.trim());
-    const label = linkLabel.trim() || url;
-    if (!url) {
-      return;
-    }
-    const nextLink: TaskReferenceLink = {
-      createdAt: new Date().toISOString(),
-      id: createTaskDetailId(currentTask.id, "link"),
-      label,
-      url,
-    };
-    onUpdateTask(currentTask.id, { links: [nextLink, ...links] });
-    setLinkLabel("");
-    setLinkUrl("");
-    onTaskActivity(currentTask.id, "参考リンクを追加しました", label, "info");
-  }
-
-  function deleteLink(linkId: string) {
-    const link = links.find((candidate) => candidate.id === linkId);
-    onUpdateTask(currentTask.id, {
-      links: links.filter((candidate) => candidate.id !== linkId),
-    });
-    if (link) {
-      onTaskActivity(currentTask.id, "参考リンクを削除しました", link.label, "warning");
-    }
   }
 
   return (
@@ -644,63 +543,11 @@ export function TaskInspector({
       ) : null}
       {activeSection === "relations" ? (
         <>
-          <section className="task-detail-section">
-            <div className="task-detail-heading">
-              <span>完了条件</span>
-              <small>
-                {doneChecklistCount} / {checklist.length}
-              </small>
-            </div>
-            <div className="inline-create-control task-detail-create">
-              <input
-                disabled={task.type === "summary" || task.type === "phase"}
-                onChange={(event) => setChecklistText(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addChecklistItem();
-                  }
-                }}
-                placeholder="例: 顧客レビュー指摘を反映"
-                value={checklistText}
-              />
-              <button
-                disabled={task.type === "summary" || task.type === "phase"}
-                onClick={addChecklistItem}
-                title="完了条件を追加"
-                type="button"
-              >
-                <PlusIcon />
-              </button>
-            </div>
-            <div className="task-checklist">
-              {checklist.map((item) => (
-                <label className={item.done ? "done" : ""} key={item.id}>
-                  <input
-                    checked={item.done}
-                    disabled={task.type === "summary" || task.type === "phase"}
-                    onChange={() => toggleChecklistItem(item.id)}
-                    type="checkbox"
-                  />
-                  <span>{item.label}</span>
-                  <button
-                    disabled={task.type === "summary" || task.type === "phase"}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      deleteChecklistItem(item.id);
-                    }}
-                    title="削除"
-                    type="button"
-                  >
-                    <TrashIcon />
-                  </button>
-                </label>
-              ))}
-              {checklist.length === 0 ? (
-                <p className="task-detail-empty">完了条件は未登録です</p>
-              ) : null}
-            </div>
-          </section>
+          <TaskChecklistSection
+            onTaskActivity={onTaskActivity}
+            onUpdateTask={onUpdateTask}
+            task={currentTask}
+          />
           <div className="check-list dependency-list">
             <div className="dependency-list-heading">
               <span>前提タスク</span>
@@ -800,126 +647,23 @@ export function TaskInspector({
         </>
       ) : null}
       {activeSection === "collaboration" ? (
-        <>
-          <section className="task-detail-section" data-task-focus-target="comments" tabIndex={-1}>
-            <div className="task-detail-heading">
-              <span>
-                <ChatBubbleLeftRightIcon />
-                コメント
-              </span>
-              <small>{comments.length}件</small>
-            </div>
-            <textarea
-              className="task-comment-input"
-              disabled={!canComment || task.type === "summary" || task.type === "phase"}
-              onChange={(event) => setCommentText(event.target.value)}
-              placeholder="進捗メモ、確認結果、次アクションなど"
-              value={commentText}
-            />
-            <button
-              className="task-detail-primary"
-              disabled={
-                !canComment ||
-                !commentText.trim() ||
-                task.type === "summary" ||
-                task.type === "phase"
-              }
-              onClick={addComment}
-              type="button"
-            >
-              コメント追加
-            </button>
-            <div className="task-comment-list">
-              {comments.slice(0, 4).map((comment) => (
-                <article key={comment.id}>
-                  <div>
-                    <strong>{comment.author}</strong>
-                    <span>{formatCommentTime(comment.createdAt)}</span>
-                  </div>
-                  <p>{comment.body}</p>
-                  <AttachmentPanel
-                    attachments={attachments.filter(
-                      (attachment) =>
-                        attachment.ownerType === "taskComment" && attachment.ownerId === comment.id,
-                    )}
-                    onAttachmentAdded={onAttachmentAdded}
-                    onAttachmentDeleted={onAttachmentDeleted}
-                    ownerId={comment.id}
-                    ownerType="taskComment"
-                    parentId={currentTask.id}
-                    projectId={projectId}
-                  />
-                </article>
-              ))}
-              {comments.length === 0 ? (
-                <p className="task-detail-empty">コメントはまだありません</p>
-              ) : null}
-            </div>
-          </section>
-          <AttachmentPanel
-            attachments={attachments.filter(
-              (attachment) =>
-                attachment.ownerType === "task" && attachment.ownerId === currentTask.id,
-            )}
-            onAttachmentAdded={onAttachmentAdded}
-            onAttachmentDeleted={onAttachmentDeleted}
-            ownerId={currentTask.id}
-            ownerType="task"
-            projectId={projectId}
-          />
-        </>
+        <TaskCollaborationSection
+          attachments={attachments}
+          canComment={canComment}
+          onAttachmentAdded={onAttachmentAdded}
+          onAttachmentDeleted={onAttachmentDeleted}
+          onTaskActivity={onTaskActivity}
+          onUpdateTask={onUpdateTask}
+          projectId={projectId}
+          task={currentTask}
+        />
       ) : null}
       {activeSection === "relations" ? (
-        <section className="task-detail-section">
-          <div className="task-detail-heading">
-            <span>
-              <LinkIcon />
-              参考リンク
-            </span>
-            <small>{links.length}件</small>
-          </div>
-          <div className="task-link-form">
-            <input
-              disabled={task.type === "summary" || task.type === "phase"}
-              onChange={(event) => setLinkLabel(event.target.value)}
-              placeholder="表示名"
-              value={linkLabel}
-            />
-            <input
-              disabled={task.type === "summary" || task.type === "phase"}
-              onChange={(event) => setLinkUrl(event.target.value)}
-              placeholder="https://..."
-              value={linkUrl}
-            />
-            <button
-              disabled={!linkUrl.trim() || task.type === "summary" || task.type === "phase"}
-              onClick={addLink}
-              type="button"
-            >
-              追加
-            </button>
-          </div>
-          <div className="task-link-list">
-            {links.map((link) => (
-              <div key={link.id}>
-                <a href={link.url} rel="noreferrer" target="_blank">
-                  {link.label}
-                </a>
-                <button
-                  disabled={task.type === "summary" || task.type === "phase"}
-                  onClick={() => deleteLink(link.id)}
-                  title="削除"
-                  type="button"
-                >
-                  <TrashIcon />
-                </button>
-              </div>
-            ))}
-            {links.length === 0 ? (
-              <p className="task-detail-empty">参考リンクは未登録です</p>
-            ) : null}
-          </div>
-        </section>
+        <TaskReferenceLinksSection
+          onTaskActivity={onTaskActivity}
+          onUpdateTask={onUpdateTask}
+          task={currentTask}
+        />
       ) : null}
     </aside>
   );
@@ -1109,10 +853,6 @@ function dependencyPathReaches(
   );
 }
 
-function createTaskDetailId(taskId: string, prefix: string) {
-  return `${taskId}-${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
 function getDateDiffDays(from: string, to: string) {
   return Math.round((parseDate(to).getTime() - parseDate(from).getTime()) / 86_400_000);
 }
@@ -1188,27 +928,4 @@ function formatDateTimeLabel(value: string) {
     2,
     "0",
   )}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
-
-function normalizeUrl(value: string) {
-  if (!value) {
-    return "";
-  }
-  if (/^https?:\/\//i.test(value)) {
-    return value;
-  }
-  return `https://${value}`;
-}
-
-function formatCommentTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "--:--";
-  }
-  return date.toLocaleString("ja-JP", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  });
 }
