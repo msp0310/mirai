@@ -107,6 +107,12 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 - `HealthPanel`: 健全性スコアと修正導線を段階表示する
 - `MilestoneLoadPanels`: 直近マイルストーンとチーム負荷を表示する
 
+## 変更履歴の責務境界
+
+- `ActivityPanel`: 保存前差分と保存済み履歴の構成だけを行う
+- `ActivityTimeline`: 保存済み履歴の検索・カテゴリ絞り込みを管理する
+- `ChangeReviewPanel`: API保存前のタスク・設定差分とフォーカス導線を表示する
+
 ## 管理設定の責務境界
 
 - `MasterSettingsPage`: 設定カテゴリと編集中チームの選択だけを管理する
