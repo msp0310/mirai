@@ -90,6 +90,14 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 - `PortfolioControls`: 検索、状態絞り込み、並び替えを管理する
 - `PortfolioSidePanels`: 要対応、直近マイルストーン、担当者別残作業を表示する
 
+## カレンダーの責務境界
+
+- `CalendarPanel`: 月グリッドと編集サイドバーの構成だけを行う
+- `useCalendarPanel`: 表示月・選択日と稼働曜日・休日編集を管理する
+- `CalendarMonthGrid`: 42日グリッドと開始・終了・マイルストーンを描画する
+- `CalendarSidebar`: 選択日、稼働曜日、休日マスターを編集する
+- `calendarView`: 日別イベント、表示優先度、フォーカス対象を純粋関数で提供する
+
 ## 管理設定の責務境界
 
 - `MasterSettingsPage`: 設定カテゴリと編集中チームの選択だけを管理する
