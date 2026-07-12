@@ -1,7 +1,8 @@
+import { Provider } from "jotai";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Sidebar } from "../components/layout/Sidebar";
-import { type ExportFormat, Topbar, type TopbarNotification } from "../components/layout/Topbar";
+import { type ExportFormat, Topbar } from "../components/layout/Topbar";
 import { type ViewTab } from "../components/layout/ViewTabs";
 import { ToastViewport } from "../components/ui/ToastViewport";
 import { apiScheduleRepository } from "../data/apiScheduleRepository";
@@ -20,7 +21,7 @@ import {
   validateProjectImportData,
   validateTaskCsvImportData,
 } from "../data/scheduleImportExport";
-import { type ProjectSummary, type ScheduleSnapshot } from "../data/scheduleRepository";
+import { type ScheduleSnapshot } from "../data/scheduleRepository";
 import { todayKey } from "../features/gantt/components/constants";
 import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
 import type { TaskCsvImportOptions } from "../features/gantt/components/TaskCsvImportSheet";
@@ -47,15 +48,12 @@ import {
 } from "../lib/changeReview";
 import { getActiveMembers, isMemberActive } from "../lib/members";
 import { getProjectAssignedMembers, projectLifecycleLabels } from "../lib/projects";
-import { buildCrossProjectResourceRows } from "../lib/resourceCalculations";
 import {
   buildGanttHeaderColumns,
-  buildResourceMatrix,
   buildTimeline,
   buildWeekColumns,
   filterTaskRows,
   flattenTasks,
-  formatShortDate,
   getProgressStats,
 } from "../lib/schedule";
 import { type ScheduleHealthIssue, buildScheduleHealthReport } from "../lib/scheduleHealth";
@@ -67,15 +65,10 @@ import type {
   Attachment,
   CalendarDefinition,
   DailyReportReminder,
-  GanttScale,
-  GanttTimeUnit,
   Member,
   Project,
   ProjectAssignment,
   ProjectLifecycleStatus,
-  ResourceDisplaySettings,
-  ResourceScope,
-  ScheduleFilters,
   StaffingDemand,
   TaskInspectorFocusTarget,
   TaskStatus,
@@ -101,7 +94,24 @@ import { mergeScheduleIntoWorkspace } from "./projectLoading";
 import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresentation";
 import { useScheduleSync } from "./useScheduleSync";
 import { useTeamScheduleLoading } from "./useTeamScheduleLoading";
+import { useWorkbenchNotifications } from "./useWorkbenchNotifications";
 import { type PendingTaskCsvImport, useWorkbenchOverlays } from "./useWorkbenchOverlays";
+import { useWorkbenchProjectContext } from "./useWorkbenchProjectContext";
+import { useWorkbenchResources } from "./useWorkbenchResources";
+import {
+  activityActor,
+  addMissingMembers,
+  appendActivityLogEntry,
+  createProjectSummaryFromSnapshot,
+  createUniqueImportedId,
+  downloadTextFile,
+  escapeCsv,
+  focusTaskTitleEditor,
+  getTaskImportSourceLabel,
+  isOptionalAssigneeWarning,
+  uniqueStrings,
+  ViewLoading,
+} from "./workbenchHelpers";
 import {
   ActivityPanel,
   AnalysisPanel,
@@ -129,6 +139,7 @@ import {
   WorkLogPanel,
   WorkloadOverviewPage,
 } from "./workbenchLazyViews";
+import { createWorkbenchViewStore, useWorkbenchViewState } from "./workbenchViewState";
 
 type AppWorkbenchProps = {
   currentUser: AuthUser;
@@ -148,144 +159,64 @@ type ActivityInput = {
   tone?: ActivityTone;
 };
 
-/** 表示履歴に記録する操作ユーザー名です。認証ユーザー表示への切替点を固定します。 */
-const activityActor = "操作ユーザー";
-
-/** 指定したタスクのタイトル編集欄へフォーカスを移します。 */
-function focusTaskTitleEditor(taskId: string) {
-  const rowSelector = `.task-table-row[data-task-id="${taskId}"]`;
-  const inputSelector = `${rowSelector} input[data-inline-field="title"]`;
-
-  function focusInput() {
-    const input = document.querySelector<HTMLInputElement>(inputSelector);
-    if (!input) {
-      return false;
-    }
-    input.focus();
-    input.select();
-    return true;
-  }
-
-  if (focusInput()) {
-    return;
-  }
-  document
-    .querySelector<HTMLElement>(`${rowSelector} [data-title-edit-trigger="true"]`)
-    ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, detail: 2 }));
-  window.requestAnimationFrame(focusInput);
-}
-
-/** CSV出力用に値をエスケープします。 */
-function escapeCsv(value: string) {
-  const escaped = value.replaceAll('"', '""');
-  return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
-}
-
-/** テキストファイルをブラウザからダウンロードします。 */
-function downloadTextFile(filename: string, content: string, type: string) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
-
-/** 取込データ用の重複しないIDを生成します。 */
-function createUniqueImportedId(baseId: string, existingIds: Set<string>) {
-  const base = baseId.trim() || "imported-project";
-  if (!existingIds.has(base)) {
-    return base;
-  }
-
-  let suffix = 2;
-  let candidate = `${base}-import`;
-  while (existingIds.has(candidate)) {
-    candidate = `${base}-import-${suffix}`;
-    suffix += 1;
-  }
-  return candidate;
-}
-
-/** 遅延ロード中のプロジェクトビューに表示する共通プレースホルダーです。 */
-function ViewLoading({ label }: { label: string }) {
-  return <div className="view-loading">{label}</div>;
-}
-
-/** 詳細スナップショットから案件一覧用の軽量集計を一度だけ作成します。 */
-function createProjectSummaryFromSnapshot(snapshot: ScheduleSnapshot): ProjectSummary {
-  const stats = getProgressStats(snapshot.tasks);
-  return {
-    completedTaskCount: stats.completed,
-    delayedTaskCount: snapshot.tasks.filter(
-      (task) => task.type === "task" && task.status === "delayed",
-    ).length,
-    memberCount: snapshot.project.memberIds?.length ?? snapshot.members.length,
-    progress: stats.progress,
-    project: snapshot.project,
-    taskCount: stats.total,
-  };
-}
-
-/** 操作履歴を上限付きで先頭へ追加します。 */
-function appendActivityLogEntry(logs: Record<string, ActivityLogEntry[]>, entry: ActivityLogEntry) {
-  return {
-    ...logs,
-    [entry.projectId]: [entry, ...(logs[entry.projectId] ?? [])].slice(0, 160),
-  };
-}
-
-/** 文字列配列の重複を除去します。 */
-function uniqueStrings(values: string[]) {
-  return [...new Set(values)];
-}
-
-/** 担当者未設定の警告が任意項目か判定します。 */
-function isOptionalAssigneeWarning(message: string) {
-  return message.endsWith("に担当者が設定されていません。");
-}
-
-/** 取込データに必要なメンバーを追加します。 */
-function addMissingMembers(currentMembers: Member[], membersToCreate: Member[]) {
-  if (membersToCreate.length === 0) {
-    return currentMembers;
-  }
-  const currentIds = new Set(currentMembers.map((member) => member.id));
-  const additions = membersToCreate.filter((member) => !currentIds.has(member.id));
-  return additions.length === 0 ? currentMembers : [...currentMembers, ...additions];
-}
-
-/** 取込元の表示名を返します。 */
-function getTaskImportSourceLabel(sourceKind: PendingTaskCsvImport["sourceKind"]) {
-  return sourceKind === "brabio" ? "Brabio XLSX" : "タスクCSV";
+/** 画面状態をワークベンチ単位のJotai Storeへ閉じ込めます。 */
+export function AppWorkbench(props: AppWorkbenchProps) {
+  const [viewStore] = useState(() => createWorkbenchViewStore(props.initialAppState));
+  return (
+    <Provider store={viewStore}>
+      <AppWorkbenchContent {...props} />
+    </Provider>
+  );
 }
 
 /** プロジェクト状態・タスク操作・各ビューを束ねる認証後のアプリケーションシェルです。 */
-export function AppWorkbench({
+function AppWorkbenchContent({
   currentUser,
   initialAppState,
   onLogout,
   onReloadWorkspace,
 }: AppWorkbenchProps) {
+  const {
+    activeProjectId,
+    activeTab,
+    activeTeamId,
+    activeTourId,
+    calendarAware,
+    collapsedIdsByProject,
+    columnVisibility,
+    filterOpen,
+    filters,
+    ganttDisplayMode,
+    resourceDisplaySettings,
+    resourceScope,
+    scale,
+    setActiveProjectId,
+    setActiveTab,
+    setActiveTeamId,
+    setActiveTourId,
+    setCalendarAware,
+    setCollapsedIdsByProject,
+    setColumnVisibility,
+    setFilterOpen,
+    setFilters,
+    setGanttDisplayMode,
+    setResourceDisplaySettings,
+    setResourceScope,
+    setScale,
+    setTaskStartFocusSignal,
+    setTaskTitleEditRequest,
+    setTimeUnit,
+    setTodaySignal,
+    taskStartFocusSignal,
+    taskTitleEditRequest,
+    timeUnit,
+    todaySignal,
+  } = useWorkbenchViewState();
   const [workspace, setWorkspace] = useState(initialAppState.workspace);
-  const [activeTeamId, setActiveTeamId] = useState(initialAppState.activeTeamId);
-  const [activeProjectId, setActiveProjectId] = useState(initialAppState.activeProjectId);
-  const [activeTab, setActiveTab] = useState<ViewTab>(initialAppState.activeTab);
   const [helpDocumentId, setHelpDocumentId] = useState<HelpDocumentId>(() =>
     getContextHelpDocumentId(initialAppState.activeTab, false, false),
   );
-  const [activeTourId, setActiveTourId] = useState<TourId | null>(null);
   const [dailyReportReminders, setDailyReportReminders] = useState<DailyReportReminder[]>([]);
-  const [filters, setFilters] = useState<ScheduleFilters>(initialAppState.filters);
-  const [collapsedIdsByProject, setCollapsedIdsByProject] = useState<Record<string, string[]>>(
-    initialAppState.collapsedIdsByProject,
-  );
-  const [filterOpen, setFilterOpen] = useState(initialAppState.filterOpen);
-  const [calendarAware, setCalendarAware] = useState(initialAppState.calendarAware);
-  const [columnVisibility, setColumnVisibility] = useState(initialAppState.columnVisibility);
   useEffect(() => {
     let active = true;
     listDailyReportReminders()
@@ -337,19 +268,6 @@ export function AppWorkbench({
     status: "idle",
   });
   const [saveRequestId, setSaveRequestId] = useState(0);
-  const [scale, setScale] = useState<GanttScale>(initialAppState.scale);
-  const [resourceDisplaySettings, setResourceDisplaySettings] = useState<ResourceDisplaySettings>(
-    initialAppState.resourceDisplaySettings,
-  );
-  const [resourceScope, setResourceScope] = useState<ResourceScope>(initialAppState.resourceScope);
-  const [timeUnit, setTimeUnit] = useState<GanttTimeUnit>(initialAppState.timeUnit);
-  const [ganttDisplayMode, setGanttDisplayMode] = useState<"gantt" | "table">("gantt");
-  const [todaySignal, setTodaySignal] = useState(0);
-  const [taskStartFocusSignal, setTaskStartFocusSignal] = useState(0);
-  const [taskTitleEditRequest, setTaskTitleEditRequest] = useState({
-    requestId: 0,
-    taskId: null as string | null,
-  });
   const [taskClipboard, setTaskClipboard] = useState<TaskClipboard | null>(null);
   const [taskPasteMode] = useState<TaskPasteMode>("sibling");
   const taskClipboardRef = useRef<TaskClipboard | null>(null);
@@ -368,42 +286,23 @@ export function AppWorkbench({
       }),
     [addToast],
   );
-  const projectSummaries = useMemo(
-    () => workspace.projectSummaries ?? workspace.schedules.map(createProjectSummaryFromSnapshot),
-    [workspace.projectSummaries, workspace.schedules],
-  );
-  const activeTeamProjects = useMemo(
-    () =>
-      projectSummaries
-        .map((summary) => summary.project)
-        .filter(
-          (project) => project.teamId === (activeTeamId || null) && !isProjectArchived(project),
-        ),
-    [activeTeamId, projectSummaries],
-  );
-  const workspaceProjects = useMemo(
-    () => projectSummaries.map((summary) => summary.project),
-    [projectSummaries],
-  );
-  const activeProjectCount = useMemo(
-    () => projectSummaries.filter((summary) => !isProjectArchived(summary.project)).length,
-    [projectSummaries],
-  );
-  const schedule =
-    workspace.schedules.find((snapshot) => snapshot.project.id === activeProjectId) ??
-    workspace.schedules[0];
-  const canEditPlan = schedule.access?.canEditPlan ?? true;
-  const canEnterActual = schedule.access?.canEnterActual ?? true;
-  const availableTourIds = useMemo<TourId[]>(() => {
-    const ids: TourId[] = ["basic", "gantt", "member"];
-    if (canEditPlan) {
-      ids.push("planner");
-    }
-    if (currentUser.role === "admin") {
-      ids.push("admin");
-    }
-    return ids;
-  }, [canEditPlan, currentUser.role]);
+  const {
+    activeProjectCount,
+    activeTeam,
+    activeTeamProjects,
+    availableTourIds,
+    canEditPlan,
+    canEnterActual,
+    managementTeam,
+    projectSummaries,
+    schedule,
+    workspaceProjects,
+  } = useWorkbenchProjectContext({
+    activeProjectId,
+    activeTeamId,
+    currentUserRole: currentUser.role,
+    workspace,
+  });
   const { commitTasks, initializeProject, replaceProject, redo, taskHistories, tasks, undo } =
     useTaskHistory({
       initialHistories: initialAppState.taskHistories,
@@ -475,9 +374,6 @@ export function AppWorkbench({
     taskFocusRequest,
     taskInspectorTaskId,
   } = useTaskSelection({ visibleRows });
-  const activeTeam = workspace.teams.find((team) => team.id === schedule.project.teamId);
-  const managementTeam =
-    workspace.teams.find((team) => team.id === activeTeamId) ?? activeTeam ?? workspace.teams[0];
   const projectMembers = useMemo(() => {
     const projectMemberIds = new Set(
       getProjectAssignedMembers({
@@ -553,92 +449,18 @@ export function AppWorkbench({
     selectedTaskId,
     setWorkspace,
   });
-  const activeTeamReviewSchedules = useMemo(
-    () =>
-      currentReviewSchedules.filter(
-        (snapshot) =>
-          snapshot.project.teamId === (activeTeamId || null) &&
-          !isProjectArchived(snapshot.project),
-      ),
-    [activeTeamId, currentReviewSchedules],
-  );
-
-  const teamResourceTasks = useMemo(
-    () =>
-      activeTeamReviewSchedules.flatMap((snapshot) =>
-        snapshot.tasks.map((task) => ({
-          ...task,
-          sourceProjectId: snapshot.project.id,
-          sourceProjectName: snapshot.project.workspace,
-        })),
-      ),
-    [activeTeamReviewSchedules],
-  );
-  const teamResourceMembers = useMemo(() => {
-    const teamMemberIds = new Set(activeTeam?.memberIds);
-    const assignedMemberIds = new Set(teamResourceTasks.flatMap((task) => task.assigneeIds));
-    const memberById = new Map<string, Member>();
-    activeTeamReviewSchedules.forEach((snapshot) => {
-      snapshot.members.forEach((member) => memberById.set(member.id, member));
-    });
-    const scopedMembers = [...memberById.values()].filter(
-      (member) =>
-        (teamMemberIds.has(member.id) && isMemberActive(member)) ||
-        assignedMemberIds.has(member.id),
-    );
-    return scopedMembers.length > 0 ? scopedMembers : projectMembers;
-  }, [activeTeam, activeTeamReviewSchedules, projectMembers, teamResourceTasks]);
-  const teamResourceRange = useMemo(() => {
-    if (activeTeamReviewSchedules.length === 0) {
-      return {
-        end: schedule.project.rangeEnd,
-        start: schedule.project.rangeStart,
-      };
-    }
-    const starts = activeTeamReviewSchedules.map((snapshot) => snapshot.project.rangeStart);
-    const ends = activeTeamReviewSchedules.map((snapshot) => snapshot.project.rangeEnd);
-    return {
-      end: [...ends].toSorted().at(-1) ?? schedule.project.rangeEnd,
-      start: [...starts].toSorted()[0] ?? schedule.project.rangeStart,
-    };
-  }, [activeTeamReviewSchedules, schedule.project.rangeEnd, schedule.project.rangeStart]);
-  const teamResourceWeeks = useMemo(
-    () =>
-      buildWeekColumns(
-        buildTimeline(
-          teamResourceRange.start,
-          teamResourceRange.end,
-          schedule.calendar,
-          calendarAware,
-          "day",
-        ),
-      ),
-    [calendarAware, schedule.calendar, teamResourceRange],
-  );
-  const teamResourceRows = useMemo(
-    () =>
-      buildCrossProjectResourceRows({
-        baseCalendar: schedule.calendar,
-        calendarAware,
-        members: teamResourceMembers,
-        schedules: activeTeamReviewSchedules,
-        weeks: teamResourceWeeks,
-      }),
-    [
-      activeTeamReviewSchedules,
+  const { activeTeamReviewSchedules, displayedResourceRows, displayedResourceWeeks, resourceRows } =
+    useWorkbenchResources({
+      activeTeam,
+      activeTeamId,
       calendarAware,
-      schedule.calendar,
-      teamResourceMembers,
-      teamResourceWeeks,
-    ],
-  );
-  const resourceRows = useMemo(
-    () =>
-      buildResourceMatrix(tasks, projectMembers, resourceWeeks, schedule.calendar, calendarAware),
-    [calendarAware, projectMembers, schedule, tasks, resourceWeeks],
-  );
-  const displayedResourceRows = resourceScope === "team" ? teamResourceRows : resourceRows;
-  const displayedResourceWeeks = resourceScope === "team" ? teamResourceWeeks : resourceWeeks;
+      currentReviewSchedules,
+      projectMembers,
+      resourceScope,
+      resourceWeeks,
+      schedule,
+      tasks,
+    });
   const stats = useMemo(() => getProgressStats(tasks), [tasks]);
   const healthReport = useMemo(
     () =>
@@ -696,62 +518,12 @@ export function AppWorkbench({
     });
     return counts;
   }, [currentReviewSchedules]);
-  const topbarNotifications = useMemo<TopbarNotification[]>(() => {
-    const delayedTasks = tasks.filter((task) => task.type === "task" && task.status === "delayed");
-    const [nextMilestone] = tasks
-      .filter((task) => task.type === "milestone" && task.status !== "done")
-      .toSorted((a, b) => a.start.localeCompare(b.start));
-    const overloadedRows = resourceRows.filter((row) => row.utilization >= 90);
-    return [
-      delayedTasks.length > 0
-        ? {
-            detail: `${delayedTasks[0].title}${
-              delayedTasks.length > 1 ? ` ほか${delayedTasks.length - 1}件` : ""
-            }`,
-            id: "delayed-tasks",
-            title: `遅延タスクが${delayedTasks.length}件あります`,
-            tone: "danger" as const,
-          }
-        : null,
-      nextMilestone
-        ? {
-            detail: `${formatShortDate(nextMilestone.start)} ${nextMilestone.title}`,
-            id: "next-milestone",
-            title: "次のマイルストーン",
-            tone: "info" as const,
-          }
-        : null,
-      overloadedRows.length > 0
-        ? {
-            detail: `${overloadedRows[0].member.name} ${overloadedRows[0].utilization}%`,
-            id: "resource-overload",
-            title: "高負荷メンバーを確認してください",
-            tone: "warning" as const,
-          }
-        : null,
-      healthReport.dangerCount > 0
-        ? {
-            detail: healthReport.issues[0]?.title ?? "データ整合性を確認してください",
-            id: "schedule-health",
-            title: `健全性エラーが${healthReport.dangerCount}件あります`,
-            tone: "danger" as const,
-          }
-        : healthReport.warningCount > 0
-          ? {
-              detail: healthReport.issues[0]?.title ?? "データ整合性を確認してください",
-              id: "schedule-health",
-              title: `健全性の確認事項が${healthReport.warningCount}件あります`,
-              tone: "warning" as const,
-            }
-          : null,
-      ...dailyReportReminders.map((reminder) => ({
-        detail: `${reminder.date} / ${reminder.senderName}から届きました`,
-        id: reminder.id,
-        title: "日報の提出をお願いします",
-        tone: "warning" as const,
-      })),
-    ].filter((notification): notification is TopbarNotification => Boolean(notification));
-  }, [dailyReportReminders, healthReport, resourceRows, tasks]);
+  const topbarNotifications = useWorkbenchNotifications({
+    dailyReportReminders,
+    healthReport,
+    resourceRows,
+    tasks,
+  });
   const currentDraft = useMemo(
     () =>
       createPersistableDraft({

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { atom, useAtom } from "jotai";
 
 import type {
   ProjectImportData,
@@ -25,22 +25,29 @@ export type PendingTaskCsvImport = {
   validation: ProjectImportValidation;
 };
 
+const showCreateSheetAtom = atom(false);
+const showHelpPageAtom = atom(false);
+const showProjectCreateSheetAtom = atom(false);
+const showShortcutHelpAtom = atom(false);
+const showMasterSettingsAtom = atom(false);
+const showProjectSettingsAtom = atom(false);
+const showSaveReviewAtom = atom(false);
+const showResetConfirmAtom = atom(false);
+const pendingProjectImportAtom = atom<PendingProjectImport | null>(null);
+const pendingTaskCsvImportAtom = atom<PendingTaskCsvImport | null>(null);
+
 /** 案件画面で使うシート・ダイアログ・設定ページの状態をまとめます。 */
 export function useWorkbenchOverlays() {
-  const [showCreateSheet, setShowCreateSheet] = useState(false);
-  const [showHelpPage, setShowHelpPage] = useState(false);
-  const [showProjectCreateSheet, setShowProjectCreateSheet] = useState(false);
-  const [showShortcutHelp, setShowShortcutHelp] = useState(false);
-  const [showMasterSettings, setShowMasterSettings] = useState(false);
-  const [showProjectSettings, setShowProjectSettings] = useState(false);
-  const [showSaveReview, setShowSaveReview] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [pendingProjectImport, setPendingProjectImport] = useState<PendingProjectImport | null>(
-    null,
-  );
-  const [pendingTaskCsvImport, setPendingTaskCsvImport] = useState<PendingTaskCsvImport | null>(
-    null,
-  );
+  const [showCreateSheet, setShowCreateSheet] = useAtom(showCreateSheetAtom);
+  const [showHelpPage, setShowHelpPage] = useAtom(showHelpPageAtom);
+  const [showProjectCreateSheet, setShowProjectCreateSheet] = useAtom(showProjectCreateSheetAtom);
+  const [showShortcutHelp, setShowShortcutHelp] = useAtom(showShortcutHelpAtom);
+  const [showMasterSettings, setShowMasterSettings] = useAtom(showMasterSettingsAtom);
+  const [showProjectSettings, setShowProjectSettings] = useAtom(showProjectSettingsAtom);
+  const [showSaveReview, setShowSaveReview] = useAtom(showSaveReviewAtom);
+  const [showResetConfirm, setShowResetConfirm] = useAtom(showResetConfirmAtom);
+  const [pendingProjectImport, setPendingProjectImport] = useAtom(pendingProjectImportAtom);
+  const [pendingTaskCsvImport, setPendingTaskCsvImport] = useAtom(pendingTaskCsvImportAtom);
 
   return {
     pendingProjectImport,
