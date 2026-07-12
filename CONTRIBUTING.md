@@ -59,3 +59,15 @@ $HOME/.dotnet/dotnet build backend/ScheduleManager.sln
 ```
 
 詳細な起動方法と検証コマンドは [README.md](README.md) を参照してください。
+
+## リリースノート
+
+リリースノートはConventional Commits形式の履歴から生成します。
+
+```bash
+npm run release:notes -- --version 0.2.0
+```
+
+生成後は、利用者向けの概要とアップグレード時の注意を確認・追記してください。
+分類ルール、差分範囲の指定、タグ作成までの手順は
+[`docs/releases/README.md`](docs/releases/README.md)を参照してください。

@@ -311,4 +311,5 @@ docs: READMEに連携ロードマップを追加
 - [`docs/api-frontend-notes.md`](docs/api-frontend-notes.md): APIとフロントエンドの接続メモ
 - [`frontend/design-qa.md`](frontend/design-qa.md): フロントエンドの検証記録
 - [`frontend/product-backlog.md`](frontend/product-backlog.md): 今後の改善候補
+- [`docs/releases/README.md`](docs/releases/README.md): リリースノートの生成・公開手順
 - [`CONTRIBUTING.md`](CONTRIBUTING.md): 開発・コミット規約

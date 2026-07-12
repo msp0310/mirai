@@ -1,0 +1,41 @@
+{
+  "productName": "Mirai",
+  "tagPrefix": "v",
+  "outputDirectory": "docs/releases",
+  "repositoryUrl": "https://github.com/msp0310/mirai",
+  "sections": [
+    {
+      "title": "新機能",
+      "types": ["feat"]
+    },
+    {
+      "title": "不具合修正",
+      "types": ["fix", "revert"]
+    },
+    {
+      "title": "パフォーマンス改善",
+      "types": ["perf"]
+    },
+    {
+      "title": "品質・運用改善",
+      "types": ["refactor", "build"]
+    }
+  ],
+  "ignoredTypes": ["docs", "style", "test", "ci", "chore"],
+  "fallbackSectionTitle": "その他の変更",
+  "scopeLabels": {
+    "analysis": "分析",
+    "api": "API",
+    "auth": "認証",
+    "core": "共通基盤",
+    "daily-report": "日報",
+    "daily-reports": "日報",
+    "gantt": "ガント",
+    "onboarding": "オンボーディング",
+    "personal-analytics": "個人分析",
+    "projects": "プロジェクト",
+    "resource": "要員計画",
+    "ui": "画面共通",
+    "weekly-report": "週次報告"
+  }
+}
