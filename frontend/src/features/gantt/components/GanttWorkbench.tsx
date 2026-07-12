@@ -5,6 +5,7 @@ import {
   ArrowUpIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
+  CalendarDaysIcon,
   DocumentDuplicateIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
@@ -435,6 +436,36 @@ export function GanttWorkbench({
       start,
     };
   }, [dayWidth, scrollLeft, timeline.length, timelineViewportWidth, timeUnit]);
+  const visibleTimelineRange = useMemo(() => {
+    const firstVisibleIndex = Math.max(Math.floor(scrollLeft / dayWidth), 0);
+    const lastVisibleIndex = Math.min(
+      Math.max(
+        Math.ceil((scrollLeft + (timelineViewportWidth || 980)) / dayWidth) - 1,
+        firstVisibleIndex,
+      ),
+      timeline.length - 1,
+    );
+    const firstSlot = timeline[firstVisibleIndex];
+    const lastSlot = timeline[lastVisibleIndex];
+    return firstSlot && lastSlot ? { end: lastSlot.end, start: firstSlot.start } : null;
+  }, [dayWidth, scrollLeft, timeline, timelineViewportWidth]);
+  const hasTaskInVisibleTimeline = useMemo(
+    () =>
+      visibleTimelineRange !== null &&
+      rows.some(
+        (task) => task.start <= visibleTimelineRange.end && task.end >= visibleTimelineRange.start,
+      ),
+    [rows, visibleTimelineRange],
+  );
+  const timelineFocusTask = useMemo(
+    () =>
+      tasks
+        .filter((task) => task.type === "task" && task.status !== "done")
+        .toSorted((a, b) => a.start.localeCompare(b.start))[0] ??
+      tasks.toSorted((a, b) => a.start.localeCompare(b.start))[0] ??
+      null,
+    [tasks],
+  );
   const dragSelectionBox = useMemo(() => {
     if (!dragSelection) {
       return null;
@@ -1156,37 +1187,51 @@ export function GanttWorkbench({
           sort={tableSort}
         />
         {displayMode === "gantt" ? (
-          <TimelineGrid
-            calendar={calendar}
-            calendarAware={calendarAware}
-            dayWidth={dayWidth}
-            headerRef={timelineHeaderRef}
-            members={members}
-            projectRangeEnd={projectRangeEnd}
-            projectRangeStart={projectRangeStart}
-            months={months}
-            onBodyScroll={handleTimelineScroll}
-            onTaskContextMenu={openTaskContextMenu}
-            onMoveTask={onMoveTask}
-            onMoveSelectedTasks={onBulkDateShift}
-            onFocusTaskStart={focusTimelineTaskStart}
-            onOpenTaskInspector={onOpenTaskInspector}
-            onResizeTask={onResizeTask}
-            onSelectTask={onSelectTask}
-            dependencyIssueByTaskId={dependencyIssueByTaskId}
-            query=""
-            rowIndexOffset={virtualWindow.start}
-            rows={virtualWindow.rows}
-            selectedTaskIds={selectedTaskIds}
-            timeUnit={timeUnit}
-            timelineBodyRef={timelineBodyRef}
-            timeline={timeline}
-            todayKey={todayKey}
-            totalRows={rows.length}
-            visibleSlotWindow={visibleSlotWindow}
-            viewportHeight={viewportHeight}
-            weeks={weeks}
-          />
+          <>
+            <TimelineGrid
+              calendar={calendar}
+              calendarAware={calendarAware}
+              dayWidth={dayWidth}
+              headerRef={timelineHeaderRef}
+              members={members}
+              projectRangeEnd={projectRangeEnd}
+              projectRangeStart={projectRangeStart}
+              months={months}
+              onBodyScroll={handleTimelineScroll}
+              onTaskContextMenu={openTaskContextMenu}
+              onMoveTask={onMoveTask}
+              onMoveSelectedTasks={onBulkDateShift}
+              onFocusTaskStart={focusTimelineTaskStart}
+              onOpenTaskInspector={onOpenTaskInspector}
+              onResizeTask={onResizeTask}
+              onSelectTask={onSelectTask}
+              dependencyIssueByTaskId={dependencyIssueByTaskId}
+              query=""
+              rowIndexOffset={virtualWindow.start}
+              rows={virtualWindow.rows}
+              selectedTaskIds={selectedTaskIds}
+              timeUnit={timeUnit}
+              timelineBodyRef={timelineBodyRef}
+              timeline={timeline}
+              todayKey={todayKey}
+              totalRows={rows.length}
+              visibleSlotWindow={visibleSlotWindow}
+              viewportHeight={viewportHeight}
+              weeks={weeks}
+            />
+            {!hasTaskInVisibleTimeline && timelineFocusTask ? (
+              <div className="gantt-out-of-range-guide" role="status">
+                <CalendarDaysIcon />
+                <div>
+                  <strong>この期間に表示するタスクはありません</strong>
+                  <span>初期表示は今日です。作業期間へ移動してタスクを確認できます。</span>
+                </div>
+                <button onClick={() => focusTimelineTaskStart(timelineFocusTask.id)} type="button">
+                  {timelineFocusTask.status === "done" ? "案件期間へ" : "未完了タスクへ"}
+                </button>
+              </div>
+            ) : null}
+          </>
         ) : null}
 
         <div

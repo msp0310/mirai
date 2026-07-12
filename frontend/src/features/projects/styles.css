@@ -645,7 +645,7 @@
 }
 
 .portfolio-attention-row {
-  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr) auto;
 }
 
 .portfolio-milestone-row {
@@ -656,6 +656,42 @@
 .portfolio-milestone-row:hover {
   border-color: #bad1ff;
   background: #f8fbff;
+}
+
+.portfolio-attention-project {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+
+.portfolio-attention-action {
+  height: 28px;
+  border: 1px solid #bfd0ef;
+  border-radius: 6px;
+  color: #174ab6;
+  background: #fff;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.portfolio-attention-project:hover strong,
+.portfolio-attention-project:focus-visible strong,
+.portfolio-attention-action:hover,
+.portfolio-attention-action:focus-visible {
+  color: #0f47bd;
+}
+
+.portfolio-attention-project:focus-visible,
+.portfolio-attention-action:focus-visible {
+  outline: 2px solid rgba(40, 100, 234, 0.24);
+  outline-offset: 2px;
 }
 
 .portfolio-attention-row > span,
@@ -675,14 +711,13 @@
   background: #eaf1ff;
 }
 
-.portfolio-attention-row div,
 .portfolio-milestone-row div {
   display: grid;
   min-width: 0;
   gap: 3px;
 }
 
-.portfolio-attention-row strong,
+.portfolio-attention-project strong,
 .portfolio-milestone-row strong {
   overflow: hidden;
   color: #172033;
@@ -692,7 +727,7 @@
   white-space: nowrap;
 }
 
-.portfolio-attention-row small,
+.portfolio-attention-project small,
 .portfolio-milestone-row small {
   overflow: hidden;
   color: #66758b;

@@ -5,6 +5,11 @@ function todayKey() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
+function todayIsWeekend() {
+  const day = new Date().getDay();
+  return day === 0 || day === 6;
+}
+
 function yearMonthLabel(offset: number) {
   const value = new Date();
   value.setDate(1);
@@ -233,7 +238,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     const initialTeamReports = dailyReport.getByRole("region", { name: "みんなの日報" });
     await expect(initialTeamReports).toBeVisible();
     await expect(initialTeamReports.getByLabel("対象日")).toHaveValue(reportDate);
-    await initialTeamReports.getByRole("button", { name: "自分の日報を提出" }).click();
+    await initialTeamReports
+      .getByRole("button", { name: /自分の日報を提出|任意で日報を作成/ })
+      .click();
     await expect(dailyReport.getByLabel("日報日付")).toHaveValue(reportDate);
     await dailyReport.getByLabel("本日のまとめ").fill("基本設計レビューを実施しました。");
     await dailyReport.getByLabel("作業内容").fill("レビュー指摘の整理");
@@ -250,11 +257,13 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await dailyReport.getByRole("button", { name: "みんなの日報" }).click();
     const teamReports = dailyReport.getByRole("region", { name: "みんなの日報" });
     await expect(teamReports.getByRole("button", { name: "自分の日報を確認" })).toBeVisible();
-    await expect(teamReports).toContainText("/ 6名");
+    await expect(teamReports).toContainText(todayIsWeekend() ? "提出不要" : "/ 6名");
     await expect(teamReports.getByRole("row", { name: /山田 健太/ })).toContainText(
       "基本設計レビューを実施しました。",
     );
-    await expect(teamReports.getByRole("row", { name: /伊藤 大輔/ })).toContainText("未提出");
+    await expect(teamReports.getByRole("row", { name: /伊藤 大輔/ })).toContainText(
+      todayIsWeekend() ? "提出不要" : "未提出",
+    );
     await teamReports.getByRole("button", { name: "山田 健太の日報へコメント" }).click();
     await expect(teamReports.getByText("レビュー指摘の整理", { exact: true })).toBeVisible();
     await teamReports.getByLabel("山田 健太へのコメント").fill("一覧から確認しました。");
@@ -303,6 +312,10 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
 
     await expect(page.getByRole("button", { name: "タスク追加" })).toBeVisible();
     await expect(page.locator(".task-table-row")).toHaveCount(16);
+    const outOfRangeGuide = page.locator(".gantt-out-of-range-guide");
+    await expect(outOfRangeGuide).toBeVisible();
+    await outOfRangeGuide.getByRole("button", { name: "未完了タスクへ" }).click();
+    await expect(outOfRangeGuide).toHaveCount(0);
     await page.getByRole("button", { name: "ショートカット" }).click();
     await expect(page.getByRole("dialog", { name: "キーボードショートカット" })).toBeVisible();
     await expect(page.getByText("選択範囲を上下に広げる", { exact: true })).toBeVisible();
@@ -645,7 +658,23 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(page.getByLabel("分析のサブメニュー")).toBeVisible();
     await page.getByRole("button", { name: "プロジェクト分析", exact: true }).click();
     await expect(page.getByLabel("分析のサブメニュー")).toHaveCount(0);
-    await expect(page.getByRole("region", { name: "プロジェクト分析" })).toBeVisible();
+    const projectAnalysis = page.getByRole("region", { name: "プロジェクト分析" });
+    await expect(projectAnalysis).toBeVisible();
+    await expect(projectAnalysis.locator(".analysis-data-status")).toContainText(
+      "実績タスク状態・進捗・日程変更は最新入力値",
+    );
+    await expect(projectAnalysis.locator(".analysis-data-status")).toContainText(
+      "予測バーンダウンは現在進捗からの線形補間",
+    );
+  });
+
+  test("要対応案件から課題管理へ移動できる", async ({ page }) => {
+    await login(page);
+    const crossProjectStatus = page.getByRole("complementary", {
+      name: "プロジェクト横断状況",
+    });
+    await crossProjectStatus.getByRole("button", { name: "課題で対応" }).click();
+    await expect(page.getByRole("heading", { name: "課題管理", level: 2 })).toBeVisible();
   });
 
   test("Nキーで選択行の下へタスクを直接追加できる", async ({ page }) => {

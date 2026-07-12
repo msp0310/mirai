@@ -101,6 +101,26 @@ export function AnalysisPanel({
         </div>
       </header>
 
+      <div className={`analysis-data-status ${hasBaseline ? "ready" : "warning"}`}>
+        <span>
+          <b>実績</b>
+          タスク状態・進捗・日程変更は最新入力値
+        </span>
+        <span>
+          <b>予測</b>
+          バーンダウンは現在進捗からの線形補間
+        </span>
+        <span>
+          <b>比較基準</b>
+          {hasBaseline ? "基準計画を設定済み" : "未設定のため参考線で表示"}
+        </span>
+        {!hasBaseline ? (
+          <button onClick={onCaptureBaseline} type="button">
+            基準計画を設定
+          </button>
+        ) : null}
+      </div>
+
       <div className="analysis-kpi-grid">
         <AnalysisKpi
           label="対象タスク"

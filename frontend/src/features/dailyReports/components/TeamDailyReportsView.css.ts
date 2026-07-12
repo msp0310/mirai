@@ -146,6 +146,21 @@ export const notSubmitted = style({
   fontSize: 9,
   fontWeight: 900,
 });
+export const notRequired = style({
+  display: "inline-flex",
+  borderRadius: 999,
+  color: "#58667a",
+  background: "#f1f3f6",
+  padding: "4px 7px",
+  fontSize: 9,
+  fontWeight: 900,
+});
+export const nonWorkingNotice = style({
+  color: "#7b5a1c",
+  fontSize: 9,
+  fontStyle: "normal",
+  fontWeight: 850,
+});
 export const blocker = style({ color: "#bd5f19", fontWeight: 900 });
 export const none = style({ color: "#8a96a8" });
 export const openButton = style({

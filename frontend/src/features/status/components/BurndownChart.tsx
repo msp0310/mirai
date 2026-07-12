@@ -62,7 +62,7 @@ export function BurndownChart({
       <div className="dashboard-panel-header">
         <div>
           <h2>バーンダウン</h2>
-          <p>{hasBaseline ? "基準計画と現在予測の残タスク数" : "理想線と現在予測の残タスク数"}</p>
+          <p>{hasBaseline ? "基準計画と現在予測の残タスク数" : "参考線と現在予測の残タスク数"}</p>
         </div>
         <div className="burndown-summary">
           <strong>{formatTasks(currentRemaining)}</strong>
@@ -80,16 +80,18 @@ export function BurndownChart({
       <div className="burndown-legend" aria-label="バーンダウンの凡例">
         <span>
           <i className="burndown-legend-line planned" />
-          {hasBaseline ? "基準計画" : "理想線"}
+          {hasBaseline ? "基準計画" : "参考線"}
+          <small>{hasBaseline ? "計画" : "推定"}</small>
         </span>
         <span>
           <i className="burndown-legend-line actual" />
           現在予測
+          <small>推定</small>
         </span>
       </div>
       <div className="burndown-chart-wrap">
         <svg
-          aria-label={`${hasBaseline ? "基準計画" : "理想線"}と現在予測の残タスク数の推移`}
+          aria-label={`${hasBaseline ? "基準計画" : "参考線"}と現在予測の残タスク数の推移`}
           className="burndown-chart"
           role="img"
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
@@ -144,7 +146,7 @@ export function BurndownChart({
         現在予測は、現在の進捗から終了日までを線形に補間した参考値です。
         {hasBaseline && baselineCapturedAt
           ? ` 基準計画: ${formatShortDate(baselineCapturedAt.slice(0, 10))}`
-          : " 基準計画が未設定のため理想線と比較しています。"}
+          : " 基準計画が未設定のため、期間内に均等消化する参考線と比較しています。"}
       </small>
     </section>
   );

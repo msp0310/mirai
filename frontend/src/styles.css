@@ -1253,6 +1253,56 @@ button {
   font-weight: 900;
 }
 
+.analysis-data-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #cfdced;
+  border-radius: 7px;
+  background: #f8fbff;
+  padding: 10px 12px;
+}
+
+.analysis-data-status.warning {
+  border-color: #ebcf9f;
+  background: #fffaf0;
+}
+
+.analysis-data-status > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  color: #63738a;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.analysis-data-status b {
+  color: #243651;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.analysis-data-status button {
+  height: 30px;
+  border: 1px solid #d8ae67;
+  border-radius: 6px;
+  color: #7b4b08;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.analysis-data-status button:hover,
+.analysis-data-status button:focus-visible {
+  border-color: #bc7920;
+  background: #fff5df;
+  outline: 0;
+}
+
 .analysis-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4424,6 +4474,15 @@ button {
   gap: 5px;
 }
 
+.burndown-legend small {
+  border-radius: 999px;
+  color: #66758b;
+  background: #edf1f6;
+  padding: 2px 5px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
 .burndown-legend-line {
   display: inline-block;
   width: 18px;
@@ -5608,6 +5667,10 @@ button.health-row:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .analysis-data-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .portfolio-layout {
     grid-template-columns: 1fr;
   }
@@ -5664,6 +5727,32 @@ button.health-row:hover {
 }
 
 @media (max-width: 760px) {
+  .analysis-data-status {
+    grid-template-columns: 1fr;
+  }
+
+  .analysis-data-status button {
+    justify-self: start;
+  }
+
+  .gantt-out-of-range-guide {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .gantt-out-of-range-guide button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .portfolio-attention-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .portfolio-attention-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+
   .weekly-report-header {
     align-items: stretch;
     flex-direction: column;

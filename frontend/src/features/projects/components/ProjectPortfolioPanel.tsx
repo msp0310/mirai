@@ -31,6 +31,7 @@ type ProjectPortfolioPanelProps = {
   calendarAware: boolean;
   favoriteProjectIds: Set<string>;
   onCreateProject: () => void;
+  onOpenProjectIssues: (projectId: string) => void;
   onOpenProject: (projectId: string) => void;
   onSelectProject: (projectId: string) => void;
   onTeamChange: (teamId: string) => void;
@@ -66,6 +67,7 @@ export function ProjectPortfolioPanel({
   calendarAware,
   favoriteProjectIds,
   onCreateProject,
+  onOpenProjectIssues,
   onOpenProject,
   onSelectProject,
   onTeamChange,
@@ -370,18 +372,24 @@ export function ProjectPortfolioPanel({
             />
             <div className="portfolio-attention-list">
               {attentionItems.map((item) => (
-                <button
-                  className="portfolio-attention-row"
-                  key={item.project.id}
-                  onClick={() => onOpenProject(item.project.id)}
-                  type="button"
-                >
+                <div className="portfolio-attention-row" key={item.project.id}>
                   <span>{item.delayedTasks.length > 0 ? "遅延" : "低進捗"}</span>
-                  <div>
+                  <button
+                    className="portfolio-attention-project"
+                    onClick={() => onOpenProject(item.project.id)}
+                    type="button"
+                  >
                     <strong>{item.project.workspace}</strong>
                     <small>{item.delayedTasks[0]?.title ?? `進捗 ${item.progress}%`}</small>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    className="portfolio-attention-action"
+                    onClick={() => onOpenProjectIssues(item.project.id)}
+                    type="button"
+                  >
+                    課題で対応
+                  </button>
+                </div>
               ))}
               {attentionItems.length === 0 ? (
                 <p className="portfolio-side-empty">要対応案件はありません。</p>

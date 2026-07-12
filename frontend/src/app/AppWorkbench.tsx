@@ -2989,6 +2989,11 @@ export function AppWorkbench({
               calendarAware={calendarAware}
               favoriteProjectIds={favoriteProjectIds}
               onCreateProject={openProjectCreateSheet}
+              onOpenProjectIssues={(projectId) => {
+                if (changeProject(projectId)) {
+                  setActiveTab("Issues");
+                }
+              }}
               onOpenProject={(projectId) => {
                 if (changeProject(projectId)) {
                   setActiveTab("Gantt");

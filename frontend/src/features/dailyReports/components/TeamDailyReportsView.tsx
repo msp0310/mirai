@@ -15,6 +15,7 @@ import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import type { DailyReport, Member } from "../../../types/schedule";
+import { isDailyReportRequired } from "../utils/dailyReportSubmission";
 
 import * as styles from "./TeamDailyReportsView.css";
 
@@ -59,12 +60,24 @@ export function TeamDailyReportsView({
   const reportsForDate = reports.filter((report) => report.date === selectedDate);
   const reportByMember = new Map(reportsForDate.map((report) => [report.memberId, report]));
   const ownReport = reportByMember.get(currentMemberId);
-  const submitted = reportsForDate.filter((report) => report.status === "submitted").length;
+  const requiredMemberIds = useMemo(
+    () =>
+      new Set(
+        members
+          .filter((member) => isDailyReportRequired(member, selectedDate, schedules))
+          .map((member) => member.id),
+      ),
+    [members, schedules, selectedDate],
+  );
+  const requiredSubmitted = reportsForDate.filter(
+    (report) => report.status === "submitted" && requiredMemberIds.has(report.memberId),
+  ).length;
   const totalHours = reportsForDate.reduce((sum, report) => sum + sumHours(report), 0);
   const blockerCount = reportsForDate.filter((report) => report.blockers?.trim()).length;
   const missingMemberIds = members
-    .filter((member) => !reportByMember.has(member.id))
+    .filter((member) => requiredMemberIds.has(member.id) && !reportByMember.has(member.id))
     .map((member) => member.id);
+  const ownReportRequired = requiredMemberIds.has(currentMemberId);
 
   function moveDate(days: number) {
     const date = new Date(`${selectedDate}T00:00:00`);
@@ -106,6 +119,9 @@ export function TeamDailyReportsView({
         <div>
           <strong>{formatLongDate(selectedDate)}</strong>
           <span>{teamName}の作業内容と提出状況</span>
+          {requiredMemberIds.size === 0 ? (
+            <em className={styles.nonWorkingNotice}>非稼働日のため提出は任意です</em>
+          ) : null}
         </div>
         <div className={styles.toolbarActions}>
           <button
@@ -120,7 +136,9 @@ export function TeamDailyReportsView({
               ? ownReport.status === "submitted"
                 ? "自分の日報を確認"
                 : "自分の日報を編集"
-              : "自分の日報を提出"}
+              : ownReportRequired
+                ? "自分の日報を提出"
+                : "任意で日報を作成"}
           </button>
           {canManage && missingMemberIds.length > 0 ? (
             <button
@@ -167,7 +185,11 @@ export function TeamDailyReportsView({
           accent="blue"
           icon={<CheckCircleIcon />}
           label="提出状況"
-          value={`${submitted} / ${members.length}名`}
+          value={
+            requiredMemberIds.size > 0
+              ? `${requiredSubmitted} / ${requiredMemberIds.size}名`
+              : "提出不要"
+          }
         />
         <SummaryCard
           accent="green"
@@ -213,6 +235,7 @@ export function TeamDailyReportsView({
           <tbody>
             {members.map((member) => {
               const report = reportByMember.get(member.id);
+              const reportRequired = requiredMemberIds.has(member.id);
               const projectNames = report
                 ? [
                     ...new Set(
@@ -222,10 +245,10 @@ export function TeamDailyReportsView({
                 : [];
               return (
                 <Fragment key={member.id}>
-                  <tr className={!report ? styles.missingRow : undefined}>
+                  <tr className={!report && reportRequired ? styles.missingRow : undefined}>
                     <td>
                       <div className={styles.memberCell}>
-                        {canManage && !report ? (
+                        {canManage && !report && reportRequired ? (
                           <input
                             aria-label={`${member.name}をリマインド対象に選択`}
                             checked={selectedMemberIds.has(member.id)}
@@ -255,14 +278,23 @@ export function TeamDailyReportsView({
                             ? styles.submitted
                             : report
                               ? styles.draft
-                              : styles.notSubmitted
+                              : reportRequired
+                                ? styles.notSubmitted
+                                : styles.notRequired
                         }
                       >
-                        {report?.status === "submitted" ? "提出済み" : report ? "下書き" : "未提出"}
+                        {report?.status === "submitted"
+                          ? "提出済み"
+                          : report
+                            ? "下書き"
+                            : reportRequired
+                              ? "未提出"
+                              : "提出不要"}
                       </span>
                     </td>
                     <td className={styles.summaryCell}>
-                      {report?.summary || "報告はまだありません"}
+                      {report?.summary ||
+                        (reportRequired ? "報告はまだありません" : "非稼働日のため提出不要")}
                       {report?.unreadCommentCount ? (
                         <small className={styles.unread}>
                           {report.unreadCommentCount}件の未読コメント

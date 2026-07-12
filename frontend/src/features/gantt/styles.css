@@ -506,6 +506,66 @@
   min-width: 0;
 }
 
+.gantt-out-of-range-guide {
+  z-index: 7;
+  display: grid;
+  grid-column: 2;
+  grid-row: 2;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-self: start;
+  align-items: center;
+  gap: 10px;
+  width: min(520px, calc(100% - 32px));
+  justify-self: center;
+  margin-top: 22px;
+  border: 1px solid #c9d8ef;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 10px 12px;
+  box-shadow: 0 10px 28px rgba(35, 55, 88, 0.12);
+}
+
+.gantt-out-of-range-guide > svg {
+  width: 20px;
+  height: 20px;
+  color: #2864ea;
+}
+
+.gantt-out-of-range-guide > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.gantt-out-of-range-guide strong {
+  color: #243651;
+  font-size: 11px;
+}
+
+.gantt-out-of-range-guide span {
+  color: #6c7b91;
+  font-size: 10px;
+}
+
+.gantt-out-of-range-guide button {
+  height: 30px;
+  border: 1px solid #9cb7ef;
+  border-radius: 6px;
+  color: #174ab6;
+  background: #f2f6ff;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.gantt-out-of-range-guide button:hover,
+.gantt-out-of-range-guide button:focus-visible {
+  border-color: #2864ea;
+  background: #e9f1ff;
+  outline: 0;
+}
+
 .timeline-canvas {
   position: relative;
   min-height: 100%;
