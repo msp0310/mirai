@@ -18,18 +18,12 @@ import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
 import type { TaskClipboard } from "../features/gantt/types/ganttState";
 import { OnboardingTour } from "../features/onboarding/components/OnboardingTour";
 import { getTourCompletionKey, tourScenarios } from "../features/onboarding/tourScenarios";
-import type { ProjectImportMode } from "../features/projects/components/ProjectImportSheet";
 import { useProjectActivityActions } from "../features/projects/hooks/useProjectActivityActions";
 import { useProjectAttachments } from "../features/projects/hooks/useProjectAttachments";
 import { useProjectConfigurationActions } from "../features/projects/hooks/useProjectConfigurationActions";
 import { useProjectImportActions } from "../features/projects/hooks/useProjectImportActions";
+import { useProjectImportCommitActions } from "../features/projects/hooks/useProjectImportCommitActions";
 import { createProjectExportFile } from "../features/projects/lib/projectExportService";
-import {
-  getTaskImportSourceLabel,
-  mergeTaskImportIntoWorkspace,
-  prepareProjectImport,
-  prepareTaskImport,
-} from "../features/projects/lib/projectImportService";
 import { useMasterDataActions } from "../features/settings/hooks/useMasterDataActions";
 import { useToastQueue } from "../hooks/useToastQueue";
 import {
@@ -42,8 +36,7 @@ import { getProgressStats } from "../lib/schedule";
 import { type ScheduleHealthIssue, buildScheduleHealthReport } from "../lib/scheduleHealth";
 import { mergeScheduleIntoWorkspace } from "../lib/scheduleWorkspace";
 import { type TaskPasteMode, normalizeSummaryTasks } from "../lib/taskOperations";
-import type { TaskCsvImportOptions } from "../types/projectImport";
-import type { TaskInspectorFocusTarget, TaskStatus } from "../types/schedule";
+import type { TaskInspectorFocusTarget } from "../types/schedule";
 import {
   createConfigChangeReviewFromRows,
   createDraftSignature,
@@ -59,6 +52,7 @@ import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresent
 import { useDailyReportReminders } from "./useDailyReportReminders";
 import { useScheduleSync } from "./useScheduleSync";
 import { useTeamScheduleLoading } from "./useTeamScheduleLoading";
+import { useWorkbenchGanttControls } from "./useWorkbenchGanttControls";
 import { useWorkbenchGanttModel } from "./useWorkbenchGanttModel";
 import { useWorkbenchNotifications } from "./useWorkbenchNotifications";
 import { useWorkbenchOverlays } from "./useWorkbenchOverlays";
@@ -102,8 +96,6 @@ type AppWorkbenchProps = {
   onLogout: () => Promise<void>;
   onReloadWorkspace: () => void;
 };
-
-type CollapsedIdUpdate = Set<string> | ((current: Set<string>) => Set<string>);
 
 /** 画面状態をワークベンチ単位のJotaiストアへ閉じ込めます。 */
 export function AppWorkbench(props: AppWorkbenchProps) {
@@ -265,6 +257,8 @@ function AppWorkbenchContent({
       tasks,
       timeUnit,
     });
+  const { setCollapsedIds, setCollapsedIdsForProject, toggleCollapsed, updateStatusFilter } =
+    useWorkbenchGanttControls({ activeProjectId, setCollapsedIdsByProject, setFilters });
   const {
     clearTaskSelection,
     closeTaskInspector,
@@ -438,6 +432,31 @@ function AppWorkbenchContent({
       schedule,
       setPendingProjectImport,
       setPendingTaskCsvImport,
+    });
+  const { applyPendingProjectImport, applyPendingTaskImport: applyPendingTaskCsvImport } =
+    useProjectImportCommitActions({
+      activeTeam,
+      activeTeamId,
+      clearTaskSelection,
+      commitTasks,
+      navigateToProjectView,
+      onToast: addToast,
+      pendingProjectImport,
+      pendingTaskCsvImport,
+      project: schedule.project,
+      recordActivity,
+      removeFavoriteProject,
+      replaceProject,
+      selectOnlyTask,
+      setActiveProjectId,
+      setActiveTab,
+      setActiveTeamId,
+      setCollapsedIds,
+      setCollapsedIdsForProject,
+      setPendingProjectImport,
+      setPendingTaskCsvImport,
+      setWorkspace,
+      workspace,
     });
   const {
     createMember,
@@ -837,59 +856,6 @@ function AppWorkbenchContent({
     setTaskTitleEditRequest((current) => ({ requestId: current.requestId + 1, taskId }));
   }
 
-  /** 現在案件の折りたたみ状態を更新します。 */
-  function setCollapsedIds(update: CollapsedIdUpdate) {
-    setCollapsedIdsForProject(activeProjectId, update);
-  }
-
-  /** 指定案件の折りたたみ状態を更新します。 */
-  function setCollapsedIdsForProject(projectId: string, update: CollapsedIdUpdate) {
-    setCollapsedIdsByProject((current) => {
-      const currentSet = new Set(current[projectId]);
-      const nextSet = typeof update === "function" ? update(currentSet) : new Set(update);
-      const nextIds = [...nextSet].toSorted();
-      const { [projectId]: previousProjectIds, ...rest } = current;
-      if (nextIds.length === 0) {
-        return previousProjectIds === undefined ? current : rest;
-      }
-      const previousIds = previousProjectIds ?? [];
-      if (
-        previousIds.length === nextIds.length &&
-        previousIds.every((id, index) => id === nextIds[index])
-      ) {
-        return current;
-      }
-      return {
-        ...current,
-        [projectId]: nextIds,
-      };
-    });
-  }
-
-  /** 指定タスクの折りたたみ状態を切り替えます。 */
-  function toggleCollapsed(taskId: string) {
-    setCollapsedIds((current) => {
-      const next = new Set(current);
-      if (next.has(taskId)) {
-        next.delete(taskId);
-      } else {
-        next.add(taskId);
-      }
-      return next;
-    });
-  }
-
-  /** 状態フィルターの選択状態を切り替えます。 */
-  function updateStatusFilter(status: TaskStatus) {
-    setFilters((current) => ({
-      ...current,
-      statuses: {
-        ...current.statuses,
-        [status]: !current.statuses[status],
-      },
-    }));
-  }
-
   /** タスク詳細の指定項目へフォーカスします。 */
   function requestTaskInspectorFocus(taskId: string, target?: TaskInspectorFocusTarget) {
     openTaskInspector(taskId, target);
@@ -958,115 +924,6 @@ function AppWorkbenchContent({
       detail: file.fileName,
       title: file.activityTitle,
       tone: "info",
-    });
-  }
-
-  /** 確認済みのタスク取込を案件へ反映します。 */
-  function applyPendingTaskCsvImport(options: TaskCsvImportOptions) {
-    if (!pendingTaskCsvImport) {
-      return;
-    }
-    const prepared = prepareTaskImport(pendingTaskCsvImport, options, schedule.project);
-    if (!prepared) {
-      addToast({
-        detail: "インポート確認のエラーを解消してください。",
-        title: `${getTaskImportSourceLabel(pendingTaskCsvImport.sourceKind)}を読み込めませんでした`,
-        tone: "warning",
-      });
-      return;
-    }
-
-    const { membersToCreate, nextProject, nextTasks, sourceLabel } = prepared;
-    commitTasks(() => nextTasks);
-    if (nextProject !== schedule.project || membersToCreate.length > 0) {
-      setWorkspace((current) =>
-        mergeTaskImportIntoWorkspace(
-          current,
-          schedule.project.id,
-          nextProject,
-          membersToCreate,
-          activeTeam?.id,
-        ),
-      );
-    }
-    void setActiveTab("Gantt");
-    setCollapsedIds(new Set());
-    selectOnlyTask(nextTasks[0]?.id ?? null);
-    setPendingTaskCsvImport(null);
-    addToast({
-      detail:
-        nextProject !== schedule.project
-          ? `${pendingTaskCsvImport.fileName} / ${nextTasks.length}行 / 期間拡張`
-          : `${pendingTaskCsvImport.fileName} / ${nextTasks.length}行`,
-      title: `${sourceLabel}を取り込みました`,
-      tone: "info",
-    });
-    recordActivity({
-      category: "import",
-      detail:
-        nextProject !== schedule.project
-          ? `${pendingTaskCsvImport.fileName} / ${nextTasks.length}行を反映し、プロジェクト期間を${nextProject.rangeStart} - ${nextProject.rangeEnd}へ広げました。`
-          : `${pendingTaskCsvImport.fileName} / ${nextTasks.length}行を${schedule.project.workspace}へ反映しました。`,
-      title: `${sourceLabel}を取り込みました`,
-      tone: "success",
-    });
-  }
-
-  /** 確認済みのプロジェクト取込をワークスペースへ反映します。 */
-  function applyPendingProjectImport(mode: ProjectImportMode) {
-    if (!pendingProjectImport) {
-      return;
-    }
-    if (pendingProjectImport.validation.errors.length > 0) {
-      addToast({
-        detail: "インポート確認のエラーを解消してください。",
-        title: "JSONを読み込めませんでした",
-        tone: "warning",
-      });
-      return;
-    }
-
-    const {
-      importedProjectId,
-      nextSchedule,
-      nextTasks,
-      nextTeam,
-      nextTeamId,
-      projectIdChanged,
-      replaceExisting,
-    } = prepareProjectImport(pendingProjectImport, mode, workspace, activeTeamId);
-
-    setWorkspace((current) => ({
-      ...current,
-      schedules: replaceExisting
-        ? current.schedules.map((snapshot) =>
-            snapshot.project.id === importedProjectId ? nextSchedule : snapshot,
-          )
-        : [...current.schedules, nextSchedule],
-      teams: nextTeam ? [...current.teams, nextTeam] : current.teams,
-    }));
-    replaceProject(importedProjectId, nextTasks);
-    if (replaceExisting && projectIdChanged) {
-      removeFavoriteProject(pendingProjectImport.data.project.id);
-    }
-    setActiveTeamId(nextTeamId ?? "");
-    setActiveProjectId(importedProjectId);
-    void navigateToProjectView(importedProjectId, "Gantt");
-    setCollapsedIdsForProject(importedProjectId, new Set());
-    clearTaskSelection();
-    setPendingProjectImport(null);
-    setPendingTaskCsvImport(null);
-    addToast({
-      detail: `${nextSchedule.project.workspace} / ${pendingProjectImport.fileName}`,
-      title: replaceExisting ? "プロジェクトを上書きしました" : "JSONを読み込みました",
-      tone: "info",
-    });
-    recordActivity({
-      category: "import",
-      detail: `${pendingProjectImport.fileName} / ${nextTasks.length}行`,
-      projectId: importedProjectId,
-      title: replaceExisting ? "プロジェクトを上書きしました" : "JSONを読み込みました",
-      tone: "success",
     });
   }
 
