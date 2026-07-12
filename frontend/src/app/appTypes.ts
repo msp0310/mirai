@@ -1,7 +1,7 @@
+import type { ViewTab } from "../components/layout/ViewTabs";
 import type { AuthUser } from "../data/authRepository";
 import type { LocalSchedulePreferences } from "../data/localScheduleStorage";
 import type { ScheduleWorkspace } from "../data/scheduleRepository";
-import type { ViewTab } from "../components/layout/ViewTabs";
 import type {
   ActivityLogEntry,
   GanttColumnVisibility,

@@ -1,21 +1,23 @@
-import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import {
   AdjustmentsHorizontalIcon,
-  ChartBarIcon,
   CalendarDaysIcon,
+  ChartBarIcon,
   ClockIcon,
   Cog6ToothIcon,
+  DocumentTextIcon,
   ExclamationTriangleIcon,
   FlagIcon,
   FolderOpenIcon,
   HomeIcon,
   ListBulletIcon,
-  DocumentTextIcon,
   QuestionMarkCircleIcon,
   UserGroupIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
+import { type ComponentType, type SVGProps, useEffect, useRef, useState } from "react";
+
 import type { ViewTab } from "./ViewTabs";
+
 import * as styles from "./Sidebar.css";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
@@ -111,7 +113,11 @@ export function Sidebar({
             activeTab={activeTab}
             ariaLabel={`選択中案件 ${projectName} のメニュー`}
             helpOpen={helpOpen}
-            items={showProjectSettings ? projectNavItems : projectNavItems.filter((item) => item.action !== "projectSettings")}
+            items={
+              showProjectSettings
+                ? projectNavItems
+                : projectNavItems.filter((item) => item.action !== "projectSettings")
+            }
             label="案件内"
             onMasterSettingsOpen={onMasterSettingsOpen}
             onNavigate={onNavigate}
@@ -120,16 +126,18 @@ export function Sidebar({
             settingsOpen={settingsOpen}
           />
         ) : null}
-        {showAdminSettings ? <NavGroup
-          activeTab={activeTab}
-          helpOpen={helpOpen}
-          items={adminNavItems}
-          onMasterSettingsOpen={onMasterSettingsOpen}
-          onNavigate={onNavigate}
-          onProjectSettingsOpen={onProjectSettingsOpen}
-          projectSettingsOpen={projectSettingsOpen}
-          settingsOpen={settingsOpen}
-        /> : null}
+        {showAdminSettings ? (
+          <NavGroup
+            activeTab={activeTab}
+            helpOpen={helpOpen}
+            items={adminNavItems}
+            onMasterSettingsOpen={onMasterSettingsOpen}
+            onNavigate={onNavigate}
+            onProjectSettingsOpen={onProjectSettingsOpen}
+            projectSettingsOpen={projectSettingsOpen}
+            settingsOpen={settingsOpen}
+          />
+        ) : null}
       </div>
       <button
         aria-current={helpOpen ? "page" : undefined}
@@ -178,7 +186,9 @@ function NavGroup({
   }, [activeTab, helpOpen, projectSettingsOpen, settingsOpen]);
 
   useEffect(() => {
-    if (expandedItemLabel === null) return;
+    if (expandedItemLabel === null) {
+      return;
+    }
 
     function closeSubmenuOnOutsideClick(event: PointerEvent) {
       if (event.target instanceof Node && !navGroupRef.current?.contains(event.target)) {
@@ -187,7 +197,9 @@ function NavGroup({
     }
 
     function closeSubmenuOnEscape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") setExpandedItemLabel(null);
+      if (event.key === "Escape") {
+        setExpandedItemLabel(null);
+      }
     }
 
     document.addEventListener("pointerdown", closeSubmenuOnOutsideClick);
@@ -231,9 +243,15 @@ function NavGroup({
                 setExpandedItemLabel((current) => (current === item.label ? null : item.label));
                 return;
               }
-              if (item.tab) onNavigate(item.tab);
-              if (item.action === "settings") onMasterSettingsOpen();
-              if (item.action === "projectSettings") onProjectSettingsOpen();
+              if (item.tab) {
+                onNavigate(item.tab);
+              }
+              if (item.action === "settings") {
+                onMasterSettingsOpen();
+              }
+              if (item.action === "projectSettings") {
+                onProjectSettingsOpen();
+              }
             }}
             title={item.label}
             type="button"
@@ -242,7 +260,9 @@ function NavGroup({
             <span>{item.label}</span>
           </button>
         );
-        if (!item.children) return navButton;
+        if (!item.children) {
+          return navButton;
+        }
 
         return (
           <div className={styles.navItemWithChildren} key={item.label}>

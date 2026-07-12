@@ -31,7 +31,9 @@ export function uploadAttachment({
   body.append("file", file);
   body.append("ownerType", ownerType);
   body.append("ownerId", ownerId);
-  if (parentId) body.append("parentId", parentId);
+  if (parentId) {
+    body.append("parentId", parentId);
+  }
   return requestAuthenticated<Attachment>(
     `/projects/${encodeURIComponent(projectId)}/attachments`,
     { body, method: "POST" },

@@ -1,16 +1,17 @@
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
+
+import { type AuditLog, listAuditLogs } from "../../../data/administrationRepository";
+import {
+  AuthRequestError,
+  type SaveMemberAccountInput,
+  authRepository,
+} from "../../../data/authRepository";
+import { fetchJapanesePublicHolidays, mergeCalendarHolidays } from "../../../data/publicHolidays";
 import { isMemberActive } from "../../../lib/members";
 import type { CalendarDefinition, CalendarHoliday, Member, Team } from "../../../types/schedule";
 import { ColorSwatches, getNextMemberColor } from "./settings/ColorSwatches";
 import { MemberAccountTable } from "./settings/MemberAccountTable";
-import { fetchJapanesePublicHolidays, mergeCalendarHolidays } from "../../../data/publicHolidays";
-import {
-  authRepository,
-  AuthRequestError,
-  type SaveMemberAccountInput,
-} from "../../../data/authRepository";
-import { listAuditLogs, type AuditLog } from "../../../data/administrationRepository";
 
 type MasterSettingsSection = "teams" | "members" | "calendar" | "audit";
 
@@ -119,7 +120,7 @@ export function MasterSettingsPage({
     (member) => selectedTeam.memberIds.includes(member.id) && isMemberActive(member),
   ).length;
   const sortedHolidays = useMemo(
-    () => [...holidays].sort((a, b) => a.date.localeCompare(b.date)),
+    () => [...holidays].toSorted((a, b) => a.date.localeCompare(b.date)),
     [holidays],
   );
   const membersWithAccountSettings = useMemo(() => {
@@ -130,12 +131,16 @@ export function MasterSettingsPage({
   }, [accountMembers, members]);
 
   useEffect(() => {
-    if (activeSection !== "members") return;
+    if (activeSection !== "members") {
+      return;
+    }
     void loadMemberAccounts();
   }, [activeSection]);
 
   useEffect(() => {
-    if (activeSection !== "audit" || !canManageMembers) return;
+    if (activeSection !== "audit" || !canManageMembers) {
+      return;
+    }
     setAuditLoading(true);
     listAuditLogs()
       .then(setAuditLogs)
@@ -154,7 +159,9 @@ export function MasterSettingsPage({
 
   function createTeam() {
     const trimmedName = newTeamName.trim();
-    if (!trimmedName) return;
+    if (!trimmedName) {
+      return;
+    }
     const id = `team-${Date.now().toString(36)}`;
     onCreateTeam({
       code: trimmedName.slice(0, 1),
@@ -170,7 +177,9 @@ export function MasterSettingsPage({
   function createMember() {
     const trimmedName = newMemberName.trim();
     const trimmedEmail = newMemberEmail.trim();
-    if (!trimmedName || !trimmedEmail) return;
+    if (!trimmedName || !trimmedEmail) {
+      return;
+    }
     const id = `member-${Date.now().toString(36)}`;
     const initials =
       newMemberInitials.trim().toUpperCase().slice(0, 3) || trimmedName.slice(0, 2).toUpperCase();
@@ -200,12 +209,14 @@ export function MasterSettingsPage({
     setWorkWeek((current) =>
       current.includes(weekday)
         ? current.filter((day) => day !== weekday)
-        : [...current, weekday].sort((a, b) => a - b),
+        : [...current, weekday].toSorted((a, b) => a - b),
     );
   }
 
   function addHoliday() {
-    if (!holidayDate) return;
+    if (!holidayDate) {
+      return;
+    }
     const name = holidayName.trim() || "会社休日";
     setHolidays((current) =>
       [
@@ -314,17 +325,15 @@ export function MasterSettingsPage({
   }
 
   return (
-    <section
-      className="master-settings-page"
-      aria-label="マスタ管理"
-      data-tour="master-settings"
-    >
+    <section className="master-settings-page" aria-label="マスタ管理" data-tour="master-settings">
       <div className="master-settings-page-header">
         <div>
           <span>{selectedTeam.name}</span>
           <h2>管理設定</h2>
         </div>
-        <strong>{canManageMembers ? "チーム / メンバー / カレンダー / 監査ログ" : "チーム / カレンダー"}</strong>
+        <strong>
+          {canManageMembers ? "チーム / メンバー / カレンダー / 監査ログ" : "チーム / カレンダー"}
+        </strong>
       </div>
 
       <div className="master-settings-layout">
@@ -499,12 +508,25 @@ export function MasterSettingsPage({
                               onSaveTeam({
                                 ...selectedTeam,
                                 memberships: [
-                                  ...(selectedTeam.memberships ?? selectedTeam.memberIds.map((memberId) => ({ memberId, role: "member" as const }))).filter((item) => item.memberId !== member.id),
-                                  { memberId: member.id, role: event.target.value as "manager" | "member" },
+                                  ...(
+                                    selectedTeam.memberships ??
+                                    selectedTeam.memberIds.map((memberId) => ({
+                                      memberId,
+                                      role: "member" as const,
+                                    }))
+                                  ).filter((item) => item.memberId !== member.id),
+                                  {
+                                    memberId: member.id,
+                                    role: event.target.value as "manager" | "member",
+                                  },
                                 ],
                               })
                             }
-                            value={(selectedTeam.memberships ?? []).find((item) => item.memberId === member.id)?.role ?? "member"}
+                            value={
+                              (selectedTeam.memberships ?? []).find(
+                                (item) => item.memberId === member.id,
+                              )?.role ?? "member"
+                            }
                           >
                             <option value="member">メンバー</option>
                             <option value="manager">チーム管理者</option>
@@ -792,7 +814,9 @@ function formatHolidayDate(dateKey: string) {
 }
 
 function mergeMemberAccountFields(member: Member, accountMember?: Member): Member {
-  if (!accountMember) return member;
+  if (!accountMember) {
+    return member;
+  }
   return {
     ...member,
     lastLoginAt: accountMember.lastLoginAt ?? null,
@@ -821,7 +845,9 @@ function formatAuthAdminError(error: unknown) {
     }
     try {
       const parsed = JSON.parse(error.message) as { message?: string };
-      if (parsed.message) return parsed.message;
+      if (parsed.message) {
+        return parsed.message;
+      }
     } catch {
       return error.message;
     }

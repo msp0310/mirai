@@ -1,7 +1,8 @@
 import { ArrowRightIcon, FlagIcon, StarIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import type { CSSProperties } from "react";
-import { formatShortDate, statusLabels } from "../../../lib/schedule";
+
 import { projectLifecycleLabels, projectLifecycleOptions } from "../../../lib/projects";
+import { formatShortDate, statusLabels } from "../../../lib/schedule";
 import type { ProjectLifecycleStatus } from "../../../types/schedule";
 import type { ProjectPortfolioItem } from "./projectPortfolioTypes";
 

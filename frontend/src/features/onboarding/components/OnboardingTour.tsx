@@ -1,6 +1,8 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
+
 import type { TourScenario } from "../tourScenarios";
+
 import * as styles from "./OnboardingTour.css";
 
 type OnboardingTourProps = {
@@ -31,7 +33,9 @@ export function OnboardingTour({ onClose, scenario }: OnboardingTourProps) {
   }, [scenario.id]);
 
   useLayoutEffect(() => {
-    if (!step) return;
+    if (!step) {
+      return;
+    }
     let cancelled = false;
     let retryCount = 0;
     let target: HTMLElement | null = null;
@@ -86,12 +90,19 @@ export function OnboardingTour({ onClose, scenario }: OnboardingTourProps) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose("skipped");
-      if (event.key === "ArrowRight") {
-        if (isLastStep) onClose("completed");
-        else setStepIndex((current) => Math.min(current + 1, scenario.steps.length - 1));
+      if (event.key === "Escape") {
+        onClose("skipped");
       }
-      if (event.key === "ArrowLeft") setStepIndex((current) => Math.max(current - 1, 0));
+      if (event.key === "ArrowRight") {
+        if (isLastStep) {
+          onClose("completed");
+        } else {
+          setStepIndex((current) => Math.min(current + 1, scenario.steps.length - 1));
+        }
+      }
+      if (event.key === "ArrowLeft") {
+        setStepIndex((current) => Math.max(current - 1, 0));
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -99,7 +110,9 @@ export function OnboardingTour({ onClose, scenario }: OnboardingTourProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isLastStep, onClose, scenario.steps.length]);
 
-  if (!step) return null;
+  if (!step) {
+    return null;
+  }
   const cardPosition = getCardPosition(targetRect);
 
   return (
@@ -175,8 +188,11 @@ export function OnboardingTour({ onClose, scenario }: OnboardingTourProps) {
             <button
               className={styles.primaryButton}
               onClick={() => {
-                if (isLastStep) onClose("completed");
-                else setStepIndex((current) => Math.min(current + 1, scenario.steps.length - 1));
+                if (isLastStep) {
+                  onClose("completed");
+                } else {
+                  setStepIndex((current) => Math.min(current + 1, scenario.steps.length - 1));
+                }
               }}
               type="button"
             >

@@ -1,12 +1,5 @@
 import { useState } from "react";
-import type {
-  CalendarDefinition,
-  Member,
-  Project,
-  ProgressStats,
-  ResourceRowModel,
-  ScheduleTask,
-} from "../../../types/schedule";
+
 import {
   daysInclusive,
   formatDateWithWeekday,
@@ -15,6 +8,14 @@ import {
   statusLabels,
 } from "../../../lib/schedule";
 import type { ScheduleHealthIssue, ScheduleHealthReport } from "../../../lib/scheduleHealth";
+import type {
+  CalendarDefinition,
+  Member,
+  ProgressStats,
+  Project,
+  ResourceRowModel,
+  ScheduleTask,
+} from "../../../types/schedule";
 import { BurndownChart } from "./BurndownChart";
 
 type SummaryStripProps = {
@@ -50,11 +51,11 @@ export function SummaryStrip({
   const phases = tasks.filter((task) => task.type === "phase");
   const milestones = tasks
     .filter((task) => task.type === "milestone")
-    .sort((a, b) => a.start.localeCompare(b.start));
-  const openMilestones = milestones.filter((task) => task.status !== "done");
+    .toSorted((a, b) => a.start.localeCompare(b.start));
+  const nextOpenMilestone = milestones.find((task) => task.status !== "done");
   const delayedTasks = actionableTasks
     .filter((task) => task.status === "delayed")
-    .sort((a, b) => a.end.localeCompare(b.end));
+    .toSorted((a, b) => a.end.localeCompare(b.end));
   const blockedTasks = actionableTasks
     .filter((task) =>
       (task.dependencies ?? []).some((dependencyId) => {
@@ -65,7 +66,7 @@ export function SummaryStrip({
     .slice(0, 4);
   const highLoadRows = resourceRows
     .filter((row) => row.utilization >= 80)
-    .sort((a, b) => b.utilization - a.utilization)
+    .toSorted((a, b) => b.utilization - a.utilization)
     .slice(0, 4);
   const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
   const totalEffort = actionableTasks.reduce(
@@ -137,9 +138,9 @@ export function SummaryStrip({
         />
         <SummaryCard
           label="次のマイルストーン"
-          value={openMilestones[0]?.title ?? project.nextMilestone.title}
+          value={nextOpenMilestone?.title ?? project.nextMilestone.title}
           tone="blue"
-          detail={formatDateWithWeekday(openMilestones[0]?.start ?? project.nextMilestone.date)}
+          detail={formatDateWithWeekday(nextOpenMilestone?.start ?? project.nextMilestone.date)}
         />
         <SummaryCard
           label="完了率"
@@ -368,27 +369,47 @@ function HealthIssueRow({
 }
 
 function getLoadTone(value: number) {
-  if (value >= 90) return "danger";
-  if (value >= 80) return "warning";
+  if (value >= 90) {
+    return "danger";
+  }
+  if (value >= 80) {
+    return "warning";
+  }
   return "good";
 }
 
 function getHealthLabel(severity: ScheduleHealthIssue["severity"]) {
-  if (severity === "danger") return "修正";
-  if (severity === "warning") return "確認";
+  if (severity === "danger") {
+    return "修正";
+  }
+  if (severity === "warning") {
+    return "確認";
+  }
   return "情報";
 }
 
 function getHealthActionLabel(issue: ScheduleHealthIssue) {
-  if (issue.taskId) return "ガント";
-  if (issue.category === "calendar") return "カレンダー";
-  if (issue.category === "load") return "リソース";
-  if (issue.category === "assign") return "メンバー";
+  if (issue.taskId) {
+    return "ガント";
+  }
+  if (issue.category === "calendar") {
+    return "カレンダー";
+  }
+  if (issue.category === "load") {
+    return "リソース";
+  }
+  if (issue.category === "assign") {
+    return "メンバー";
+  }
   return "ガント";
 }
 
 function getHealthTone(report: ScheduleHealthReport) {
-  if (report.dangerCount > 0) return "danger";
-  if (report.warningCount > 0) return "warning";
+  if (report.dangerCount > 0) {
+    return "danger";
+  }
+  if (report.warningCount > 0) {
+    return "warning";
+  }
   return "good";
 }

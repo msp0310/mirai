@@ -1,4 +1,4 @@
-import { buildResourceMatrix } from "./schedule";
+import type { ScheduleSnapshot } from "../data/scheduleRepository";
 import type {
   CalendarDefinition,
   Member,
@@ -8,7 +8,7 @@ import type {
   TimelineColumn,
   UtilizationTone,
 } from "../types/schedule";
-import type { ScheduleSnapshot } from "../data/scheduleRepository";
+import { buildResourceMatrix } from "./schedule";
 
 /** チーム横断の負荷計算に使うタスクへ、所属プロジェクト情報を付与します。 */
 function addProjectContext(tasks: ScheduleTask[], snapshot: ScheduleSnapshot): ScheduleTask[] {
@@ -21,8 +21,12 @@ function addProjectContext(tasks: ScheduleTask[], snapshot: ScheduleSnapshot): S
 
 /** 利用率を、画面の警告色に対応する3段階へ変換します。 */
 export function getResourceUtilizationTone(percent: number): UtilizationTone {
-  if (percent >= 100) return "danger";
-  if (percent >= 82) return "warning";
+  if (percent >= 100) {
+    return "danger";
+  }
+  if (percent >= 82) {
+    return "warning";
+  }
   return "good";
 }
 
@@ -72,12 +76,16 @@ export function buildCrossProjectResourceRows({
 
     projectRows.forEach((projectRow) => {
       const targetRow = rowsByMemberId.get(projectRow.member.id);
-      if (!targetRow) return;
+      if (!targetRow) {
+        return;
+      }
       const projectCellsByWeek = new Map(projectRow.cells.map((cell) => [cell.week, cell]));
       targetRow.cells = targetRow.cells.map((cell) => {
         const projectCell = projectCellsByWeek.get(cell.week);
-        if (!projectCell || projectCell.contributions.length === 0) return cell;
-        const contributions = [...cell.contributions, ...projectCell.contributions].sort(
+        if (!projectCell || projectCell.contributions.length === 0) {
+          return cell;
+        }
+        const contributions = [...cell.contributions, ...projectCell.contributions].toSorted(
           (a, b) => b.hours - a.hours || a.start.localeCompare(b.start),
         );
         const hours = Math.round(
@@ -89,7 +97,13 @@ export function buildCrossProjectResourceRows({
             : hours > 0
               ? 100
               : 0;
-        return { ...cell, contributions, hours, percent, tone: getResourceUtilizationTone(percent) };
+        return {
+          ...cell,
+          contributions,
+          hours,
+          percent,
+          tone: getResourceUtilizationTone(percent),
+        };
       });
     });
   });

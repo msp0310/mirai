@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+
 import type { TaskFocusRequest, TaskSelectionOptions } from "../../../app/appTypes";
 import type { TaskInspectorFocusTarget } from "../../../types/schedule";
 
@@ -57,20 +58,25 @@ export function useTaskSelection({ visibleRows }: UseTaskSelectionOptions) {
       if (options.range && selectionAnchorTaskId) {
         const anchorIndex = visibleRows.findIndex((row) => row.id === selectionAnchorTaskId);
         const targetIndex = visibleRows.findIndex((row) => row.id === taskId);
-        if (anchorIndex >= 0 && targetIndex >= 0) {
+        if (anchorIndex !== -1 && targetIndex !== -1) {
           const start = Math.min(anchorIndex, targetIndex);
           const end = Math.max(anchorIndex, targetIndex);
           const ids = visibleRows.slice(start, end + 1).map((row) => row.id);
           setSelectedTaskId(taskId);
           setSelectedTaskIds(new Set(ids));
-          if (options.focusTarget) openTaskInspector(taskId, options.focusTarget);
-          else closeTaskInspector();
+          if (options.focusTarget) {
+            openTaskInspector(taskId, options.focusTarget);
+          } else {
+            closeTaskInspector();
+          }
           return;
         }
       }
 
       if (options.additive) {
-        if (!options.focusTarget) closeTaskInspector();
+        if (!options.focusTarget) {
+          closeTaskInspector();
+        }
         setSelectedTaskIds((current) => {
           const next = new Set(current);
           if (next.has(taskId) && next.size > 1) {
@@ -83,12 +89,16 @@ export function useTaskSelection({ visibleRows }: UseTaskSelectionOptions) {
           }
           return next;
         });
-        if (options.focusTarget) openTaskInspector(taskId, options.focusTarget);
+        if (options.focusTarget) {
+          openTaskInspector(taskId, options.focusTarget);
+        }
         return;
       }
 
       selectOnlyTask(taskId);
-      if (options.focusTarget) openTaskInspector(taskId, options.focusTarget);
+      if (options.focusTarget) {
+        openTaskInspector(taskId, options.focusTarget);
+      }
     },
     [closeTaskInspector, openTaskInspector, selectOnlyTask, selectionAnchorTaskId, visibleRows],
   );
@@ -97,7 +107,9 @@ export function useTaskSelection({ visibleRows }: UseTaskSelectionOptions) {
     (startTaskId: string, endTaskId: string) => {
       const startIndex = visibleRows.findIndex((row) => row.id === startTaskId);
       const endIndex = visibleRows.findIndex((row) => row.id === endTaskId);
-      if (startIndex < 0 || endIndex < 0) return;
+      if (startIndex === -1 || endIndex === -1) {
+        return;
+      }
 
       const start = Math.min(startIndex, endIndex);
       const end = Math.max(startIndex, endIndex);

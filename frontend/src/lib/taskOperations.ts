@@ -55,7 +55,9 @@ export function createTaskFromInput(
 
 function createEqualAssigneeAllocations(assigneeIds: string[]) {
   const ids = [...new Set(assigneeIds)];
-  if (ids.length <= 1) return undefined;
+  if (ids.length <= 1) {
+    return undefined;
+  }
   const base = Math.floor(100 / ids.length);
   const remainder = 100 - base * ids.length;
   return ids.map((memberId, index) => ({
@@ -83,7 +85,9 @@ export function moveTaskByDays(
   calendar?: CalendarDefinition,
   calendarAware = true,
 ): ScheduleTask[] {
-  if (deltaDays === 0) return tasks;
+  if (deltaDays === 0) {
+    return tasks;
+  }
   const targetIds = getDescendantIds(tasks, taskId);
   targetIds.add(taskId);
   return moveTaskIdsByDays(tasks, targetIds, deltaDays, calendar, calendarAware);
@@ -95,7 +99,9 @@ export function moveTaskSubtreesByDays(
   calendar?: CalendarDefinition,
   calendarAware = true,
 ): ScheduleTask[] {
-  if (deltaDays === 0 || taskIds.length === 0) return tasks;
+  if (deltaDays === 0 || taskIds.length === 0) {
+    return tasks;
+  }
   const selectedIds = new Set(taskIds);
   const movableSelectedIds = new Set(
     tasks
@@ -108,7 +114,9 @@ export function moveTaskSubtreesByDays(
         movableSelectedIds.has(task.id) && !hasSelectedAncestor(tasks, task.id, movableSelectedIds),
     )
     .map((task) => task.id);
-  if (rootIds.length === 0) return tasks;
+  if (rootIds.length === 0) {
+    return tasks;
+  }
 
   const targetIds = new Set<string>();
   rootIds.forEach((taskId) => {
@@ -127,7 +135,9 @@ function moveTaskIdsByDays(
 ): ScheduleTask[] {
   return normalizeSummaryTasks(
     tasks.map((task) => {
-      if (!targetIds.has(task.id)) return task;
+      if (!targetIds.has(task.id)) {
+        return task;
+      }
       return { ...task, ...getMovedTaskDateRange(task, deltaDays, calendar, calendarAware) };
     }),
   );
@@ -141,7 +151,9 @@ export function getMovedTaskDateRange(
   calendarAware = true,
 ): TaskDateRange {
   const start = toDateKey(addDays(parseDate(task.start), deltaDays));
-  if (task.type === "milestone") return { end: start, start };
+  if (task.type === "milestone") {
+    return { end: start, start };
+  }
   const workDays = getTaskWorkDays(task, calendar, calendarAware);
   return {
     end: resolveEndForWorkDays(start, workDays, calendar, calendarAware),
@@ -186,10 +198,14 @@ export function resizeTaskByDays(
   edge: "start" | "end",
   deltaDays: number,
 ): ScheduleTask[] {
-  if (deltaDays === 0) return tasks;
+  if (deltaDays === 0) {
+    return tasks;
+  }
   return normalizeSummaryTasks(
     tasks.map((task) => {
-      if (task.id !== taskId) return task;
+      if (task.id !== taskId) {
+        return task;
+      }
       return { ...task, ...getResizedTaskDateRange(task, edge, deltaDays) };
     }),
   );
@@ -254,7 +270,9 @@ export function insertTaskAtTaskPosition(
 }
 export function getTaskSubtree(tasks: ScheduleTask[], taskId: string): ScheduleTask[] {
   const task = tasks.find((item) => item.id === taskId);
-  if (!task) return [];
+  if (!task) {
+    return [];
+  }
   const subtreeIds = getDescendantIds(tasks, taskId);
   subtreeIds.add(taskId);
   return tasks.filter((item) => subtreeIds.has(item.id));
@@ -306,7 +324,7 @@ export function pasteTaskSubtree(
 
   const target = targetTaskId ? tasks.find((task) => task.id === targetTaskId) : null;
   const fallbackParentId = tasks.find((task) => task.parentId === null)?.id ?? null;
-  const firstSourceRoot = copiedRootTasks[0];
+  const [firstSourceRoot] = copiedRootTasks;
   const parentId = target
     ? getPastedTaskParentId(target, mode)
     : tasks.some((task) => task.id === firstSourceRoot.parentId)
@@ -314,8 +332,10 @@ export function pasteTaskSubtree(
       : fallbackParentId;
   const insertIndex = target ? getSubtreeEndIndex(tasks, target.id) + 1 : tasks.length;
   const pastedTasks = createPastedSubtree(copiedTasks, parentId);
-  const pastedRoot = pastedTasks[0];
-  if (!pastedRoot) return { insertedTaskId: null, tasks };
+  const [pastedRoot] = pastedTasks;
+  if (!pastedRoot) {
+    return { insertedTaskId: null, tasks };
+  }
 
   return {
     insertedTaskId: pastedRoot.id,
@@ -328,7 +348,9 @@ export function pasteTaskSubtree(
 }
 export function deleteTaskSubtrees(tasks: ScheduleTask[], taskIds: string[]): ScheduleTask[] {
   const deletedTasks = getTaskSubtrees(tasks, taskIds);
-  if (deletedTasks.length === 0) return tasks;
+  if (deletedTasks.length === 0) {
+    return tasks;
+  }
   const deletedIds = new Set(deletedTasks.map((task) => task.id));
   return normalizeSummaryTasks(
     tasks
@@ -378,7 +400,9 @@ function hasSelectedAncestor(
   const taskById = new Map(tasks.map((task) => [task.id, task]));
   let parentId = taskById.get(taskId)?.parentId;
   while (parentId) {
-    if (selectedIds.has(parentId)) return true;
+    if (selectedIds.has(parentId)) {
+      return true;
+    }
     parentId = taskById.get(parentId)?.parentId;
   }
   return false;
@@ -391,7 +415,7 @@ function getInsertIndexAfterSiblings(
 ): number {
   if (siblings.length === 0) {
     const parentIndex = tasks.findIndex((task) => task.id === parentId);
-    return parentIndex >= 0 ? parentIndex + 1 : tasks.length;
+    return parentIndex !== -1 ? parentIndex + 1 : tasks.length;
   }
   const lastSibling = siblings[siblings.length - 1];
   const subtreeIds = getDescendantIds(tasks, lastSibling.id);
@@ -404,18 +428,26 @@ function getInsertIndexAfterSiblings(
 }
 
 function getNewTaskParentId(anchor: ScheduleTask): string | null {
-  if (anchor.type === "summary" || anchor.type === "phase") return anchor.id;
+  if (anchor.type === "summary" || anchor.type === "phase") {
+    return anchor.id;
+  }
   return anchor.parentId;
 }
 
 function getTaskPositionParentId(anchor: ScheduleTask): string | null {
-  if (anchor.parentId === null && anchor.type === "summary") return anchor.id;
+  if (anchor.parentId === null && anchor.type === "summary") {
+    return anchor.id;
+  }
   return anchor.parentId;
 }
 
 function getPastedTaskParentId(anchor: ScheduleTask, mode: TaskPasteMode): string | null {
-  if (mode === "child" && anchor.type !== "milestone") return anchor.id;
-  if (anchor.parentId === null && anchor.type === "summary") return anchor.id;
+  if (mode === "child" && anchor.type !== "milestone") {
+    return anchor.id;
+  }
+  if (anchor.parentId === null && anchor.type === "summary") {
+    return anchor.id;
+  }
   return anchor.parentId;
 }
 
@@ -462,10 +494,18 @@ export function indentTask(
 ): ScheduleTask[] {
   const task = tasks.find((item) => item.id === taskId);
   const parent = tasks.find((item) => item.id === parentId);
-  if (!task || !parent) return tasks;
-  if (task.parentId === null || task.parentId === parentId) return tasks;
-  if (parent.type === "milestone" || parent.id === task.id) return tasks;
-  if (getDescendantIds(tasks, task.id).has(parent.id)) return tasks;
+  if (!task || !parent) {
+    return tasks;
+  }
+  if (task.parentId === null || task.parentId === parentId) {
+    return tasks;
+  }
+  if (parent.type === "milestone" || parent.id === task.id) {
+    return tasks;
+  }
+  if (getDescendantIds(tasks, task.id).has(parent.id)) {
+    return tasks;
+  }
 
   return normalizeSummaryTasks(
     tasks.map((item) => (item.id === taskId ? { ...item, parentId: parent.id } : item)),
@@ -473,9 +513,13 @@ export function indentTask(
 }
 export function outdentTask(tasks: ScheduleTask[], taskId: string): ScheduleTask[] {
   const task = tasks.find((item) => item.id === taskId);
-  if (!task?.parentId) return tasks;
+  if (!task?.parentId) {
+    return tasks;
+  }
   const parent = tasks.find((item) => item.id === task.parentId);
-  if (!parent) return tasks;
+  if (!parent) {
+    return tasks;
+  }
   return normalizeSummaryTasks(
     tasks.map((item) => (item.id === taskId ? { ...item, parentId: parent.parentId } : item)),
   );
@@ -486,11 +530,13 @@ export function moveTaskWithinSiblings(
   direction: -1 | 1,
 ): ScheduleTask[] {
   const task = tasks.find((item) => item.id === taskId);
-  if (!task) return tasks;
+  if (!task) {
+    return tasks;
+  }
   const siblings = tasks.filter((item) => item.parentId === task.parentId);
   const currentIndex = siblings.findIndex((item) => item.id === taskId);
   const nextIndex = currentIndex + direction;
-  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= siblings.length) {
+  if (currentIndex === -1 || nextIndex < 0 || nextIndex >= siblings.length) {
     return tasks;
   }
 
@@ -509,10 +555,14 @@ export function moveTaskSubtreesWithinSiblings(
   taskIds: string[],
   direction: -1 | 1,
 ): ScheduleTask[] {
-  if (taskIds.length === 0) return tasks;
+  if (taskIds.length === 0) {
+    return tasks;
+  }
 
   const rootIds = getSelectedRootIds(tasks, taskIds);
-  if (rootIds.length === 0) return tasks;
+  if (rootIds.length === 0) {
+    return tasks;
+  }
 
   const rootIdSet = new Set(rootIds);
   const reorderedSiblingsByParent = new Map<string | null, ScheduleTask[]>();
@@ -520,7 +570,9 @@ export function moveTaskSubtreesWithinSiblings(
 
   rootIds.forEach((taskId) => {
     const task = tasks.find((item) => item.id === taskId);
-    if (!task || reorderedSiblingsByParent.has(task.parentId)) return;
+    if (!task || reorderedSiblingsByParent.has(task.parentId)) {
+      return;
+    }
 
     const siblings = tasks.filter((item) => item.parentId === task.parentId);
     const siblingRootIds = new Set(
@@ -551,13 +603,17 @@ export function moveTaskSubtreesWithinSiblings(
     reorderedSiblingsByParent.set(task.parentId, nextSiblings);
   });
 
-  if (!changed) return tasks;
+  if (!changed) {
+    return tasks;
+  }
 
   const siblingCursors = new Map<string | null, number>();
   return normalizeSummaryTasks(
     tasks.map((item) => {
       const nextSiblings = reorderedSiblingsByParent.get(item.parentId);
-      if (!nextSiblings) return item;
+      if (!nextSiblings) {
+        return item;
+      }
       const cursor = siblingCursors.get(item.parentId) ?? 0;
       siblingCursors.set(item.parentId, cursor + 1);
       return nextSiblings[cursor] ?? item;
@@ -571,10 +627,14 @@ export function moveTaskSubtreesToSiblingPosition(
   placement: TaskSiblingReorderPlacement,
 ): ScheduleTask[] {
   const targetTask = tasks.find((task) => task.id === targetTaskId);
-  if (!targetTask || taskIds.length === 0) return tasks;
+  if (!targetTask || taskIds.length === 0) {
+    return tasks;
+  }
 
   const rootIds = getSelectedRootIds(tasks, taskIds);
-  if (rootIds.length === 0 || rootIds.includes(targetTaskId)) return tasks;
+  if (rootIds.length === 0 || rootIds.includes(targetTaskId)) {
+    return tasks;
+  }
 
   const rootTasks = rootIds
     .map((taskId) => tasks.find((task) => task.id === taskId))
@@ -588,7 +648,9 @@ export function moveTaskSubtreesToSiblingPosition(
   const movingSiblings = siblings.filter((task) => movingRootIds.has(task.id));
   const remainingSiblings = siblings.filter((task) => !movingRootIds.has(task.id));
   const targetIndex = remainingSiblings.findIndex((task) => task.id === targetTaskId);
-  if (targetIndex < 0) return tasks;
+  if (targetIndex === -1) {
+    return tasks;
+  }
 
   const insertIndex = placement === "after" ? targetIndex + 1 : targetIndex;
   const nextSiblings = [
@@ -596,7 +658,9 @@ export function moveTaskSubtreesToSiblingPosition(
     ...movingSiblings,
     ...remainingSiblings.slice(insertIndex),
   ];
-  if (hasSameTaskOrder(siblings, nextSiblings)) return tasks;
+  if (hasSameTaskOrder(siblings, nextSiblings)) {
+    return tasks;
+  }
 
   let siblingCursor = 0;
   return normalizeSummaryTasks(
@@ -625,14 +689,18 @@ export function moveTaskSubtreesToParentPosition(
   }
 
   const rootIds = getMovableSelectedRootIds(tasks, taskIds);
-  if (rootIds.length === 0) return tasks;
+  if (rootIds.length === 0) {
+    return tasks;
+  }
 
   const movingSubtreeIds = new Set<string>();
   rootIds.forEach((taskId) => {
     movingSubtreeIds.add(taskId);
     getDescendantIds(tasks, taskId).forEach((id) => movingSubtreeIds.add(id));
   });
-  if (targetParentId && movingSubtreeIds.has(targetParentId)) return tasks;
+  if (targetParentId && movingSubtreeIds.has(targetParentId)) {
+    return tasks;
+  }
 
   const movingRootIds = new Set(rootIds);
   const updatedTasks = tasks.map((task) =>
@@ -683,7 +751,9 @@ function hasSelectedMovableAncestor(
   let parentId = taskById.get(taskId)?.parentId;
   while (parentId) {
     const parent = taskById.get(parentId);
-    if (selectedIds.has(parentId) && parent?.parentId !== null) return true;
+    if (selectedIds.has(parentId) && parent?.parentId !== null) {
+      return true;
+    }
     parentId = parent?.parentId;
   }
   return false;
@@ -696,7 +766,9 @@ function hasSelectedAncestorFromMap(
 ): boolean {
   let parentId = taskById.get(taskId)?.parentId;
   while (parentId) {
-    if (selectedIds.has(parentId)) return true;
+    if (selectedIds.has(parentId)) {
+      return true;
+    }
     parentId = taskById.get(parentId)?.parentId;
   }
   return false;
@@ -713,11 +785,15 @@ function getMoveTargetInsertIndex(tasks: ScheduleTask[], targetParentId: string 
       lastSiblingIndex = index;
     }
   });
-  if (lastSiblingIndex >= 0) return lastSiblingIndex + 1;
+  if (lastSiblingIndex >= 0) {
+    return lastSiblingIndex + 1;
+  }
 
-  if (!targetParentId) return tasks.length;
+  if (!targetParentId) {
+    return tasks.length;
+  }
   const parentIndex = tasks.findIndex((task) => task.id === targetParentId);
-  return parentIndex >= 0 ? parentIndex + 1 : tasks.length;
+  return parentIndex !== -1 ? parentIndex + 1 : tasks.length;
 }
 
 function getReferenceInsertIndex(
@@ -726,8 +802,12 @@ function getReferenceInsertIndex(
   placement: TaskSiblingReorderPlacement,
 ): number {
   const referenceIndex = tasks.findIndex((task) => task.id === referenceTaskId);
-  if (referenceIndex < 0) return tasks.length;
-  if (placement === "before") return referenceIndex;
+  if (referenceIndex === -1) {
+    return tasks.length;
+  }
+  if (placement === "before") {
+    return referenceIndex;
+  }
   const subtreeEndIndex = getSubtreeEndIndex(tasks, referenceTaskId);
   return (subtreeEndIndex >= 0 ? subtreeEndIndex : referenceIndex) + 1;
 }
@@ -744,8 +824,12 @@ export function normalizeDateChange(change: TaskDateChange): TaskDateChange {
   return change.end < change.start ? { ...change, end: change.start } : change;
 }
 export function normalizeProgressStatus(progress: number): TaskStatus {
-  if (progress >= 100) return "done";
-  if (progress > 0) return "inProgress";
+  if (progress >= 100) {
+    return "done";
+  }
+  if (progress > 0) {
+    return "inProgress";
+  }
   return "notStarted";
 }
 export function normalizeSummaryTasks(tasks: ScheduleTask[]): ScheduleTask[] {
@@ -758,14 +842,16 @@ export function normalizeSummaryTasks(tasks: ScheduleTask[]): ScheduleTask[] {
   const parentIds = [...taskMap.values()]
     .filter((task) => task.type === "summary" || task.type === "phase")
     .map((task) => task.id)
-    .reverse();
+    .toReversed();
 
   parentIds.forEach((parentId) => {
     const parent = taskMap.get(parentId);
     const children = (byParent.get(parentId) ?? [])
       .map((child) => taskMap.get(child.id))
       .filter((task): task is ScheduleTask => Boolean(task));
-    if (!parent || children.length === 0) return;
+    if (!parent || children.length === 0) {
+      return;
+    }
     const actionableChildren = children.filter((child) => child.type !== "milestone");
     const sourceChildren = actionableChildren.length > 0 ? actionableChildren : children;
     const start = sourceChildren.reduce(
@@ -793,8 +879,12 @@ export function normalizeSummaryTasks(tasks: ScheduleTask[]): ScheduleTask[] {
 }
 
 function deriveStatus(tasks: ScheduleTask[], progress: number): TaskStatus {
-  if (tasks.some((task) => task.status === "delayed")) return "delayed";
-  if (tasks.every((task) => task.status === "done")) return "done";
+  if (tasks.some((task) => task.status === "delayed")) {
+    return "delayed";
+  }
+  if (tasks.every((task) => task.status === "done")) {
+    return "done";
+  }
   if (progress > 0 || tasks.some((task) => task.status === "inProgress")) {
     return "inProgress";
   }
@@ -847,7 +937,9 @@ function getTaskWorkDays(
   calendar?: CalendarDefinition,
   calendarAware = true,
 ): number {
-  if (!calendar) return getDurationDays(task);
+  if (!calendar) {
+    return getDurationDays(task);
+  }
   return getWorkingDaySpan(task.start, task.end, calendar, calendarAware);
 }
 

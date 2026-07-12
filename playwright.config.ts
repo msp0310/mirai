@@ -6,13 +6,14 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
-  fullyParallel: true,
+  // API統合テストは共有SQLiteを更新するため、直列実行して検証結果を再現可能にします。
+  fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI ? "github" : "list",
   timeout: 30_000,
-  expect: { timeout: 5_000 },
+  expect: { timeout: 5000 },
   use: {
     baseURL: "http://127.0.0.1:5174",
     trace: "retain-on-failure",

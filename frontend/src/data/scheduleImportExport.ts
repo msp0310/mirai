@@ -14,8 +14,8 @@ import type {
   ProjectIssueType,
   ProjectLifecycleStatus,
   ProjectWorkLog,
-  StaffingDemand,
   ScheduleTask,
+  StaffingDemand,
   TaskAssigneeAllocation,
   TaskChecklistItem,
   TaskComment,
@@ -87,7 +87,7 @@ export class ProjectImportError extends Error {
   }
 }
 export function parseProjectImportJson(source: string): ProjectImportData {
-  let parsed: unknown;
+  let parsed: unknown = null;
   try {
     parsed = JSON.parse(source);
   } catch {
@@ -247,7 +247,7 @@ export function createTaskCsvImportDraft(source: string): TaskCsvImportDraft {
 export async function createBrabioXlsxImportDraft(file: File): Promise<BrabioXlsxImportData> {
   const xlsx = await import("@e965/xlsx");
   const workbook = xlsx.read(await file.arrayBuffer(), { cellDates: true, type: "array" });
-  const firstSheetName = workbook.SheetNames[0];
+  const [firstSheetName] = workbook.SheetNames;
   if (!firstSheetName) {
     throw new ProjectImportError("Brabio XLSXにシートがありません。");
   }
@@ -697,7 +697,9 @@ function getBrabioColumns(header: string[]) {
       .map(normalizeCsvHeader)
       .map((alias) => normalizedHeader.indexOf(alias))
       .find((candidate) => candidate >= 0);
-    if (index != null && index >= 0) columns[key] = index;
+    if (index != null && index >= 0) {
+      columns[key] = index;
+    }
   });
 
   (["type", "outline", "id", "title"] as BrabioColumnKey[]).forEach((key) => {
@@ -718,7 +720,9 @@ function readBrabioRow(
 ): BrabioRawTaskRow | null {
   const type = readBrabioCell(row, columns.type);
   const title = readBrabioCell(row, columns.title);
-  if (!type || !title) return null;
+  if (!type || !title) {
+    return null;
+  }
   const outline = readBrabioOutline(readBrabioCell(row, columns.outline), rowNumber);
 
   return {
@@ -739,10 +743,16 @@ function readBrabioRow(
 }
 
 function readBrabioCell(row: unknown[], index: number | undefined) {
-  if (index == null) return "";
+  if (index == null) {
+    return "";
+  }
   const value = row[index];
-  if (value == null) return "";
-  if (value instanceof Date) return formatDateKey(value);
+  if (value == null) {
+    return "";
+  }
+  if (value instanceof Date) {
+    return formatDateKey(value);
+  }
   return String(value).trim();
 }
 
@@ -755,10 +765,16 @@ function readBrabioOutline(value: string, rowNumber: number) {
 }
 
 function readBrabioDateCell(value: unknown) {
-  if (value == null || value === "") return "";
-  if (value instanceof Date) return formatDateKey(value);
+  if (value == null || value === "") {
+    return "";
+  }
+  if (value instanceof Date) {
+    return formatDateKey(value);
+  }
   const text = String(value).trim();
-  if (!text) return "";
+  if (!text) {
+    return "";
+  }
   const normalized = text
     .replaceAll("/", "-")
     .replaceAll(".", "-")
@@ -766,13 +782,17 @@ function readBrabioDateCell(value: unknown) {
     .replace("月", "-")
     .replace(/日$/, "");
   const match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(normalized);
-  if (!match) return "";
+  if (!match) {
+    return "";
+  }
   const [, year, month, day] = match;
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
 function readBrabioProgress(value: string) {
-  if (!value) return 0;
+  if (!value) {
+    return 0;
+  }
   const parsed = Number(value.replace("%", "").trim());
   return Number.isFinite(parsed) ? clampProgress(parsed) : 0;
 }
@@ -782,7 +802,9 @@ function collectBrabioMembers(taskRows: BrabioRawTaskRow[]) {
   const warnings: string[] = [];
   taskRows.forEach((row) => {
     row.assignees.forEach((name, index) => {
-      if (membersByName.has(name)) return;
+      if (membersByName.has(name)) {
+        return;
+      }
       const brabioId = row.assigneeIds[index] ?? "";
       const id = createBrabioMemberId(name, brabioId, membersByName.size + 1);
       membersByName.set(name, {
@@ -819,26 +841,30 @@ function convertBrabioRowsToTaskRows(
     taskRows
       .map((row) => row.start)
       .filter(Boolean)
-      .sort()[0] ?? todayKey();
+      .toSorted()[0] ?? todayKey();
   const projectEnd =
     taskRows
       .map((row) => row.end || row.completedAt || row.start)
       .filter(Boolean)
-      .sort()
+      .toSorted()
       .at(-1) ?? projectStart;
 
   taskRows.forEach((row) => {
     const taskId = createBrabioTaskId(row.id);
     const taskType = readBrabioTaskType(row.type, row.outline);
     const parentId = row.outline === 0 ? null : (taskIdsByOutline.get(row.outline - 1) ?? null);
-    let start = row.start;
-    let end = row.end;
+    let { start } = row;
+    let { end } = row;
     if (!start && !end && row.completedAt) {
       start = row.completedAt;
       end = row.completedAt;
     }
-    if (start && !end) end = start;
-    if (!start && end) start = end;
+    if (start && !end) {
+      end = start;
+    }
+    if (!start && end) {
+      start = end;
+    }
     if (!start || !end) {
       const parent = parentId
         ? resolvedRows.find((candidate) => candidate.taskId === parentId)
@@ -895,16 +921,26 @@ function convertBrabioRowsToTaskRows(
 
 function readBrabioTaskType(type: string, outline: number): TaskType {
   const normalized = normalizeCsvToken(type);
-  if (normalized === "project") return "summary";
-  if (normalized === "folder") return outline <= 1 ? "phase" : "summary";
-  if (normalized === "milestone" || normalized === "マイルストーン") return "milestone";
+  if (normalized === "project") {
+    return "summary";
+  }
+  if (normalized === "folder") {
+    return outline <= 1 ? "phase" : "summary";
+  }
+  if (normalized === "milestone" || normalized === "マイルストーン") {
+    return "milestone";
+  }
   return "task";
 }
 
 function readBrabioTaskStatus(status: string, situation: string, progress: number): TaskStatus {
   const normalized = normalizeCsvToken(status || situation);
-  if (normalized.includes("完了") || progress >= 100) return "done";
-  if (normalized.includes("遅") || normalized.includes("delay")) return "delayed";
+  if (normalized.includes("完了") || progress >= 100) {
+    return "done";
+  }
+  if (normalized.includes("遅") || normalized.includes("delay")) {
+    return "delayed";
+  }
   if (normalized.includes("着手") || normalized.includes("進行") || progress > 0) {
     return "inProgress";
   }
@@ -1006,7 +1042,9 @@ function parseCsvRows(source: string): string[][] {
 
   function pushRow() {
     pushCell();
-    if (!isBlankCsvRow(row)) rows.push(row);
+    if (!isBlankCsvRow(row)) {
+      rows.push(row);
+    }
     row = [];
   }
 
@@ -1038,7 +1076,9 @@ function parseCsvRows(source: string): string[][] {
     }
     if (char === "\r" || char === "\n") {
       pushRow();
-      if (char === "\r" && text[index + 1] === "\n") index += 1;
+      if (char === "\r" && text[index + 1] === "\n") {
+        index += 1;
+      }
       continue;
     }
 
@@ -1049,7 +1089,9 @@ function parseCsvRows(source: string): string[][] {
   if (inQuotes) {
     throw new ProjectImportError("CSVの引用符が閉じていません。");
   }
-  if (cellTouched || cell.length > 0 || row.length > 0) pushRow();
+  if (cellTouched || cell.length > 0 || row.length > 0) {
+    pushRow();
+  }
 
   return rows;
 }
@@ -1124,7 +1166,9 @@ function readCsvDate(value: string, rowNumber: number, label: string) {
 }
 
 function readCsvTaskStatus(value: string, rowNumber: number): TaskStatus {
-  if (value === "") return "notStarted";
+  if (value === "") {
+    return "notStarted";
+  }
   const status = taskCsvStatusMap[normalizeCsvToken(value)];
   if (!status) {
     throw new ProjectImportError(`CSV ${rowNumber}行目の状態が正しくありません。`);
@@ -1133,7 +1177,9 @@ function readCsvTaskStatus(value: string, rowNumber: number): TaskStatus {
 }
 
 function readCsvTaskType(value: string, rowNumber: number): TaskType {
-  if (value === "") return "task";
+  if (value === "") {
+    return "task";
+  }
   const type = taskCsvTypeMap[normalizeCsvToken(value)];
   if (!type) {
     throw new ProjectImportError(`CSV ${rowNumber}行目の種別が正しくありません。`);
@@ -1142,7 +1188,9 @@ function readCsvTaskType(value: string, rowNumber: number): TaskType {
 }
 
 function readCsvProgress(value: string, status: TaskStatus, rowNumber: number) {
-  if (value === "") return status === "done" ? 100 : 0;
+  if (value === "") {
+    return status === "done" ? 100 : 0;
+  }
   const parsed = Number(value.replace("%", "").trim());
   if (!Number.isFinite(parsed)) {
     throw new ProjectImportError(`CSV ${rowNumber}行目の進捗は数値にしてください。`);
@@ -1151,7 +1199,9 @@ function readCsvProgress(value: string, status: TaskStatus, rowNumber: number) {
 }
 
 function readCsvOptionalNumber(value: string, rowNumber: number, label: string) {
-  if (value === "") return undefined;
+  if (value === "") {
+    return undefined;
+  }
   const parsed = Number(
     value.replaceAll(",", "").replace(/[hH]/g, "").replaceAll("時間", "").trim(),
   );
@@ -1179,7 +1229,9 @@ function createMemberLookup(members: Member[]) {
 }
 
 function getTaskCsvColor(type: TaskType, rowNumber: number) {
-  if (type !== "task") return taskCsvTypeColors[type];
+  if (type !== "task") {
+    return taskCsvTypeColors[type];
+  }
   return taskCsvPalette[(rowNumber - 2) % taskCsvPalette.length];
 }
 
@@ -1359,7 +1411,9 @@ function parseStaffingDemand(value: unknown): StaffingDemand {
 }
 
 function readProjectStatus(value: unknown, label: string) {
-  if (value === "active" || value === "archived") return value;
+  if (value === "active" || value === "archived") {
+    return value;
+  }
   throw new ProjectImportError(`${label} の値が正しくありません。`);
 }
 
@@ -1371,7 +1425,9 @@ function readProjectLifecycleStatus(value: unknown, label: string): ProjectLifec
 }
 
 function readMemberStatus(value: unknown, label: string): MemberStatus {
-  if (value === "active" || value === "inactive") return value;
+  if (value === "active" || value === "inactive") {
+    return value;
+  }
   throw new ProjectImportError(`${label} の値が正しくありません。`);
 }
 
@@ -1379,7 +1435,9 @@ function readMemberAvailabilityOverrideType(
   value: unknown,
   label: string,
 ): MemberAvailabilityOverrideType {
-  if (value === "unavailable") return value;
+  if (value === "unavailable") {
+    return value;
+  }
   throw new ProjectImportError(`${label} の値が正しくありません。`);
 }
 
@@ -1616,12 +1674,16 @@ function findCycles(tasks: ScheduleTask[], getNextIds: (task: ScheduleTask) => s
       cyclicTitles.add(task.title);
       return;
     }
-    if (visited.has(task.id)) return;
+    if (visited.has(task.id)) {
+      return;
+    }
 
     visiting.add(task.id);
     getNextIds(task).forEach((nextId) => {
       const nextTask = taskById.get(nextId);
-      if (nextTask) visit(nextTask);
+      if (nextTask) {
+        visit(nextTask);
+      }
     });
     visiting.delete(task.id);
     visited.add(task.id);
@@ -1646,7 +1708,9 @@ function getDuplicates(values: string[]) {
 
 function isValidDateKey(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
+  if (!match) {
+    return false;
+  }
   const [, yearText, monthText, dayText] = match;
   const year = Number(yearText);
   const month = Number(monthText);

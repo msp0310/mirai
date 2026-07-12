@@ -1,4 +1,20 @@
-import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type MouseEvent,
+  type RefObject,
+  useEffect,
+  useRef,
+} from "react";
+
+import {
+  type DependencyIssue,
+  formatShortDate,
+  getDateDeltaForTimeUnit,
+  getTaskTimelineSpan,
+  taskMatchesQuery,
+} from "../../../lib/schedule";
+import { getMovedTaskDateRange, getResizedTaskDateRange } from "../../../lib/taskOperations";
 import type {
   CalendarDefinition,
   GanttTimeUnit,
@@ -7,17 +23,7 @@ import type {
   TimelineColumn,
   TimelineDay,
 } from "../../../types/schedule";
-import type { DependencyIssue } from "../../../lib/schedule";
-import {
-  getMovedTaskDateRange,
-  getResizedTaskDateRange,
-} from "../../../lib/taskOperations";
-import {
-  formatShortDate,
-  getDateDeltaForTimeUnit,
-  getTaskTimelineSpan,
-  taskMatchesQuery,
-} from "../../../lib/schedule";
+import { getTaskSelectionOptions } from "../utils/taskSelection";
 import { rowHeight } from "./constants";
 
 type VisibleSlotWindow = {
@@ -250,10 +256,8 @@ function CalendarBackdrop({
     <div className="calendar-backdrop" style={{ height: bodyHeight }}>
       {visibleDays.map((day) => {
         const isToday = day.index === todayOffset;
-        const isOutsideProjectRange =
-          day.end < projectRangeStart || day.start > projectRangeEnd;
-        const includesProjectEnd =
-          projectRangeEnd >= day.start && projectRangeEnd <= day.end;
+        const isOutsideProjectRange = day.end < projectRangeStart || day.start > projectRangeEnd;
+        const includesProjectEnd = projectRangeEnd >= day.start && projectRangeEnd <= day.end;
         const className = [
           "day-column",
           day.isNonWorking ? "non-working" : "",
@@ -381,16 +385,19 @@ function TimelineRow({
           : "same"
       : "same";
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (focusStartTimerRef.current !== null) {
         window.clearTimeout(focusStartTimerRef.current);
       }
-    };
-  }, []);
+    },
+    [],
+  );
 
   function cancelPendingFocusStart() {
-    if (focusStartTimerRef.current === null) return;
+    if (focusStartTimerRef.current === null) {
+      return;
+    }
     window.clearTimeout(focusStartTimerRef.current);
     focusStartTimerRef.current = null;
   }
@@ -403,19 +410,10 @@ function TimelineRow({
     }, 140);
   }
 
-  function getSelectionOptions(event: {
-    ctrlKey?: boolean;
-    metaKey?: boolean;
-    shiftKey?: boolean;
-  }) {
-    return {
-      additive: Boolean(event.ctrlKey || event.metaKey),
-      range: Boolean(event.shiftKey),
-    };
-  }
-
   function startPointerOperation(event: MouseEvent<HTMLElement>, mode: PointerMode) {
-    if (event.button !== 0) return;
+    if (event.button !== 0) {
+      return;
+    }
     if (event.detail >= 2) {
       handleOpenInspector(event);
       return;
@@ -423,7 +421,7 @@ function TimelineRow({
     if ((mode === "move" && !canMove) || (mode !== "move" && !canResize)) {
       return;
     }
-    const selectionOptions = getSelectionOptions(event);
+    const selectionOptions = getTaskSelectionOptions(event);
     const moveSelectionTogether =
       mode === "move" &&
       selected &&
@@ -434,7 +432,9 @@ function TimelineRow({
     event.preventDefault();
     event.stopPropagation();
     const element = event.currentTarget.closest(".gantt-bar, .milestone") as HTMLElement | null;
-    if (!element) return;
+    if (!element) {
+      return;
+    }
     const canvas = element.closest(".timeline-canvas") as HTMLElement | null;
     const body = element.closest(".timeline-body") as HTMLElement | null;
     let previewElements: ReturnType<typeof ensureDragPreviewElements> | null = null;
@@ -473,10 +473,7 @@ function TimelineRow({
       };
     };
 
-    const updatePreview = (
-      deltaUnits: number,
-      preview: ReturnType<typeof getPreviewState>,
-    ) => {
+    const updatePreview = (deltaUnits: number, preview: ReturnType<typeof getPreviewState>) => {
       const { endOffsetPx, lineSlot, range, startOffsetPx } = preview;
       const lineLeft = clamp(lineSlot, 0, timeline.length) * dayWidth;
       const previewLabel = formatDragPreviewLabel(mode, deltaUnits, timeUnit, range);
@@ -485,7 +482,9 @@ function TimelineRow({
         : previewLabel;
 
       element.dataset.dragPreview = label;
-      if (!previewElements) return;
+      if (!previewElements) {
+        return;
+      }
       previewElements.guide.style.left = `${lineLeft}px`;
       previewElements.bubble.style.left = `${lineLeft}px`;
       previewElements.bubble.style.top = `${Math.max(index * rowHeight - 32, 4)}px`;
@@ -494,7 +493,9 @@ function TimelineRow({
     };
 
     const beginDrag = () => {
-      if (active) return;
+      if (active) {
+        return;
+      }
       active = true;
       element.classList.add("is-dragging");
       previewElements = canvas ? ensureDragPreviewElements(canvas) : null;
@@ -509,7 +510,9 @@ function TimelineRow({
         window.cancelAnimationFrame(autoScrollFrame);
         autoScrollFrame = null;
       }
-      if (body) delete body.dataset.autoScroll;
+      if (body) {
+        delete body.dataset.autoScroll;
+      }
       element.classList.remove("is-dragging");
       element.style.transform = "";
       element.style.width = "";
@@ -521,7 +524,9 @@ function TimelineRow({
     const applyPointerPosition = (clientX: number) => {
       const scrollDelta = (body?.scrollLeft ?? startScrollLeft) - startScrollLeft;
       const rawDelta = clientX - startX + scrollDelta;
-      if (!active && Math.abs(rawDelta) < 5) return;
+      if (!active && Math.abs(rawDelta) < 5) {
+        return;
+      }
       beginDrag();
       let deltaUnits = Math.round(rawDelta / dayWidth);
       if (mode === "start") {
@@ -530,7 +535,9 @@ function TimelineRow({
       if (mode === "end") {
         deltaUnits = Math.max(deltaUnits, minEndDelta);
       }
-      if (deltaUnits === latestDelta) return;
+      if (deltaUnits === latestDelta) {
+        return;
+      }
       latestDelta = deltaUnits;
       const preview = getPreviewState(latestDelta);
       if (mode === "move" || mode === "start") {
@@ -541,7 +548,9 @@ function TimelineRow({
     };
 
     const getAutoScrollVelocity = () => {
-      if (!active || !body) return 0;
+      if (!active || !body) {
+        return 0;
+      }
       const rect = body.getBoundingClientRect();
       const edgeSize = Math.min(56, rect.width * 0.16);
       if (latestClientX < rect.left + edgeSize) {
@@ -555,12 +564,18 @@ function TimelineRow({
 
     const runAutoScroll = () => {
       autoScrollFrame = null;
-      if (!body) return;
+      if (!body) {
+        return;
+      }
       const velocity = getAutoScrollVelocity();
-      if (velocity === 0) return;
+      if (velocity === 0) {
+        return;
+      }
       const previousScrollLeft = body.scrollLeft;
       body.scrollLeft += velocity;
-      if (body.scrollLeft === previousScrollLeft) return;
+      if (body.scrollLeft === previousScrollLeft) {
+        return;
+      }
       applyPointerPosition(latestClientX);
       autoScrollFrame = window.requestAnimationFrame(runAutoScroll);
     };
@@ -568,9 +583,13 @@ function TimelineRow({
     const updateAutoScroll = () => {
       const velocity = getAutoScrollVelocity();
       if (body) {
-        if (velocity < 0) body.dataset.autoScroll = "left";
-        else if (velocity > 0) body.dataset.autoScroll = "right";
-        else delete body.dataset.autoScroll;
+        if (velocity < 0) {
+          body.dataset.autoScroll = "left";
+        } else if (velocity > 0) {
+          body.dataset.autoScroll = "right";
+        } else {
+          delete body.dataset.autoScroll;
+        }
       }
       if (velocity !== 0 && autoScrollFrame === null) {
         autoScrollFrame = window.requestAnimationFrame(runAutoScroll);
@@ -592,12 +611,19 @@ function TimelineRow({
     const handleUp = () => {
       const didDrag = active;
       cleanup();
-      if (didDrag) suppressFollowingClick();
-      if (!didDrag || latestDelta === 0) return;
+      if (didDrag) {
+        suppressFollowingClick();
+      }
+      if (!didDrag || latestDelta === 0) {
+        return;
+      }
       if (mode === "move") {
         const deltaDays = getDateDeltaForTimeUnit(task.start, timeUnit, latestDelta);
-        if (moveSelectionTogether) onMoveSelectedTasks(deltaDays);
-        else onMoveTask(task.id, deltaDays);
+        if (moveSelectionTogether) {
+          onMoveSelectedTasks(deltaDays);
+        } else {
+          onMoveTask(task.id, deltaDays);
+        }
       } else {
         onResizeTask(
           task.id,
@@ -607,7 +633,9 @@ function TimelineRow({
       }
     };
     const handleCancel = (keyEvent: globalThis.KeyboardEvent) => {
-      if (keyEvent.key !== "Escape") return;
+      if (keyEvent.key !== "Escape") {
+        return;
+      }
       keyEvent.preventDefault();
       suppressFollowingClick();
       cleanup();
@@ -622,13 +650,15 @@ function TimelineRow({
     cancelPendingFocusStart();
     event.preventDefault();
     event.stopPropagation();
-    onSelect(getSelectionOptions(event));
+    onSelect(getTaskSelectionOptions(event));
     onOpenInspector();
   }
 
   function handleTaskClick(event: MouseEvent<HTMLElement>) {
-    if (event.currentTarget.dataset.suppressTaskClick === "true") return;
-    const selectionOptions = getSelectionOptions(event);
+    if (event.currentTarget.dataset.suppressTaskClick === "true") {
+      return;
+    }
+    const selectionOptions = getTaskSelectionOptions(event);
     onSelect(selectionOptions);
     if (!selectionOptions.additive && !selectionOptions.range && event.detail === 1) {
       scheduleFocusStart();
@@ -639,7 +669,9 @@ function TimelineRow({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+      return;
+    }
     event.preventDefault();
     const delta = event.key === "ArrowLeft" ? -1 : 1;
     if (event.shiftKey && canResize) {
@@ -798,7 +830,7 @@ function DependencyOverlay({
   const rowById = new Map(
     rows.map((task, index) => [task.id, { task, index: rowIndexOffset + index }]),
   );
-  const paths: Array<{
+  const paths: {
     issue: boolean;
     path: string;
     sourceId: string;
@@ -807,14 +839,16 @@ function DependencyOverlay({
     x2: number;
     y1: number;
     y2: number;
-  }> = [];
+  }[] = [];
   const visibleLeft = visibleSlotWindow.start * dayWidth - dayWidth;
   const visibleRight = visibleSlotWindow.end * dayWidth + dayWidth;
 
   rows.forEach((task, targetIndex) => {
     (task.dependencies ?? []).forEach((dependencyId) => {
       const source = rowById.get(dependencyId);
-      if (!source) return;
+      if (!source) {
+        return;
+      }
       const sourceSpan = getTaskTimelineSpan(source.task, timeline);
       const targetSpan = getTaskTimelineSpan(task, timeline);
       const x1 = getDependencyAnchorX(source.task, sourceSpan, dayWidth, "end");
@@ -824,7 +858,9 @@ function DependencyOverlay({
       const mid = Math.max(x1 + 16, (x1 + x2) / 2);
       const pathLeft = Math.min(x1, x2, mid);
       const pathRight = Math.max(x1, x2, mid);
-      if (pathRight < visibleLeft || pathLeft > visibleRight) return;
+      if (pathRight < visibleLeft || pathLeft > visibleRight) {
+        return;
+      }
       paths.push({
         issue: (dependencyIssueByTaskId.get(task.id) ?? []).some(
           (issue) => issue.dependency.id === dependencyId,
@@ -889,7 +925,9 @@ function updateDependencyPreviewPaths(
   startOffsetPx: number,
   endOffsetPx: number,
 ) {
-  if (!canvas) return;
+  if (!canvas) {
+    return;
+  }
   const paths = canvas.querySelectorAll<SVGPathElement>(
     ".dependency-overlay path[data-dependency-source-id], .dependency-overlay path[data-dependency-target-id]",
   );
@@ -922,7 +960,9 @@ function updateDependencyPreviewPaths(
 }
 
 function resetDependencyPreviewPaths(canvas: HTMLElement | null) {
-  if (!canvas) return;
+  if (!canvas) {
+    return;
+  }
   const paths = canvas.querySelectorAll<SVGPathElement>(
     ".dependency-overlay path[data-source-x][data-source-y][data-target-x][data-target-y]",
   );
@@ -966,7 +1006,9 @@ function ensureDragPreviewElements(canvas: HTMLElement) {
 }
 
 function clearDragPreviewElements(canvas: HTMLElement | null) {
-  if (!canvas) return;
+  if (!canvas) {
+    return;
+  }
   canvas
     .querySelectorAll("[data-drag-preview-guide], [data-drag-preview-bubble]")
     .forEach((element) => element.remove());

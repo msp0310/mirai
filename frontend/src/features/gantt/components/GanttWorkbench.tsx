@@ -1,7 +1,7 @@
 import {
+  ArrowDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  ArrowDownIcon,
   ArrowUpIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
@@ -17,25 +17,31 @@ import {
   useRef,
   useState,
 } from "react";
+
+import { getActiveMembers } from "../../../lib/members";
+
+import "./GanttViewport.css";
+import {
+  type DependencyIssue,
+  getDependencyIssues,
+  getTimelineSlotIndex,
+  statusLabels,
+} from "../../../lib/schedule";
+import type { TaskSiblingReorderPlacement } from "../../../lib/taskOperations";
 import type {
   CalendarDefinition,
   GanttColumnVisibility,
   GanttScale,
   GanttTimeUnit,
   Member,
-  ScheduleTask,
   ScheduleFilters,
+  ScheduleTask,
   TaskInspectorFocusTarget,
   TaskRow,
   TaskStatus,
   TimelineColumn,
   TimelineDay,
 } from "../../../types/schedule";
-import "./GanttViewport.css";
-import type { TaskSiblingReorderPlacement } from "../../../lib/taskOperations";
-import type { DependencyIssue } from "../../../lib/schedule";
-import { getDependencyIssues, getTimelineSlotIndex, statusLabels } from "../../../lib/schedule";
-import { getActiveMembers } from "../../../lib/members";
 import { rowHeight, todayKey } from "./constants";
 import { FilterPanel } from "./FilterPanel";
 import { GanttToolbar } from "./GanttToolbar";
@@ -151,6 +157,55 @@ type RowReorderState = {
   valid: boolean;
 };
 
+function hasSelectedAncestor(
+  taskId: string,
+  selectedIds: Set<string>,
+  taskMap: Map<string, ScheduleTask>,
+) {
+  let parentId = taskMap.get(taskId)?.parentId;
+  while (parentId) {
+    if (selectedIds.has(parentId)) {
+      return true;
+    }
+    parentId = taskMap.get(parentId)?.parentId;
+  }
+  return false;
+}
+
+function getRowReorderMode(clientX: number, startX: number) {
+  const deltaX = clientX - startX;
+  if (deltaX > 34) {
+    return "child" as const;
+  }
+  if (deltaX < -34) {
+    return "outdent" as const;
+  }
+  return "sibling" as const;
+}
+
+function isDragSelectionBlocked(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  return Boolean(
+    target.closest(
+      [
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "a",
+        "[contenteditable='true']",
+        ".collapse-button",
+        ".dependency-alert-badge",
+        ".inline-select",
+        ".inline-title-input",
+        ".task-context-menu",
+      ].join(", "),
+    ),
+  );
+}
+
 type RowReorderSession = {
   active: boolean;
   draggingTaskIds: string[];
@@ -165,7 +220,9 @@ function sortTaskRowsPreservingHierarchy(
   sort: TaskTableSortState,
   members: Member[],
 ) {
-  if (!sort.key || rows.length < 2) return rows;
+  if (!sort.key || rows.length < 2) {
+    return rows;
+  }
 
   const memberNames = new Map(members.map((member) => [member.id, member.name]));
   const statusOrder: Record<TaskStatus, number> = {
@@ -196,11 +253,13 @@ function sortTaskRowsPreservingHierarchy(
   }
 
   function sortLevel(startIndex: number, depth: number): { nextIndex: number; rows: TaskRow[] } {
-    const blocks: Array<{ root: TaskRow; rows: TaskRow[] }> = [];
+    const blocks: { root: TaskRow; rows: TaskRow[] }[] = [];
     let index = startIndex;
     while (index < rows.length && rows[index]?.depth === depth) {
       const root = rows[index];
-      if (!root) break;
+      if (!root) {
+        break;
+      }
       index += 1;
       const children = sortLevel(index, depth + 1);
       index = children.nextIndex;
@@ -310,7 +369,9 @@ export function GanttWorkbench({
   const taskChildrenByParentId = useMemo(() => {
     const children = new Map<string, ScheduleTask[]>();
     tasks.forEach((task) => {
-      if (!task.parentId) return;
+      if (!task.parentId) {
+        return;
+      }
       const siblings = children.get(task.parentId) ?? [];
       siblings.push(task);
       children.set(task.parentId, siblings);
@@ -375,7 +436,9 @@ export function GanttWorkbench({
     };
   }, [dayWidth, scrollLeft, timeline.length, timelineViewportWidth, timeUnit]);
   const dragSelectionBox = useMemo(() => {
-    if (!dragSelection) return null;
+    if (!dragSelection) {
+      return null;
+    }
     const start = Math.min(dragSelection.anchorIndex, dragSelection.currentIndex);
     const end = Math.max(dragSelection.anchorIndex, dragSelection.currentIndex);
     return {
@@ -384,11 +447,15 @@ export function GanttWorkbench({
     };
   }, [dragSelection]);
   const rowReorderGuide = useMemo(() => {
-    if (!rowReorder?.targetTaskId) return null;
+    if (!rowReorder?.targetTaskId) {
+      return null;
+    }
     const guideTaskId =
       rowReorder.mode === "outdent" ? rowReorder.referenceTaskId : rowReorder.targetTaskId;
     const targetIndex = displayRows.findIndex((row) => row.id === guideTaskId);
-    if (targetIndex < 0) return null;
+    if (targetIndex === -1) {
+      return null;
+    }
     const targetRow = displayRows[targetIndex];
     let guideIndex = targetIndex;
     if (targetRow && (rowReorder.mode === "child" || rowReorder.mode === "outdent")) {
@@ -428,26 +495,40 @@ export function GanttWorkbench({
     }
 
     const observer = new ResizeObserver(measureViewport);
-    if (timelineBody) observer.observe(timelineBody);
-    if (table) observer.observe(table);
+    if (timelineBody) {
+      observer.observe(timelineBody);
+    }
+    if (table) {
+      observer.observe(table);
+    }
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     const selectedIndex = displayRows.findIndex((row) => row.id === selectedTaskId);
-    if (selectedIndex < 0) return;
+    if (selectedIndex === -1) {
+      return;
+    }
     const body = timelineBodyRef.current;
     const table = tableRef.current;
     const scrollContainer = body ?? table;
-    if (!scrollContainer) return;
+    if (!scrollContainer) {
+      return;
+    }
     const rowTop = selectedIndex * rowHeight;
     const rowBottom = rowTop + rowHeight;
     const currentTop = scrollContainer.scrollTop;
     const currentBottom = currentTop + scrollContainer.clientHeight;
-    if (rowTop >= currentTop && rowBottom <= currentBottom) return;
+    if (rowTop >= currentTop && rowBottom <= currentBottom) {
+      return;
+    }
     const nextTop = Math.max(rowTop - rowHeight * 2, 0);
-    if (body) body.scrollTop = nextTop;
-    if (table) table.scrollTop = nextTop;
+    if (body) {
+      body.scrollTop = nextTop;
+    }
+    if (table) {
+      table.scrollTop = nextTop;
+    }
     setScrollTop(nextTop);
   }, [displayRows, selectedTaskId]);
 
@@ -457,18 +538,24 @@ export function GanttWorkbench({
   }, [dayWidth, projectRangeEnd, projectRangeStart, todaySignal]);
 
   useEffect(() => {
-    if (taskStartFocusSignal === 0 || !selectedTaskId) return;
+    if (taskStartFocusSignal === 0 || !selectedTaskId) {
+      return;
+    }
     const task = tasks.find((item) => item.id === selectedTaskId);
-    if (!task) return;
+    if (!task) {
+      return;
+    }
     const offset = getTimelineSlotIndex(task.start, timeline);
     scrollTimelineToSlot(offset, 0.18);
   }, [dayWidth, selectedTaskId, taskStartFocusSignal, tasks, timeline]);
 
   useEffect(() => {
-    if (!taskContextMenu) return;
+    if (!taskContextMenu) {
+      return;
+    }
 
     function closeWhenOutside(event: PointerEvent) {
-      const target = event.target;
+      const { target } = event;
       if (target instanceof Node && !taskContextMenuRef.current?.contains(target)) {
         setTaskContextMenu(null);
       }
@@ -493,18 +580,26 @@ export function GanttWorkbench({
   function handleTimelineScroll() {
     closeContextMenu();
     const body = timelineBodyRef.current;
-    if (!body || syncingRef.current) return;
+    if (!body || syncingRef.current) {
+      return;
+    }
     setScrollTop(body.scrollTop);
     setScrollLeft(body.scrollLeft);
     syncingRef.current = true;
-    if (tableRef.current) tableRef.current.scrollTop = body.scrollTop;
-    if (timelineHeaderRef.current) timelineHeaderRef.current.scrollLeft = body.scrollLeft;
+    if (tableRef.current) {
+      tableRef.current.scrollTop = body.scrollTop;
+    }
+    if (timelineHeaderRef.current) {
+      timelineHeaderRef.current.scrollLeft = body.scrollLeft;
+    }
     syncingRef.current = false;
   }
 
   function scrollTimelineToLeft(left: number) {
     const body = timelineBodyRef.current;
-    if (!body) return;
+    if (!body) {
+      return;
+    }
     const maxScrollLeft = Math.max(body.scrollWidth - body.clientWidth, 0);
     const nextScrollLeft = Math.min(Math.max(left, 0), maxScrollLeft);
     body.scrollLeft = nextScrollLeft;
@@ -516,19 +611,25 @@ export function GanttWorkbench({
 
   function scrollTimelineToSlot(slotIndex: number, align = 0.52) {
     const body = timelineBodyRef.current;
-    if (!body) return;
+    if (!body) {
+      return;
+    }
     scrollTimelineToLeft(slotIndex * dayWidth - body.clientWidth * align);
   }
 
   function focusTimelineTaskStart(taskId: string) {
     const task = tasks.find((item) => item.id === taskId);
-    if (!task) return;
+    if (!task) {
+      return;
+    }
     scrollTimelineToSlot(getTimelineSlotIndex(task.start, timeline), 0.14);
   }
 
   function handleTimelineNavigate(direction: -1 | 1) {
     const body = timelineBodyRef.current;
-    if (!body) return;
+    if (!body) {
+      return;
+    }
     const periodStepSlots = timeUnit === "day" ? 30 : timeUnit === "week" ? 4 : 1;
     const pageStep = Math.max(dayWidth * periodStepSlots, dayWidth);
     scrollTimelineToLeft(body.scrollLeft + pageStep * direction);
@@ -537,10 +638,14 @@ export function GanttWorkbench({
   function handleTableScroll() {
     closeContextMenu();
     const table = tableRef.current;
-    if (!table || syncingRef.current) return;
+    if (!table || syncingRef.current) {
+      return;
+    }
     setScrollTop(table.scrollTop);
     syncingRef.current = true;
-    if (timelineBodyRef.current) timelineBodyRef.current.scrollTop = table.scrollTop;
+    if (timelineBodyRef.current) {
+      timelineBodyRef.current.scrollTop = table.scrollTop;
+    }
     syncingRef.current = false;
   }
 
@@ -550,7 +655,9 @@ export function GanttWorkbench({
 
   function getTaskIndexFromClientY(clientY: number) {
     const table = tableRef.current;
-    if (!table || displayRows.length === 0) return -1;
+    if (!table || displayRows.length === 0) {
+      return -1;
+    }
     const tableRect = table.getBoundingClientRect();
     const y = clientY - tableRect.top + table.scrollTop;
     const index = Math.floor(y / rowHeight);
@@ -559,10 +666,14 @@ export function GanttWorkbench({
 
   function getVisibleSubtreeEndIndex(startIndex: number) {
     const startRow = displayRows[startIndex];
-    if (!startRow) return startIndex;
+    if (!startRow) {
+      return startIndex;
+    }
     let endIndex = startIndex;
     for (let index = startIndex + 1; index < displayRows.length; index += 1) {
-      if (displayRows[index].depth <= startRow.depth) break;
+      if (displayRows[index].depth <= startRow.depth) {
+        break;
+      }
       endIndex = index;
     }
     return endIndex;
@@ -577,21 +688,10 @@ export function GanttWorkbench({
       .map((task) => task.id);
   }
 
-  function hasSelectedAncestor(
-    taskId: string,
-    selectedIds: Set<string>,
-    taskById: Map<string, ScheduleTask>,
-  ) {
-    let parentId = taskById.get(taskId)?.parentId;
-    while (parentId) {
-      if (selectedIds.has(parentId)) return true;
-      parentId = taskById.get(parentId)?.parentId;
-    }
-    return false;
-  }
-
   function getRowReorderTaskIds(sourceTaskId: string) {
-    if (!selectedTaskIds.has(sourceTaskId)) return [sourceTaskId];
+    if (!selectedTaskIds.has(sourceTaskId)) {
+      return [sourceTaskId];
+    }
     return tasks.filter((task) => selectedTaskIds.has(task.id)).map((task) => task.id);
   }
 
@@ -601,7 +701,9 @@ export function GanttWorkbench({
     const pending = [...(taskChildrenByParentId.get(taskId) ?? [])];
     while (pending.length > 0) {
       const task = pending.pop();
-      if (!task) continue;
+      if (!task) {
+        continue;
+      }
       ids.add(task.id);
       pending.push(...(taskChildrenByParentId.get(task.id) ?? []));
     }
@@ -617,16 +719,11 @@ export function GanttWorkbench({
     return ids;
   }
 
-  function getRowReorderMode(clientX: number, startX: number) {
-    const deltaX = clientX - startX;
-    if (deltaX > 34) return "child" as const;
-    if (deltaX < -34) return "outdent" as const;
-    return "sibling" as const;
-  }
-
   function getRowReorderPlacement(clientY: number, targetIndex: number) {
     const table = tableRef.current;
-    if (!table) return "before" satisfies TaskSiblingReorderPlacement;
+    if (!table) {
+      return "before" satisfies TaskSiblingReorderPlacement;
+    }
     const tableRect = table.getBoundingClientRect();
     const y = clientY - tableRect.top + table.scrollTop;
     const offsetWithinRow = y - targetIndex * rowHeight;
@@ -696,7 +793,7 @@ export function GanttWorkbench({
     }
 
     if (mode === "outdent") {
-      const parentIds = Array.from(new Set(rootTasks.map((task) => task.parentId)));
+      const parentIds = [...new Set(rootTasks.map((task) => task.parentId))];
       const sourceParentId = parentIds.length === 1 ? parentIds[0] : null;
       const sourceParent = sourceParentId ? tasks.find((task) => task.id === sourceParentId) : null;
       const canOutdent = rootTasks.length > 0 && parentIds.length === 1 && Boolean(sourceParent);
@@ -728,7 +825,9 @@ export function GanttWorkbench({
 
   function autoScrollTaskTable(clientY: number) {
     const table = tableRef.current;
-    if (!table) return;
+    if (!table) {
+      return;
+    }
     const tableRect = table.getBoundingClientRect();
     const edgeSize = 42;
     const delta =
@@ -737,12 +836,16 @@ export function GanttWorkbench({
         : clientY > tableRect.bottom - edgeSize
           ? rowHeight
           : 0;
-    if (delta === 0) return;
+    if (delta === 0) {
+      return;
+    }
     const nextScrollTop = Math.min(
       Math.max(table.scrollTop + delta, 0),
       table.scrollHeight - table.clientHeight,
     );
-    if (nextScrollTop === table.scrollTop) return;
+    if (nextScrollTop === table.scrollTop) {
+      return;
+    }
     table.scrollTop = nextScrollTop;
     if (timelineBodyRef.current) {
       timelineBodyRef.current.scrollTop = nextScrollTop;
@@ -750,46 +853,33 @@ export function GanttWorkbench({
     setScrollTop(nextScrollTop);
   }
 
-  function isDragSelectionBlocked(target: EventTarget | null) {
-    if (!(target instanceof Element)) return false;
-    return Boolean(
-      target.closest(
-        [
-          "button",
-          "input",
-          "select",
-          "textarea",
-          "a",
-          "[contenteditable='true']",
-          ".collapse-button",
-          ".dependency-alert-badge",
-          ".inline-select",
-          ".inline-title-input",
-          ".task-context-menu",
-        ].join(", "),
-      ),
-    );
-  }
-
   function selectRangeByIndex(anchorIndex: number, currentIndex: number) {
     const anchorTask = displayRows[anchorIndex];
     const currentTask = displayRows[currentIndex];
-    if (!anchorTask || !currentTask) return;
+    if (!anchorTask || !currentTask) {
+      return;
+    }
     onSelectTaskRange(anchorTask.id, currentTask.id);
   }
 
   function handleTableClickCapture(event: MouseEvent<HTMLDivElement>) {
-    if (!suppressDragClickRef.current) return;
+    if (!suppressDragClickRef.current) {
+      return;
+    }
     suppressDragClickRef.current = false;
     event.preventDefault();
     event.stopPropagation();
   }
 
   function handleTablePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button !== 0 || isDragSelectionBlocked(event.target)) return;
+    if (event.button !== 0 || isDragSelectionBlocked(event.target)) {
+      return;
+    }
 
     const anchorIndex = getTaskIndexFromClientY(event.clientY);
-    if (anchorIndex < 0) return;
+    if (anchorIndex < 0) {
+      return;
+    }
 
     closeContextMenu();
     dragSelectionSessionRef.current = {
@@ -808,16 +898,22 @@ export function GanttWorkbench({
 
     function handlePointerMove(pointerEvent: PointerEvent) {
       const session = dragSelectionSessionRef.current;
-      if (!session || pointerEvent.pointerId !== session.pointerId) return;
+      if (!session || pointerEvent.pointerId !== session.pointerId) {
+        return;
+      }
 
       const currentIndex = getTaskIndexFromClientY(pointerEvent.clientY);
-      if (currentIndex < 0) return;
+      if (currentIndex < 0) {
+        return;
+      }
 
       const distance = Math.hypot(
         pointerEvent.clientX - session.startX,
         pointerEvent.clientY - session.startY,
       );
-      if (!session.active && distance < 5) return;
+      if (!session.active && distance < 5) {
+        return;
+      }
 
       if (!session.active) {
         session.active = true;
@@ -831,7 +927,9 @@ export function GanttWorkbench({
 
     function handlePointerEnd(pointerEvent: PointerEvent) {
       const session = dragSelectionSessionRef.current;
-      if (!session || pointerEvent.pointerId !== session.pointerId) return;
+      if (!session || pointerEvent.pointerId !== session.pointerId) {
+        return;
+      }
 
       removeDragListeners();
       if (session.active) {
@@ -857,7 +955,9 @@ export function GanttWorkbench({
     taskId: string,
     event: ReactPointerEvent<HTMLButtonElement>,
   ) {
-    if (event.button !== 0 || (displayMode === "table" && tableSort.key !== null)) return;
+    if (event.button !== 0 || (displayMode === "table" && tableSort.key !== null)) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
 
@@ -884,13 +984,17 @@ export function GanttWorkbench({
 
     function handlePointerMove(pointerEvent: PointerEvent) {
       const session = rowReorderSessionRef.current;
-      if (!session || pointerEvent.pointerId !== session.pointerId) return;
+      if (!session || pointerEvent.pointerId !== session.pointerId) {
+        return;
+      }
 
       const distance = Math.hypot(
         pointerEvent.clientX - session.startX,
         pointerEvent.clientY - session.startY,
       );
-      if (!session.active && distance < 5) return;
+      if (!session.active && distance < 5) {
+        return;
+      }
 
       if (!session.active) {
         session.active = true;
@@ -912,7 +1016,9 @@ export function GanttWorkbench({
 
     function handlePointerEnd(pointerEvent: PointerEvent) {
       const session = rowReorderSessionRef.current;
-      if (!session || pointerEvent.pointerId !== session.pointerId) return;
+      if (!session || pointerEvent.pointerId !== session.pointerId) {
+        return;
+      }
 
       removeReorderListeners();
       if (session.active) {
@@ -1215,7 +1321,9 @@ export function GanttWorkbench({
                 aria-label="選択行の状態を変更"
                 disabled={!canContextBulkEdit}
                 onChange={(event) => {
-                  if (!event.target.value) return;
+                  if (!event.target.value) {
+                    return;
+                  }
                   runContextAction(() =>
                     onBulkStatusChange(event.target.value as TaskStatus, contextActionTaskId),
                   );
@@ -1236,7 +1344,9 @@ export function GanttWorkbench({
                 aria-label="選択行の担当者を変更"
                 disabled={!canContextBulkEdit}
                 onChange={(event) => {
-                  if (!event.target.value) return;
+                  if (!event.target.value) {
+                    return;
+                  }
                   runContextAction(() =>
                     onBulkAssigneeChange(event.target.value, contextActionTaskId),
                   );

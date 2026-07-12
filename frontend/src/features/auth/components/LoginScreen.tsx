@@ -14,7 +14,9 @@ export function LoginScreen({ error, loading, onLogin }: LoginScreenProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (loading) return;
+    if (loading) {
+      return;
+    }
     await onLogin(email, password);
   }
 

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import { filterTaskRows, flattenTasks } from "../../frontend/src/lib/schedule";
 import type { ScheduleFilters, ScheduleTask } from "../../frontend/src/types/schedule";
 
@@ -32,7 +33,5 @@ test("10万段のタスク階層を安全に平坦化し、担当者で絞り込
 
   expect(rows).toHaveLength(100_000);
   expect(matchedRows).toHaveLength(1);
-  expect(elapsedMs, `階層展開と絞り込みが${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(
-    1_000,
-  );
+  expect(elapsedMs, `階層展開と絞り込みが${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1000);
 });

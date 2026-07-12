@@ -40,12 +40,7 @@ export function TaskTableHeader({
         />
       ) : null}
       {displayMode === "table" ? (
-        <HeaderCell
-          label="終了日"
-          onClick={() => onSortChange("end")}
-          sort={sort}
-          sortKey="end"
-        />
+        <HeaderCell label="終了日" onClick={() => onSortChange("end")} sort={sort} sortKey="end" />
       ) : null}
       {displayMode === "table" || columnVisibility.assignee ? (
         <HeaderCell

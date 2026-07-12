@@ -15,14 +15,20 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, State> 
   }
 
   render() {
-    if (!this.state.errorId) return this.props.children;
+    if (!this.state.errorId) {
+      return this.props.children;
+    }
     return (
       <main className="app-boot-screen">
         <section className="app-boot-panel" role="alert">
           <img alt="Mirai" className="app-boot-wordmark" src="/brand/mirai-wordmark.png" />
           <h1>画面を表示できませんでした</h1>
-          <p>再読み込みしても直らない場合は、エラーID {this.state.errorId} を管理者へ伝えてください。</p>
-          <button className="primary-button" onClick={() => window.location.reload()} type="button">再読み込み</button>
+          <p>
+            再読み込みしても直らない場合は、エラーID {this.state.errorId} を管理者へ伝えてください。
+          </p>
+          <button className="primary-button" onClick={() => window.location.reload()} type="button">
+            再読み込み
+          </button>
         </section>
       </main>
     );

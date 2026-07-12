@@ -11,6 +11,16 @@ import {
   useRef,
   useState,
 } from "react";
+
+import { Avatar } from "../../../components/ui/Avatar";
+import { getAssignableMembers } from "../../../lib/members";
+import {
+  type DependencyIssue,
+  formatShortDate,
+  statusLabels,
+  taskMatchesQuery,
+} from "../../../lib/schedule";
+import { normalizeProgressStatus } from "../../../lib/taskOperations";
 import type {
   GanttColumnVisibility,
   Member,
@@ -18,11 +28,7 @@ import type {
   TaskInspectorFocusTarget,
   TaskRow,
 } from "../../../types/schedule";
-import type { DependencyIssue } from "../../../lib/schedule";
-import { formatShortDate, statusLabels, taskMatchesQuery } from "../../../lib/schedule";
-import { getAssignableMembers } from "../../../lib/members";
-import { normalizeProgressStatus } from "../../../lib/taskOperations";
-import { Avatar } from "../../../components/ui/Avatar";
+import { getTaskSelectionOptions } from "../utils/taskSelection";
 import { rowHeight } from "./constants";
 
 type TaskTableRowProps = {
@@ -89,25 +95,16 @@ export function TaskTableRow({
   const dependencyIssueSummary = formatDependencyIssueSummary(dependencyIssues);
   const commentCount = task.comments?.length ?? 0;
 
-  function getSelectionOptions(event: {
-    ctrlKey?: boolean;
-    metaKey?: boolean;
-    shiftKey?: boolean;
-  }) {
-    return {
-      additive: Boolean(event.ctrlKey || event.metaKey),
-      range: Boolean(event.shiftKey),
-    };
-  }
-
   function handleRowClick(event: MouseEvent<HTMLDivElement>) {
-    const selectionOptions = getSelectionOptions(event);
+    const selectionOptions = getTaskSelectionOptions(event);
     onSelect(selectionOptions);
     if (!selectionOptions.additive && !selectionOptions.range && event.detail === 1) {
       onFocusTaskStart();
     }
-    if (event.detail < 2) return;
-    const target = event.target;
+    if (event.detail < 2) {
+      return;
+    }
+    const { target } = event;
     if (
       target instanceof Element &&
       target.closest("button, input, select, textarea, [contenteditable='true']")
@@ -127,20 +124,23 @@ export function TaskTableRow({
   }, [task.progress]);
 
   useEffect(() => {
-    if (!isEditingTitle) return;
+    if (!isEditingTitle) {
+      return;
+    }
     window.requestAnimationFrame(() => {
       titleInputRef.current?.focus();
       titleInputRef.current?.select();
     });
   }, [isEditingTitle]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (titleClickTimerRef.current !== null) {
         window.clearTimeout(titleClickTimerRef.current);
       }
-    };
-  }, []);
+    },
+    [],
+  );
 
   function startTitleEdit() {
     setTitleDraft(task.title);
@@ -148,7 +148,9 @@ export function TaskTableRow({
   }
 
   useEffect(() => {
-    if (titleEditSignal > 0) startTitleEdit();
+    if (titleEditSignal > 0) {
+      startTitleEdit();
+    }
   }, [titleEditSignal]);
 
   function commitTitle(value: string) {
@@ -191,13 +193,15 @@ export function TaskTableRow({
       startTitleEdit();
       return;
     }
-    const selectionOptions = getSelectionOptions(event);
+    const selectionOptions = getTaskSelectionOptions(event);
     pendingTitleSelectionRef.current = selectionOptions;
     titleClickTimerRef.current = window.setTimeout(() => {
       titleClickTimerRef.current = null;
       pendingTitleSelectionRef.current = null;
       onSelect(selectionOptions);
-      if (!selectionOptions.additive && !selectionOptions.range) onFocusTaskStart();
+      if (!selectionOptions.additive && !selectionOptions.range) {
+        onFocusTaskStart();
+      }
     }, 80);
   }
 
@@ -230,8 +234,12 @@ export function TaskTableRow({
       onClick={handleRowClick}
       onContextMenu={onContextMenu}
       onKeyDown={(event) => {
-        if (event.currentTarget === event.target) flushTitleSelection();
-        if (event.currentTarget !== event.target) return;
+        if (event.currentTarget === event.target) {
+          flushTitleSelection();
+        }
+        if (event.currentTarget !== event.target) {
+          return;
+        }
         if (event.key === " ") {
           event.preventDefault();
           onSelect();
@@ -277,7 +285,7 @@ export function TaskTableRow({
             onChange={(event) => updateTitleDraft(event.target.value)}
             onClick={(event) => {
               event.stopPropagation();
-              onSelect(getSelectionOptions(event));
+              onSelect(getTaskSelectionOptions(event));
             }}
             onFocus={() => onSelect()}
             onKeyDown={(event) => {
@@ -368,8 +376,10 @@ export function TaskTableRow({
               }
               onClick={(event) => {
                 event.stopPropagation();
-                onSelect(getSelectionOptions(event));
-                if (event.detail >= 2) startTitleEdit();
+                onSelect(getTaskSelectionOptions(event));
+                if (event.detail >= 2) {
+                  startTitleEdit();
+                }
               }}
               onFocus={() => onSelect()}
               value={task.assigneeIds[0] ?? members[0]?.id ?? ""}
@@ -399,7 +409,7 @@ export function TaskTableRow({
               }
               onClick={(event) => {
                 event.stopPropagation();
-                onSelect(getSelectionOptions(event));
+                onSelect(getTaskSelectionOptions(event));
               }}
               onFocus={() => onSelect()}
               value={task.status}
@@ -433,7 +443,7 @@ export function TaskTableRow({
               onChange={(event) => updateProgressDraft(event.target.value)}
               onClick={(event) => {
                 event.stopPropagation();
-                onSelect(getSelectionOptions(event));
+                onSelect(getTaskSelectionOptions(event));
               }}
               onFocus={() => onSelect()}
               onKeyDown={(event) => {

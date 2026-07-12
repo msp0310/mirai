@@ -4,12 +4,13 @@ import {
   ClockIcon,
   FolderOpenIcon,
 } from "@heroicons/react/24/outline";
-import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
+
 import type { AuthUser } from "../../../data/authRepository";
 import { listDailyReports } from "../../../data/dailyReportRepository";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import type { DailyReport, WorkLogCategory } from "../../../types/schedule";
+
 import * as styles from "./PersonalAnalyticsPage.css";
 
 type PersonalAnalyticsPageProps = {
@@ -66,7 +67,9 @@ export function PersonalAnalyticsPage({
       .catch(() => setDailyReports([]));
   }, []);
   useEffect(() => {
-    if (!selectedMemberId && currentMember?.id) setSelectedMemberId(currentMember.id);
+    if (!selectedMemberId && currentMember?.id) {
+      setSelectedMemberId(currentMember.id);
+    }
   }, [currentMember?.id, selectedMemberId]);
   const allLogs = useMemo(() => {
     const logs = new Map<string, PersonalLog>();
@@ -100,12 +103,14 @@ export function PersonalAnalyticsPage({
           }),
         ),
       );
-    return [...logs.values()].sort((a, b) => b.date.localeCompare(a.date));
+    return [...logs.values()].toSorted((a, b) => b.date.localeCompare(a.date));
   }, [dailyReports, schedules, selectedMember?.id]);
   const currentYear = todayKey.slice(0, 4);
   const yearOptions = useMemo(
     () =>
-      [...new Set([currentYear, ...allLogs.map((log) => log.date.slice(0, 4))])].sort().reverse(),
+      [...new Set([currentYear, ...allLogs.map((log) => log.date.slice(0, 4))])]
+        .toSorted()
+        .reverse(),
     [allLogs, currentYear],
   );
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -120,7 +125,7 @@ export function PersonalAnalyticsPage({
       label,
     }))
     .filter((row) => row.hours > 0)
-    .sort((a, b) => b.hours - a.hours);
+    .toSorted((a, b) => b.hours - a.hours);
   const monthlyRows = Array.from({ length: 12 }, (_, index) => {
     const month = `${selectedYear}-${String(index + 1).padStart(2, "0")}`;
     return { hours: sumHours(yearLogs.filter((log) => log.date.startsWith(month))), month };
@@ -318,7 +323,7 @@ function buildProjectRows(logs: PersonalLog[], schedules: ScheduleSnapshot[]) {
         taskCount: taskIds.size,
       };
     })
-    .sort((a, b) => b.lastDate.localeCompare(a.lastDate));
+    .toSorted((a, b) => b.lastDate.localeCompare(a.lastDate));
 }
 
 function projectName(id: string, schedules: ScheduleSnapshot[]) {

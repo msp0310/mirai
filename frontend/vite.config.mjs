@@ -1,9 +1,14 @@
-import { fileURLToPath, URL } from "node:url";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { URL, fileURLToPath } from "node:url";
+
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 export default defineConfig({
+  build: {
+    // Brabio取込時だけ遅延ロードするXLSXチャンクは約500KBのため、初期バンドルと分けて監視します。
+    chunkSizeWarningLimit: 550,
+  },
   optimizeDeps: {
     include: ["react", "react-dom/client"],
   },
@@ -18,7 +23,7 @@ export default defineConfig({
   plugins: [react(), vanillaExtractPlugin()],
   resolve: {
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@": fileURLToPath(new URL("src", import.meta.url)),
     },
   },
 });

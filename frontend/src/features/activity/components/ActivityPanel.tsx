@@ -8,7 +8,8 @@ import {
   UserGroupIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
-import { useMemo, useState, type MouseEvent } from "react";
+import { type MouseEvent, useMemo, useState } from "react";
+
 import type {
   ConfigChangeReview,
   ConfigChangeRow,
@@ -58,7 +59,7 @@ const categoryIcons: Record<ActivityCategory, typeof CheckCircleIcon> = {
   workLog: WrenchScrewdriverIcon,
 };
 
-const filterCategories: Array<ActivityCategory | "all"> = [
+const filterCategories: (ActivityCategory | "all")[] = [
   "all",
   "task",
   "issue",
@@ -88,14 +89,18 @@ export function ActivityPanel({
     (entry) => new Date(entry.happenedAt).toDateString() === todayKey,
   );
   const taskEntries = entries.filter((entry) => entry.category === "task");
-  const syncEntries = entries.filter((entry) => entry.category === "sync");
+  const latestSyncEntry = entries.find((entry) => entry.category === "sync");
 
   const filteredEntries = useMemo(
     () =>
       entries.filter((entry) => {
         const categoryMatched = category === "all" || entry.category === category;
-        if (!categoryMatched) return false;
-        if (!normalizedQuery) return true;
+        if (!categoryMatched) {
+          return false;
+        }
+        if (!normalizedQuery) {
+          return true;
+        }
         return `${entry.title} ${entry.detail} ${entry.actor}`
           .toLowerCase()
           .includes(normalizedQuery);
@@ -127,7 +132,7 @@ export function ActivityPanel({
         <ActivityStat label="タスク操作" value={`${taskEntries.length}件`} />
         <ActivityStat
           label="最終保存/同期"
-          value={syncEntries[0] ? formatTime(syncEntries[0].happenedAt) : "-"}
+          value={latestSyncEntry ? formatTime(latestSyncEntry.happenedAt) : "-"}
         />
       </div>
 
@@ -352,11 +357,13 @@ function getFocusTargetFromClick(
   event: MouseEvent<HTMLButtonElement>,
   row: TaskChangeReview["rows"][number],
 ): TaskInspectorFocusTarget | undefined {
-  const target = event.target;
+  const { target } = event;
   if (target instanceof HTMLElement) {
     const fieldElement = target.closest<HTMLElement>("[data-focus-target]");
     const fieldTarget = fieldElement?.dataset.focusTarget;
-    if (fieldTarget) return fieldTarget as TaskInspectorFocusTarget;
+    if (fieldTarget) {
+      return fieldTarget as TaskInspectorFocusTarget;
+    }
   }
   return row.fields.find((field) => field.focusTarget)?.focusTarget;
 }
@@ -372,7 +379,9 @@ function ChangeReviewStat({ label, value }: { label: string; value: number }) {
 
 function formatTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--:--";
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
   return date.toLocaleTimeString("ja-JP", {
     hour: "2-digit",
     minute: "2-digit",

@@ -1,12 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
-import type {
-  Member,
-  ProjectIssue,
-  ProjectIssuePriority,
-  ProjectIssueStatus,
-  ScheduleTask,
-} from "../../../types/schedule";
+
 import {
   addDays,
   formatShortDate,
@@ -14,6 +8,13 @@ import {
   statusLabels,
   toDateKey,
 } from "../../../lib/schedule";
+import type {
+  Member,
+  ProjectIssue,
+  ProjectIssuePriority,
+  ProjectIssueStatus,
+  ScheduleTask,
+} from "../../../types/schedule";
 
 type WeeklyProgressSummaryProps = {
   issues: ProjectIssue[];
@@ -84,8 +85,12 @@ export function buildWeeklyProgressRows(
     }
 
     rows.forEach((row) => {
-      if (task.start > row.end || task.end < row.start) return;
-      if (task.status === "inProgress") row.inProgress += 1;
+      if (task.start > row.end || task.end < row.start) {
+        return;
+      }
+      if (task.status === "inProgress") {
+        row.inProgress += 1;
+      }
       row.currentProgress += task.progress;
       row.targetCount += 1;
     });
@@ -101,10 +106,12 @@ export function buildWeeklyProgressRows(
 export function getIssuesDueByWeek(issues: ProjectIssue[], weekEnd: string) {
   return issues
     .filter((issue) => issue.dueDate && issue.dueDate <= weekEnd)
-    .sort((left, right) => {
+    .toSorted((left, right) => {
       const leftResolved = isIssueResolved(left);
       const rightResolved = isIssueResolved(right);
-      if (leftResolved !== rightResolved) return leftResolved ? 1 : -1;
+      if (leftResolved !== rightResolved) {
+        return leftResolved ? 1 : -1;
+      }
       return (
         (left.dueDate ?? "").localeCompare(right.dueDate ?? "") ||
         getIssuePriorityOrder(left.priority) - getIssuePriorityOrder(right.priority)
@@ -132,7 +139,9 @@ export function WeeklyProgressSummary({
   const actionableTasks = useMemo(() => tasks.filter((task) => task.type === "task"), [tasks]);
   const currentWeek = useMemo(() => {
     const matched = rows.find((row) => row.start <= todayKey && todayKey <= row.end);
-    if (matched) return matched;
+    if (matched) {
+      return matched;
+    }
     return todayKey < projectStart ? rows[0] : rows[rows.length - 1];
   }, [projectStart, rows, todayKey]);
   const currentWeekIndex = currentWeek
@@ -167,7 +176,9 @@ export function WeeklyProgressSummary({
       : 0;
   const completionGap = actualCompletionRate - plannedCompletionRate;
   const detail = useMemo(() => {
-    if (!selectedWeek) return { groups: [], hiddenCount: 0, totalCount: 0 };
+    if (!selectedWeek) {
+      return { groups: [], hiddenCount: 0, totalCount: 0 };
+    }
     const groups = buildWeeklyTaskGroups(selectedWeek, actionableTasks, members);
     const totalCount = new Set(groups.flatMap((group) => group.tasks.map((task) => task.id))).size;
     let remaining = maxDetailTasks;
@@ -189,7 +200,9 @@ export function WeeklyProgressSummary({
     [members],
   );
   const selectedWeekIssues = useMemo(() => {
-    if (!selectedWeek) return [];
+    if (!selectedWeek) {
+      return [];
+    }
     return getIssuesDueByWeek(issues, selectedWeek.end);
   }, [issues, selectedWeek]);
   const unresolvedIssueCount = selectedWeekIssues.filter((issue) => !isIssueResolved(issue)).length;
@@ -544,7 +557,7 @@ function buildWeeklyTaskGroups(
   const groups = new Map<string, WeeklyTaskGroup>();
   tasks
     .filter((task) => task.start <= week.end && task.end >= week.start)
-    .sort((left, right) => {
+    .toSorted((left, right) => {
       const leftPriority = left.status === "delayed" ? 0 : left.status === "inProgress" ? 1 : 2;
       const rightPriority = right.status === "delayed" ? 0 : right.status === "inProgress" ? 1 : 2;
       return (
@@ -565,9 +578,13 @@ function buildWeeklyTaskGroups(
         groups.set(memberId, group);
       });
     });
-  return [...groups.values()].sort((left, right) => {
-    if (left.memberId === unassignedMemberId) return -1;
-    if (right.memberId === unassignedMemberId) return 1;
+  return [...groups.values()].toSorted((left, right) => {
+    if (left.memberId === unassignedMemberId) {
+      return -1;
+    }
+    if (right.memberId === unassignedMemberId) {
+      return 1;
+    }
     return (left.member?.name ?? "").localeCompare(right.member?.name ?? "");
   });
 }
@@ -581,7 +598,9 @@ function getIssuePriorityOrder(priority: ProjectIssuePriority) {
 }
 
 function formatIssueAssignees(issue: ProjectIssue, memberById: Map<string, Member>) {
-  if (issue.assigneeIds.length === 0) return "担当未設定";
+  if (issue.assigneeIds.length === 0) {
+    return "担当未設定";
+  }
   return issue.assigneeIds
     .map((memberId) => memberById.get(memberId)?.name ?? "不明な担当者")
     .join(" / ");

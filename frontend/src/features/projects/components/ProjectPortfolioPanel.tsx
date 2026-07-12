@@ -6,12 +6,15 @@ import {
   PlusIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
+
 import type { ProjectSummary, ScheduleSnapshot } from "../../../data/scheduleRepository";
-import { formatShortDate } from "../../../lib/schedule";
 import { projectLifecycleOptions } from "../../../lib/projects";
+import { formatShortDate } from "../../../lib/schedule";
 import type { ProjectLifecycleStatus, Team } from "../../../types/schedule";
 import {
+  type PortfolioFilter,
+  type PortfolioSort,
   buildPortfolioItem,
   buildPortfolioSummaryItem,
   buildTeamWorkloads,
@@ -19,8 +22,6 @@ import {
   isAttentionProject,
   matchesPortfolioFilter,
   matchesPortfolioQuery,
-  type PortfolioFilter,
-  type PortfolioSort,
 } from "../projectPortfolioModel";
 import { ProjectPortfolioCard } from "./ProjectPortfolioCard";
 
@@ -143,24 +144,23 @@ export function ProjectPortfolioPanel({
           inProgressItems.reduce((sum, item) => sum + item.progress, 0) / inProgressItems.length,
         )
       : 0;
-  const lifecycleCounts = projectLifecycleOptions.reduce(
-    (counts, option) => ({
-      ...counts,
-      [option.value]: allItems.filter((item) => item.lifecycleStatus === option.value).length,
-    }),
-    {} as Record<ProjectLifecycleStatus, number>,
-  );
+  const lifecycleCounts = Object.fromEntries(
+    projectLifecycleOptions.map((option) => [
+      option.value,
+      allItems.filter((item) => item.lifecycleStatus === option.value).length,
+    ]),
+  ) as Record<ProjectLifecycleStatus, number>;
   const nextMilestones = filteredItems
     .filter((item) => item.lifecycleStatus !== "completed")
     .map((item) => ({
       milestone: item.nextMilestone,
       project: item.project,
     }))
-    .sort((a, b) => a.milestone.start.localeCompare(b.milestone.start))
+    .toSorted((a, b) => a.milestone.start.localeCompare(b.milestone.start))
     .slice(0, 5);
   const attentionItems = allItems
     .filter(isAttentionProject)
-    .sort((a, b) => comparePortfolioItems(a, b, "priority"))
+    .toSorted((a, b) => comparePortfolioItems(a, b, "priority"))
     .slice(0, 5);
   const teamWorkloads = useMemo(
     () =>

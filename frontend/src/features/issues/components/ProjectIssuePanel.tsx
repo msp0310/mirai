@@ -8,6 +8,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
+
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
+import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import type { AuthUser } from "../../../data/authRepository";
 import type {
   Attachment,
@@ -20,8 +23,6 @@ import type {
   ProjectIssueType,
   ScheduleTask,
 } from "../../../types/schedule";
-import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
-import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type ProjectIssuePanelProps = {
   attachments: Attachment[];
@@ -96,8 +97,12 @@ export function ProjectIssuePanel({
   const filteredIssues = useMemo(
     () =>
       issues.filter((issue) => {
-        if (statusFilter !== "all" && issue.status !== statusFilter) return false;
-        if (!normalizedQuery) return true;
+        if (statusFilter !== "all" && issue.status !== statusFilter) {
+          return false;
+        }
+        if (!normalizedQuery) {
+          return true;
+        }
         const assigneeNames = issue.assigneeIds
           .map((memberId) => memberById.get(memberId)?.name ?? memberId)
           .join(" ");
@@ -156,7 +161,9 @@ export function ProjectIssuePanel({
 
   function addIssueReply(issueId: string, body: string) {
     const issue = issues.find((current) => current.id === issueId);
-    if (!issue) return;
+    if (!issue) {
+      return;
+    }
     const now = new Date().toISOString();
     const reply: ProjectIssueReply = {
       authorId: currentUser.id,
@@ -171,7 +178,9 @@ export function ProjectIssuePanel({
   }
 
   function saveDialogIssue() {
-    if (!dialogState) return;
+    if (!dialogState) {
+      return;
+    }
     const issue = normalizeIssueDraft(dialogState.issue);
     if (dialogState.mode === "create") {
       const issueId = onCreateIssue(issue);
@@ -724,7 +733,9 @@ function IssueReplySection({
 
   function submitReply() {
     const trimmedBody = replyBody.trim();
-    if (!trimmedBody) return;
+    if (!trimmedBody) {
+      return;
+    }
     onAddReply(trimmedBody);
     setReplyBody("");
     setReplyMode("edit");
@@ -830,20 +841,28 @@ function IssueStatusBadge({ status }: { status: ProjectIssueStatus }) {
 }
 
 function formatAssignees(ids: string[], memberById: Map<string, Member>) {
-  if (ids.length === 0) return "未設定";
+  if (ids.length === 0) {
+    return "未設定";
+  }
   return ids.map((id) => memberById.get(id)?.initials ?? id).join(" / ");
 }
 
 function formatDueDate(dueDate: string | undefined) {
-  if (!dueDate) return "未設定";
+  if (!dueDate) {
+    return "未設定";
+  }
   const [, month, day] = dueDate.match(/^(\d{4})-(\d{2})-(\d{2})$/) ?? [];
-  if (!month || !day) return dueDate;
+  if (!month || !day) {
+    return dueDate;
+  }
   return `${Number(month)}/${Number(day)}`;
 }
 
 function formatDateTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
   return `${date.getMonth() + 1}/${date.getDate()} ${date
     .getHours()
     .toString()
@@ -852,7 +871,9 @@ function formatDateTime(value: string) {
 
 function getInitialLetters(name: string) {
   const trimmed = name.trim();
-  if (!trimmed) return "--";
+  if (!trimmed) {
+    return "--";
+  }
   const parts = trimmed.split(/\s+/);
   if (parts.length >= 2) {
     return `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase();

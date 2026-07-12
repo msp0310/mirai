@@ -1,3 +1,4 @@
+import { normalizeResourceDisplaySettings } from "../lib/resourceDisplaySettings";
 import type {
   AppViewTab,
   GanttColumnVisibility,
@@ -7,7 +8,6 @@ import type {
   ResourceScope,
   ScheduleFilters,
 } from "../types/schedule";
-import { normalizeResourceDisplaySettings } from "../lib/resourceDisplaySettings";
 export type LocalSchedulePreferences = {
   activeProjectId: string;
   activeTab: AppViewTab;
@@ -34,12 +34,18 @@ const localScheduleDraftVersion = 2;
 
 /** 端末に保存した表示設定を、旧バージョンを含めて安全に読み込みます。 */
 export function loadLocalScheduleDraft(): LocalScheduleDraft | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
   try {
     const raw = window.localStorage.getItem(localScheduleDraftKey);
-    if (!raw) return null;
+    if (!raw) {
+      return null;
+    }
     const parsed = JSON.parse(raw) as Partial<LocalScheduleDraft>;
-    if (!isLocalScheduleDraft(parsed)) return null;
+    if (!isLocalScheduleDraft(parsed)) {
+      return null;
+    }
     const draft: LocalScheduleDraft = {
       activeProjectId: parsed.activeProjectId,
       activeTab: isAppViewTab(parsed.activeTab) ? parsed.activeTab : "Projects",
@@ -95,7 +101,9 @@ export function saveLocalScheduleDraft(draft: LocalSchedulePreferences) {
 
 /** ログアウトや再初期化の際に、端末へ残した表示設定を破棄します。 */
 export function clearLocalScheduleDraft() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
   window.localStorage.removeItem(localScheduleDraftKey);
 }
 
@@ -120,7 +128,9 @@ function isLocalScheduleDraft(value: Partial<LocalScheduleDraft>): value is Loca
 }
 
 function normalizeScheduleFilters(value: unknown): ScheduleFilters {
-  if (isScheduleFilters(value)) return value;
+  if (isScheduleFilters(value)) {
+    return value;
+  }
   return {
     assigneeId: "all",
     query: "",
@@ -134,10 +144,12 @@ function normalizeScheduleFilters(value: unknown): ScheduleFilters {
 }
 
 function normalizeCollapsedIdsByProject(value: unknown): Record<string, string[]> {
-  if (!isCollapsedIdsByProject(value)) return {};
+  if (!isCollapsedIdsByProject(value)) {
+    return {};
+  }
   return Object.fromEntries(
     Object.entries(value)
-      .map(([projectId, taskIds]) => [projectId, [...new Set(taskIds)].sort()])
+      .map(([projectId, taskIds]) => [projectId, [...new Set(taskIds)].toSorted()])
       .filter(([, taskIds]) => taskIds.length > 0),
   );
 }
@@ -155,7 +167,9 @@ function isCollapsedIdsByProject(value: unknown): value is Record<string, string
 }
 
 function isScheduleFilters(value: unknown): value is ScheduleFilters {
-  if (value == null || typeof value !== "object") return false;
+  if (value == null || typeof value !== "object") {
+    return false;
+  }
   const maybe = value as Partial<ScheduleFilters>;
   return (
     typeof maybe.assigneeId === "string" &&
@@ -170,7 +184,9 @@ function isScheduleFilters(value: unknown): value is ScheduleFilters {
 }
 
 function migrateVersion1ColumnVisibility(value: unknown): unknown {
-  if (!isGanttColumnVisibility(value)) return value;
+  if (!isGanttColumnVisibility(value)) {
+    return value;
+  }
   return {
     ...value,
     assignee: false,
@@ -178,7 +194,9 @@ function migrateVersion1ColumnVisibility(value: unknown): unknown {
 }
 
 function normalizeColumnVisibility(value: unknown): GanttColumnVisibility {
-  if (isGanttColumnVisibility(value)) return value;
+  if (isGanttColumnVisibility(value)) {
+    return value;
+  }
   return {
     assignee: false,
     progress: false,
@@ -187,7 +205,9 @@ function normalizeColumnVisibility(value: unknown): GanttColumnVisibility {
 }
 
 function isGanttColumnVisibility(value: unknown): value is GanttColumnVisibility {
-  if (value == null || typeof value !== "object") return false;
+  if (value == null || typeof value !== "object") {
+    return false;
+  }
   const maybe = value as Partial<GanttColumnVisibility>;
   return (
     typeof maybe.assignee === "boolean" &&

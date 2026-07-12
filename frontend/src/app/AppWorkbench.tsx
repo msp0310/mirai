@@ -1,35 +1,53 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
+
 import { Sidebar } from "../components/layout/Sidebar";
-import { Topbar, type ExportFormat, type TopbarNotification } from "../components/layout/Topbar";
+import { type ExportFormat, Topbar, type TopbarNotification } from "../components/layout/Topbar";
 import { type ViewTab } from "../components/layout/ViewTabs";
-import type { ProjectImportMode } from "../features/projects/components/ProjectImportSheet";
-import type { CreateProjectTemplateInput } from "../features/projects/components/ProjectCreateSheet";
-import type { TaskCsvImportOptions } from "../features/gantt/components/TaskCsvImportSheet";
 import { ToastViewport } from "../components/ui/ToastViewport";
-import {
-  buildTaskChangeReview,
-  buildWorkspaceTaskChangeReview,
-  buildWorkspaceConfigChangeReview,
-} from "../lib/changeReview";
+import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import { type AuthUser } from "../data/authRepository";
 import { listDailyReportReminders } from "../data/dailyReportRepository";
-import { type ProjectSummary, type ScheduleSnapshot } from "../data/scheduleRepository";
-import { apiScheduleRepository } from "../data/apiScheduleRepository";
+import { clearLocalScheduleDraft, saveLocalScheduleDraft } from "../data/localScheduleStorage";
 import { createProjectFromTemplate } from "../data/projectTemplates";
 import {
-  createBrabioXlsxImportDraft,
-  createTaskCsvImportDraft,
-  parseTaskCsvImportFromDraft,
-  parseProjectImportJson,
   ProjectImportError,
   type TaskCsvImportDraft,
   type TaskCsvImportMapping,
-  validateTaskCsvImportData,
+  createBrabioXlsxImportDraft,
+  createTaskCsvImportDraft,
+  parseProjectImportJson,
+  parseTaskCsvImportFromDraft,
   validateProjectImportData,
+  validateTaskCsvImportData,
 } from "../data/scheduleImportExport";
-import { clearLocalScheduleDraft, saveLocalScheduleDraft } from "../data/localScheduleStorage";
-import { normalizeSummaryTasks, type TaskPasteMode } from "../lib/taskOperations";
+import { type ProjectSummary, type ScheduleSnapshot } from "../data/scheduleRepository";
+import { todayKey } from "../features/gantt/components/constants";
+import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
+import type { TaskCsvImportOptions } from "../features/gantt/components/TaskCsvImportSheet";
+import { useGanttKeyboardShortcuts } from "../features/gantt/hooks/useGanttKeyboardShortcuts";
+import { useTaskActions } from "../features/gantt/hooks/useTaskActions";
+import { useTaskActualUpdater } from "../features/gantt/hooks/useTaskActualUpdater";
+import { useTaskHistory } from "../features/gantt/hooks/useTaskHistory";
+import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
+import { OnboardingTour } from "../features/onboarding/components/OnboardingTour";
+import {
+  type TourId,
+  getTourCompletionKey,
+  tourScenarios,
+} from "../features/onboarding/tourScenarios";
+import type { CreateProjectTemplateInput } from "../features/projects/components/ProjectCreateSheet";
+import type { ProjectImportMode } from "../features/projects/components/ProjectImportSheet";
+import { useProjectActivityActions } from "../features/projects/hooks/useProjectActivityActions";
+import type { HelpDocumentId } from "../help/helpDocuments";
+import { useToastQueue } from "../hooks/useToastQueue";
+import {
+  buildTaskChangeReview,
+  buildWorkspaceConfigChangeReview,
+  buildWorkspaceTaskChangeReview,
+} from "../lib/changeReview";
+import { getActiveMembers, isMemberActive } from "../lib/members";
+import { getProjectAssignedMembers, projectLifecycleLabels } from "../lib/projects";
+import { buildCrossProjectResourceRows } from "../lib/resourceCalculations";
 import {
   buildGanttHeaderColumns,
   buildResourceMatrix,
@@ -40,16 +58,13 @@ import {
   formatShortDate,
   getProgressStats,
 } from "../lib/schedule";
-import { buildScheduleHealthReport, type ScheduleHealthIssue } from "../lib/scheduleHealth";
-import { buildCrossProjectResourceRows } from "../lib/resourceCalculations";
-import { getActiveMembers, isMemberActive } from "../lib/members";
-import { getProjectAssignedMembers, projectLifecycleLabels } from "../lib/projects";
-import type { ScheduleFilters, TaskStatus } from "../types/schedule";
+import { type ScheduleHealthIssue, buildScheduleHealthReport } from "../lib/scheduleHealth";
+import { type TaskPasteMode, normalizeSummaryTasks } from "../lib/taskOperations";
 import type {
-  Attachment,
   ActivityCategory,
   ActivityLogEntry,
   ActivityTone,
+  Attachment,
   CalendarDefinition,
   DailyReportReminder,
   GanttScale,
@@ -60,19 +75,21 @@ import type {
   ProjectLifecycleStatus,
   ResourceDisplaySettings,
   ResourceScope,
-  TaskInspectorFocusTarget,
-  Team,
+  ScheduleFilters,
   StaffingDemand,
+  TaskInspectorFocusTarget,
+  TaskStatus,
+  Team,
 } from "../types/schedule";
 import {
   createConfigChangeReviewFromRows,
   createDraftSignature,
   createLocalDraftChangeSummary,
   createPersistableDraft,
-  getOperationalProjectStatus,
-  getProjectIdFromHash,
   getGanttTimelineRange,
   getHealthIssueFocusTarget,
+  getOperationalProjectStatus,
+  getProjectIdFromHash,
   getTaskRange,
   initialFilters,
   isProjectArchived,
@@ -80,26 +97,11 @@ import {
   writeProjectHash,
 } from "./appState";
 import type { ApiSyncState, AppInitialState, TaskClipboard } from "./appTypes";
-import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresentation";
-import { useToastQueue } from "../hooks/useToastQueue";
-import { useGanttKeyboardShortcuts } from "../features/gantt/hooks/useGanttKeyboardShortcuts";
 import { mergeScheduleIntoWorkspace } from "./projectLoading";
-import { useTaskHistory } from "../features/gantt/hooks/useTaskHistory";
-import { useProjectActivityActions } from "../features/projects/hooks/useProjectActivityActions";
-import { useTaskActions } from "../features/gantt/hooks/useTaskActions";
-import { useTaskActualUpdater } from "../features/gantt/hooks/useTaskActualUpdater";
+import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresentation";
 import { useScheduleSync } from "./useScheduleSync";
-import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
-import { useWorkbenchOverlays, type PendingTaskCsvImport } from "./useWorkbenchOverlays";
 import { useTeamScheduleLoading } from "./useTeamScheduleLoading";
-import { todayKey } from "../features/gantt/components/constants";
-import { OnboardingTour } from "../features/onboarding/components/OnboardingTour";
-import {
-  getTourCompletionKey,
-  tourScenarios,
-  type TourId,
-} from "../features/onboarding/tourScenarios";
-import type { HelpDocumentId } from "../help/helpDocuments";
+import { type PendingTaskCsvImport, useWorkbenchOverlays } from "./useWorkbenchOverlays";
 import {
   ActivityPanel,
   AnalysisPanel,
@@ -124,8 +126,8 @@ import {
   TaskCsvImportSheet,
   TaskInspector,
   WeeklyReportPanel,
-  WorkloadOverviewPage,
   WorkLogPanel,
+  WorkloadOverviewPage,
 } from "./workbenchLazyViews";
 
 type AppWorkbenchProps = {
@@ -156,13 +158,17 @@ function focusTaskTitleEditor(taskId: string) {
 
   function focusInput() {
     const input = document.querySelector<HTMLInputElement>(inputSelector);
-    if (!input) return false;
+    if (!input) {
+      return false;
+    }
     input.focus();
     input.select();
     return true;
   }
 
-  if (focusInput()) return;
+  if (focusInput()) {
+    return;
+  }
   document
     .querySelector<HTMLElement>(`${rowSelector} [data-title-edit-trigger="true"]`)
     ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, detail: 2 }));
@@ -191,7 +197,9 @@ function downloadTextFile(filename: string, content: string, type: string) {
 /** 取込データ用の重複しないIDを生成します。 */
 function createUniqueImportedId(baseId: string, existingIds: Set<string>) {
   const base = baseId.trim() || "imported-project";
-  if (!existingIds.has(base)) return base;
+  if (!existingIds.has(base)) {
+    return base;
+  }
 
   let suffix = 2;
   let candidate = `${base}-import`;
@@ -222,6 +230,39 @@ function createProjectSummaryFromSnapshot(snapshot: ScheduleSnapshot): ProjectSu
   };
 }
 
+/** 操作履歴を上限付きで先頭へ追加します。 */
+function appendActivityLogEntry(logs: Record<string, ActivityLogEntry[]>, entry: ActivityLogEntry) {
+  return {
+    ...logs,
+    [entry.projectId]: [entry, ...(logs[entry.projectId] ?? [])].slice(0, 160),
+  };
+}
+
+/** 文字列配列の重複を除去します。 */
+function uniqueStrings(values: string[]) {
+  return [...new Set(values)];
+}
+
+/** 担当者未設定の警告が任意項目か判定します。 */
+function isOptionalAssigneeWarning(message: string) {
+  return message.endsWith("に担当者が設定されていません。");
+}
+
+/** 取込データに必要なメンバーを追加します。 */
+function addMissingMembers(currentMembers: Member[], membersToCreate: Member[]) {
+  if (membersToCreate.length === 0) {
+    return currentMembers;
+  }
+  const currentIds = new Set(currentMembers.map((member) => member.id));
+  const additions = membersToCreate.filter((member) => !currentIds.has(member.id));
+  return additions.length === 0 ? currentMembers : [...currentMembers, ...additions];
+}
+
+/** 取込元の表示名を返します。 */
+function getTaskImportSourceLabel(sourceKind: PendingTaskCsvImport["sourceKind"]) {
+  return sourceKind === "brabio" ? "Brabio XLSX" : "タスクCSV";
+}
+
 /** プロジェクト状態・タスク操作・各ビューを束ねる認証後のアプリケーションシェルです。 */
 export function AppWorkbench({
   currentUser,
@@ -249,7 +290,9 @@ export function AppWorkbench({
     let active = true;
     listDailyReportReminders()
       .then((items) => {
-        if (active) setDailyReportReminders(items);
+        if (active) {
+          setDailyReportReminders(items);
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -353,8 +396,12 @@ export function AppWorkbench({
   const canEnterActual = schedule.access?.canEnterActual ?? true;
   const availableTourIds = useMemo<TourId[]>(() => {
     const ids: TourId[] = ["basic", "gantt", "member"];
-    if (canEditPlan) ids.push("planner");
-    if (currentUser.role === "admin") ids.push("admin");
+    if (canEditPlan) {
+      ids.push("planner");
+    }
+    if (currentUser.role === "admin") {
+      ids.push("admin");
+    }
     return ids;
   }, [canEditPlan, currentUser.role]);
   const { commitTasks, initializeProject, replaceProject, redo, taskHistories, tasks, undo } =
@@ -406,7 +453,7 @@ export function AppWorkbench({
   );
   const resourceWeeks = useMemo(() => buildWeekColumns(dayTimeline), [dayTimeline]);
   const collapsedIds = useMemo(
-    () => new Set(collapsedIdsByProject[activeProjectId] ?? []),
+    () => new Set(collapsedIdsByProject[activeProjectId]),
     [activeProjectId, collapsedIdsByProject],
   );
   const flattenedRows = useMemo(() => flattenTasks(tasks, collapsedIds), [collapsedIds, tasks]);
@@ -528,7 +575,7 @@ export function AppWorkbench({
     [activeTeamReviewSchedules],
   );
   const teamResourceMembers = useMemo(() => {
-    const teamMemberIds = new Set(activeTeam?.memberIds ?? []);
+    const teamMemberIds = new Set(activeTeam?.memberIds);
     const assignedMemberIds = new Set(teamResourceTasks.flatMap((task) => task.assigneeIds));
     const memberById = new Map<string, Member>();
     activeTeamReviewSchedules.forEach((snapshot) => {
@@ -551,8 +598,8 @@ export function AppWorkbench({
     const starts = activeTeamReviewSchedules.map((snapshot) => snapshot.project.rangeStart);
     const ends = activeTeamReviewSchedules.map((snapshot) => snapshot.project.rangeEnd);
     return {
-      end: [...ends].sort().at(-1) ?? schedule.project.rangeEnd,
-      start: [...starts].sort()[0] ?? schedule.project.rangeStart,
+      end: [...ends].toSorted().at(-1) ?? schedule.project.rangeEnd,
+      start: [...starts].toSorted()[0] ?? schedule.project.rangeStart,
     };
   }, [activeTeamReviewSchedules, schedule.project.rangeEnd, schedule.project.rangeStart]);
   const teamResourceWeeks = useMemo(
@@ -651,9 +698,9 @@ export function AppWorkbench({
   }, [currentReviewSchedules]);
   const topbarNotifications = useMemo<TopbarNotification[]>(() => {
     const delayedTasks = tasks.filter((task) => task.type === "task" && task.status === "delayed");
-    const nextMilestone = tasks
+    const [nextMilestone] = tasks
       .filter((task) => task.type === "milestone" && task.status !== "done")
-      .sort((a, b) => a.start.localeCompare(b.start))[0];
+      .toSorted((a, b) => a.start.localeCompare(b.start));
     const overloadedRows = resourceRows.filter((row) => row.utilization >= 90);
     return [
       delayedTasks.length > 0
@@ -879,9 +926,13 @@ export function AppWorkbench({
   }, [activityLogs]);
 
   useEffect(() => {
-    if (initialRouteNoticeShownRef.current) return;
+    if (initialRouteNoticeShownRef.current) {
+      return;
+    }
     initialRouteNoticeShownRef.current = true;
-    if (!initialAppState.routeProjectId) return;
+    if (!initialAppState.routeProjectId) {
+      return;
+    }
 
     if (initialAppState.routeProjectMatched) {
       addToast({
@@ -906,7 +957,9 @@ export function AppWorkbench({
   }, [configChangeReview, hasUnsavedChanges, taskChangeReview]);
 
   useEffect(() => {
-    if (!hasUnsavedChanges) return;
+    if (!hasUnsavedChanges) {
+      return;
+    }
     const savedDraft = savedDraftRef.current;
     const currentWithSavedLocalState = {
       ...currentDraft,
@@ -931,14 +984,18 @@ export function AppWorkbench({
   }, [currentDraft, hasUnsavedChanges]);
 
   useEffect(() => {
-    if (showMasterSettings || (activeTab === "Projects" && !showProjectSettings)) return;
+    if (showMasterSettings || (activeTab === "Projects" && !showProjectSettings)) {
+      return;
+    }
     writeProjectHash(activeProjectId, "replace");
   }, [activeProjectId, activeTab, showMasterSettings, showProjectSettings]);
 
   useEffect(() => {
     function handleProjectRouteChange() {
       const projectId = getProjectIdFromHash();
-      if (!projectId || projectId === activeProjectId) return;
+      if (!projectId || projectId === activeProjectId) {
+        return;
+      }
       const nextProject =
         workspace.schedules.find((snapshot) => snapshot.project.id === projectId)?.project ??
         projectSummaries.find((summary) => summary.project.id === projectId)?.project;
@@ -1078,17 +1135,6 @@ export function AppWorkbench({
     };
   }
 
-  /** 操作履歴を上限付きで先頭へ追加します。 */
-  function appendActivityLogEntry(
-    logs: Record<string, ActivityLogEntry[]>,
-    entry: ActivityLogEntry,
-  ) {
-    return {
-      ...logs,
-      [entry.projectId]: [entry, ...(logs[entry.projectId] ?? [])].slice(0, 160),
-    };
-  }
-
   /** タスクを選択し、タイトル編集へフォーカスします。 */
   function selectAndFocusTaskTitle(taskId: string) {
     selectOnlyTask(taskId);
@@ -1104,9 +1150,9 @@ export function AppWorkbench({
   /** 指定案件の折りたたみ状態を更新します。 */
   function setCollapsedIdsForProject(projectId: string, update: CollapsedIdUpdate) {
     setCollapsedIdsByProject((current) => {
-      const currentSet = new Set(current[projectId] ?? []);
+      const currentSet = new Set(current[projectId]);
       const nextSet = typeof update === "function" ? update(currentSet) : new Set(update);
-      const nextIds = [...nextSet].sort();
+      const nextIds = [...nextSet].toSorted();
       const { [projectId]: previousProjectIds, ...rest } = current;
       if (nextIds.length === 0) {
         return previousProjectIds === undefined ? current : rest;
@@ -1248,10 +1294,14 @@ export function AppWorkbench({
     focusTarget?: TaskInspectorFocusTarget,
     projectId?: string,
   ) {
-    if (!taskId) return;
+    if (!taskId) {
+      return;
+    }
     if (projectId && projectId !== schedule.project.id) {
       const activated = activateProject(projectId);
-      if (!activated) return;
+      if (!activated) {
+        return;
+      }
     }
     selectOnlyTask(taskId);
     setActiveTab("Gantt");
@@ -1331,7 +1381,7 @@ export function AppWorkbench({
       const updateProject = (project: Project) => ({
         ...project,
         assignments,
-        memberIds: Array.from(new Set([...(project.memberIds ?? []), ...assignmentMemberIds])),
+        memberIds: [...new Set([...(project.memberIds ?? []), ...assignmentMemberIds])],
         staffingDemands,
       });
       return {
@@ -1342,7 +1392,9 @@ export function AppWorkbench({
             : summary,
         ),
         schedules: current.schedules.map((snapshot) => {
-          if (snapshot.project.id !== projectId) return snapshot;
+          if (snapshot.project.id !== projectId) {
+            return snapshot;
+          }
           const existingIds = new Set(snapshot.members.map((member) => member.id));
           return {
             ...snapshot,
@@ -1371,7 +1423,9 @@ export function AppWorkbench({
     );
     const targetSummary = projectSummaries.find((summary) => summary.project.id === projectId);
     const targetProject = targetSchedule?.project ?? targetSummary?.project;
-    if (!targetProject) return;
+    if (!targetProject) {
+      return;
+    }
     const nextProject = {
       ...targetProject,
       lifecycleStatus,
@@ -1409,7 +1463,9 @@ export function AppWorkbench({
     const targetSchedule = workspace.schedules.find(
       (snapshot) => snapshot.project.id === projectId,
     );
-    if (!targetSchedule) return;
+    if (!targetSchedule) {
+      return;
+    }
     const fallbackSchedule =
       workspace.schedules.find(
         (snapshot) =>
@@ -1446,7 +1502,9 @@ export function AppWorkbench({
       ),
     }));
     setFavoriteProjectIds((current) => {
-      if (!current.has(projectId)) return current;
+      if (!current.has(projectId)) {
+        return current;
+      }
       const next = new Set(current);
       next.delete(projectId);
       return next;
@@ -1481,11 +1539,15 @@ export function AppWorkbench({
     const targetSchedule = workspace.schedules.find(
       (snapshot) => snapshot.project.id === projectId,
     );
-    if (!targetSchedule) return;
+    if (!targetSchedule) {
+      return;
+    }
     setWorkspace((current) => ({
       ...current,
       schedules: current.schedules.map((snapshot) => {
-        if (snapshot.project.id !== projectId) return snapshot;
+        if (snapshot.project.id !== projectId) {
+          return snapshot;
+        }
         const { archivedAt: _archivedAt, status: _status, ...project } = snapshot.project;
         return {
           ...snapshot,
@@ -1693,22 +1755,25 @@ export function AppWorkbench({
     });
     if (teamId) {
       const targetTeam = workspace.teams.find((item) => item.id === teamId);
-      if (targetTeam)
+      if (targetTeam) {
         await updateTeam({
           ...targetTeam,
-          memberIds: Array.from(new Set([...targetTeam.memberIds, member.id])),
+          memberIds: [...new Set([...targetTeam.memberIds, member.id])],
         });
+      }
     }
   }
 
   /** チームとメンバーの所属を切り替えます。 */
   async function toggleTeamMember(teamId: string, memberId: string, enabled: boolean) {
     const target = workspace.teams.find((team) => team.id === teamId);
-    if (!target) return;
+    if (!target) {
+      return;
+    }
     const savedTeam = {
       ...target,
       memberIds: enabled
-        ? Array.from(new Set([...target.memberIds, memberId]))
+        ? [...new Set([...target.memberIds, memberId])]
         : target.memberIds.filter((id) => id !== memberId),
     };
     try {
@@ -1724,11 +1789,13 @@ export function AppWorkbench({
     setWorkspace((current) => ({
       ...current,
       teams: current.teams.map((team) => {
-        if (team.id !== teamId) return team;
+        if (team.id !== teamId) {
+          return team;
+        }
         return {
           ...team,
           memberIds: enabled
-            ? Array.from(new Set([...team.memberIds, memberId]))
+            ? [...new Set([...team.memberIds, memberId])]
             : team.memberIds.filter((id) => id !== memberId),
         };
       }),
@@ -1821,7 +1888,9 @@ export function AppWorkbench({
       (summary) => summary.project.id === projectId,
     )?.project;
     const nextProject = nextSchedule?.project ?? summaryProject;
-    if (!nextProject) return false;
+    if (!nextProject) {
+      return false;
+    }
     if (isProjectArchived(nextProject)) {
       addToast({
         detail: nextProject.workspace,
@@ -1834,7 +1903,9 @@ export function AppWorkbench({
     projectLoadRequestIdRef.current = requestId;
 
     const completeActivation = (loadedSchedule: ScheduleSnapshot) => {
-      if (projectLoadRequestIdRef.current !== requestId) return;
+      if (projectLoadRequestIdRef.current !== requestId) {
+        return;
+      }
       setWorkspace((current) => mergeScheduleIntoWorkspace(current, loadedSchedule));
       initializeProject(projectId, loadedSchedule.tasks);
       setActiveTeamId(loadedSchedule.project.teamId ?? "");
@@ -1854,13 +1925,17 @@ export function AppWorkbench({
     };
 
     if (!nextSchedule) {
-      if (loadingProjectId === projectId) return true;
+      if (loadingProjectId === projectId) {
+        return true;
+      }
       setLoadingProjectId(projectId);
       apiScheduleRepository
         .getProjectSchedule(projectId)
         .then(completeActivation)
         .catch((error: unknown) => {
-          if (projectLoadRequestIdRef.current !== requestId) return;
+          if (projectLoadRequestIdRef.current !== requestId) {
+            return;
+          }
           setLoadingProjectId(null);
           addToast({
             detail: error instanceof Error ? error.message : "案件詳細を取得できませんでした。",
@@ -1909,7 +1984,7 @@ export function AppWorkbench({
 
   /** テンプレートからプロジェクトを作成します。 */
   async function createProject(input: CreateProjectTemplateInput) {
-    const activeTeamMemberIds = new Set(activeTeam?.memberIds ?? []);
+    const activeTeamMemberIds = new Set(activeTeam?.memberIds);
     const templateMembers = getActiveMembers(schedule.members).filter((member) =>
       activeTeamMemberIds.has(member.id),
     );
@@ -1925,15 +2000,17 @@ export function AppWorkbench({
       templateId: input.templateId,
       workspace: input.workspace,
     });
-    let createdSchedule: ScheduleSnapshot;
-    try {
-      createdSchedule = await apiScheduleRepository.createProject(nextSchedule);
-    } catch (error) {
-      addToast({
-        detail: error instanceof Error ? error.message : "作成できませんでした。",
-        title: "プロジェクトの追加に失敗しました",
-        tone: "warning",
+    const createdSchedule = await apiScheduleRepository
+      .createProject(nextSchedule)
+      .catch((error) => {
+        addToast({
+          detail: error instanceof Error ? error.message : "作成できませんでした。",
+          title: "プロジェクトの追加に失敗しました",
+          tone: "warning",
+        });
+        return null;
       });
+    if (!createdSchedule) {
       return;
     }
     const nextSummary = createProjectSummaryFromSnapshot(createdSchedule);
@@ -2214,40 +2291,21 @@ export function AppWorkbench({
     const nextMembers: Member[] = [];
     const nextIds = new Set<string>();
     members.forEach((member) => {
-      if (existingIds.has(member.id) || nextIds.has(member.id)) return;
+      if (existingIds.has(member.id) || nextIds.has(member.id)) {
+        return;
+      }
       nextIds.add(member.id);
       nextMembers.push(member);
     });
     return nextMembers;
   }
 
-  /** 文字列配列の重複を除去します。 */
-  function uniqueStrings(values: string[]) {
-    return [...new Set(values)];
-  }
-
-  /** 担当者未設定の警告が任意項目か判定します。 */
-  function isOptionalAssigneeWarning(message: string) {
-    return message.endsWith("に担当者が設定されていません。");
-  }
-
-  /** 取込データに必要なメンバーを追加します。 */
-  function addMissingMembers(currentMembers: Member[], membersToCreate: Member[]) {
-    if (membersToCreate.length === 0) return currentMembers;
-    const currentIds = new Set(currentMembers.map((member) => member.id));
-    const additions = membersToCreate.filter((member) => !currentIds.has(member.id));
-    return additions.length === 0 ? currentMembers : [...currentMembers, ...additions];
-  }
-
-  /** 取込元の表示名を返します。 */
-  function getTaskImportSourceLabel(sourceKind: PendingTaskCsvImport["sourceKind"]) {
-    return sourceKind === "brabio" ? "Brabio XLSX" : "タスクCSV";
-  }
-
   /** 取込確認画面の列対応を更新します。 */
   function updatePendingTaskCsvMapping(mapping: TaskCsvImportMapping) {
     setPendingTaskCsvImport((current) => {
-      if (!current) return current;
+      if (!current) {
+        return current;
+      }
       return createPendingTaskCsvImport(
         current.fileName,
         {
@@ -2265,7 +2323,9 @@ export function AppWorkbench({
 
   /** 確認済みのタスク取込を案件へ反映します。 */
   function applyPendingTaskCsvImport(options: TaskCsvImportOptions) {
-    if (!pendingTaskCsvImport) return;
+    if (!pendingTaskCsvImport) {
+      return;
+    }
     if (pendingTaskCsvImport.validation.errors.length > 0 || pendingTaskCsvImport.data === null) {
       addToast({
         detail: "インポート確認のエラーを解消してください。",
@@ -2276,7 +2336,7 @@ export function AppWorkbench({
     }
 
     const sourceLabel = getTaskImportSourceLabel(pendingTaskCsvImport.sourceKind);
-    const membersToCreate = pendingTaskCsvImport.membersToCreate;
+    const { membersToCreate } = pendingTaskCsvImport;
     const nextTasks = normalizeSummaryTasks(pendingTaskCsvImport.data.tasks);
     const csvRange = getTaskRange(nextTasks, schedule.project);
     const shouldExpandProjectRange =
@@ -2349,7 +2409,9 @@ export function AppWorkbench({
 
   /** 確認済みのプロジェクト取込をワークスペースへ反映します。 */
   function applyPendingProjectImport(mode: ProjectImportMode) {
-    if (!pendingProjectImport) return;
+    if (!pendingProjectImport) {
+      return;
+    }
     if (pendingProjectImport.validation.errors.length > 0) {
       addToast({
         detail: "インポート確認のエラーを解消してください。",
@@ -2413,7 +2475,9 @@ export function AppWorkbench({
     }));
     replaceProject(importedProjectId, nextTasks);
     setFavoriteProjectIds((current) => {
-      if (!replaceExisting || !projectIdChanged) return current;
+      if (!replaceExisting || !projectIdChanged) {
+        return current;
+      }
       const next = new Set(current);
       next.delete(imported.project.id);
       return next;
@@ -2512,12 +2576,12 @@ export function AppWorkbench({
     );
     recordActivity({
       category: "task",
-      detail: targetTasks.length + "件の開始日・終了日を基準計画として保存しました。",
+      detail: `${targetTasks.length}件の開始日・終了日を基準計画として保存しました。`,
       title: "基準計画を設定しました",
       tone: "success",
     });
     addToast({
-      detail: targetTasks.length + "件のタスクを対象にしました。保存するとAPIへ反映されます。",
+      detail: `${targetTasks.length}件のタスクを対象にしました。保存するとAPIへ反映されます。`,
       title: "基準計画を設定しました",
       tone: "success",
     });
@@ -2556,7 +2620,9 @@ export function AppWorkbench({
       select?.focus();
     },
     onFocusSelectedTitle: () => {
-      if (selectedTaskId) focusTaskTitleEditor(selectedTaskId);
+      if (selectedTaskId) {
+        focusTaskTitleEditor(selectedTaskId);
+      }
     },
     onFocusTaskStart: () => setTaskStartFocusSignal((value) => value + 1),
     onIndentSelectedTasks: taskActions.indentSelectedTasks,
@@ -2592,7 +2658,9 @@ export function AppWorkbench({
   });
 
   useEffect(() => {
-    if (saveRequestId === 0) return;
+    if (saveRequestId === 0) {
+      return;
+    }
     const timeoutId = window.setTimeout(() => {
       if (
         hasUnsavedChangesRef.current &&
@@ -2607,7 +2675,9 @@ export function AppWorkbench({
   }, [saveRequestId]);
 
   useEffect(() => {
-    if (!hasUnsavedChanges) return;
+    if (!hasUnsavedChanges) {
+      return;
+    }
     function handleBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
       event.returnValue = "";
@@ -2940,7 +3010,9 @@ export function AppWorkbench({
               calendar={schedule.calendar}
               calendarAware={calendarAware}
               onOpenProject={(projectId) => {
-                if (changeProject(projectId)) setActiveTab("Gantt");
+                if (changeProject(projectId)) {
+                  setActiveTab("Gantt");
+                }
               }}
               onOpenTeam={(teamId) => changeTeam(teamId, { stayOnPortfolio: true })}
               onUpdateProjectStaffing={updateProjectStaffing}
@@ -3170,7 +3242,11 @@ function getContextHelpDocumentId(
   masterSettingsOpen: boolean,
   projectSettingsOpen: boolean,
 ): HelpDocumentId {
-  if (masterSettingsOpen) return "adminSettings";
-  if (projectSettingsOpen) return "projectSettings";
+  if (masterSettingsOpen) {
+    return "adminSettings";
+  }
+  if (projectSettingsOpen) {
+    return "projectSettings";
+  }
   return helpDocumentByView[activeTab];
 }

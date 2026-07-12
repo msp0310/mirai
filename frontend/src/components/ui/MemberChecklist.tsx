@@ -1,5 +1,5 @@
-import type { Member } from "../../types/schedule";
 import { getMemberStatusLabel, isMemberActive } from "../../lib/members";
+import type { Member } from "../../types/schedule";
 
 type MemberChecklistProps = {
   disabled?: boolean;
@@ -27,10 +27,7 @@ export function MemberChecklist({
     >
       <span>{title}</span>
       {members.map((member) => (
-        <label
-          className={isMemberActive(member) ? "" : "inactive"}
-          key={member.id}
-        >
+        <label className={isMemberActive(member) ? "" : "inactive"} key={member.id}>
           <input
             aria-label={`${title}: ${member.name}`}
             checked={selectedIds.includes(member.id)}
@@ -39,9 +36,7 @@ export function MemberChecklist({
             type="checkbox"
           />
           {member.initials} {member.name}
-          {!isMemberActive(member) ? (
-            <small>{getMemberStatusLabel(member)}</small>
-          ) : null}
+          {!isMemberActive(member) ? <small>{getMemberStatusLabel(member)}</small> : null}
         </label>
       ))}
     </div>

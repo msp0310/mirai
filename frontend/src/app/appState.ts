@@ -1,7 +1,9 @@
-import type { ConfigChangeReview } from "../lib/changeReview";
+import type { ViewTab } from "../components/layout/ViewTabs";
 import { loadLocalScheduleDraft } from "../data/localScheduleStorage";
-import { defaultResourceDisplaySettings } from "../lib/resourceDisplaySettings";
+import type { ScheduleWorkspace } from "../data/scheduleRepository";
+import type { ConfigChangeReview } from "../lib/changeReview";
 import { getProjectLifecycleStatus, projectLifecycleLabels } from "../lib/projects";
+import { defaultResourceDisplaySettings } from "../lib/resourceDisplaySettings";
 import { addDays, parseDate, toDateKey } from "../lib/schedule";
 import type { ScheduleHealthIssue } from "../lib/scheduleHealth";
 import { normalizeSummaryTasks } from "../lib/taskOperations";
@@ -14,9 +16,7 @@ import type {
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../types/schedule";
-import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import type { AppInitialState, PersistableDraft, TaskHistory } from "./appTypes";
-import type { ViewTab } from "../components/layout/ViewTabs";
 
 /** ローカル表示設定がない場合に使う既定のフィルター状態です。 */
 export const initialFilters: ScheduleFilters = {
@@ -108,7 +108,9 @@ export function mergeWorkspaceTasks(
 
 /** タスクの日付範囲を返し、タスクがなければプロジェクト範囲を使います。 */
 export function getTaskRange(tasks: ScheduleTask[], project: Project) {
-  if (tasks.length === 0) return null;
+  if (tasks.length === 0) {
+    return null;
+  }
   return {
     end: tasks.reduce((latest, task) => (task.end > latest ? task.end : latest), project.rangeEnd),
     start: tasks.reduce(
@@ -156,9 +158,12 @@ export function serializeCollapsedIdsByProject(
 ): Record<string, string[]> {
   return Object.fromEntries(
     Object.entries(value)
-      .map(([projectId, taskIds]): [string, string[]] => [projectId, [...new Set(taskIds)].sort()])
+      .map(([projectId, taskIds]): [string, string[]] => [
+        projectId,
+        [...new Set(taskIds)].toSorted(),
+      ])
       .filter(([, taskIds]) => taskIds.length > 0)
-      .sort(([projectA], [projectB]) => projectA.localeCompare(projectB)),
+      .toSorted(([projectA], [projectB]) => projectA.localeCompare(projectB)),
   );
 }
 
@@ -176,7 +181,9 @@ export function createLocalDraftChangeSummary(
     const savedSchedule = savedDraft.workspace.schedules.find(
       (schedule) => schedule.project.id === currentSchedule.project.id,
     );
-    if (!savedSchedule) return [];
+    if (!savedSchedule) {
+      return [];
+    }
     return [
       !areDraftValuesEqual(currentSchedule.issues ?? [], savedSchedule.issues ?? [])
         ? "課題"
@@ -218,9 +225,13 @@ export function createLocalDraftChangeSummary(
 
 /** ビルド時にブラウザーAPIへ依存せず、ハッシュから選択プロジェクトを読み取ります。 */
 export function getProjectIdFromHash() {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {
+    return null;
+  }
   const rawHash = window.location.hash.replace(/^#/, "").trim();
-  if (!rawHash) return null;
+  if (!rawHash) {
+    return null;
+  }
   try {
     return decodeURIComponent(rawHash);
   } catch {
@@ -230,12 +241,19 @@ export function getProjectIdFromHash() {
 
 /** パスとクエリを維持したまま、プロジェクトのディープリンクを更新します。 */
 export function writeProjectHash(projectId: string, mode: "push" | "replace" = "push") {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    return;
+  }
   const nextHash = `#${encodeURIComponent(projectId)}`;
-  if (window.location.hash === nextHash) return;
+  if (window.location.hash === nextHash) {
+    return;
+  }
   const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
-  if (mode === "replace") window.history.replaceState(null, "", nextUrl);
-  else window.history.pushState(null, "", nextUrl);
+  if (mode === "replace") {
+    window.history.replaceState(null, "", nextUrl);
+  } else {
+    window.history.pushState(null, "", nextUrl);
+  }
 }
 
 /** 通常の運用画面からアーカイブ済みプロジェクトを除外します。 */
@@ -275,7 +293,7 @@ export function createPersistableDraft(input: {
     calendarAware: input.calendarAware,
     columnVisibility: input.columnVisibility,
     collapsedIdsByProject: serializeCollapsedIdsByProject(input.collapsedIdsByProject),
-    favoriteProjectIds: [...input.favoriteProjectIds].sort(),
+    favoriteProjectIds: [...input.favoriteProjectIds].toSorted(),
     filterOpen: input.filterOpen,
     filters: input.filters,
     resourceDisplaySettings: input.resourceDisplaySettings,
@@ -294,10 +312,9 @@ export function createInitialAppState(
   if (workspace.schedules.length === 0) {
     throw new Error("APIからプロジェクトが取得できませんでした。");
   }
-  const activeSchedules = workspace.schedules.filter(
-    (snapshot) => !isProjectArchived(snapshot.project),
-  );
-  const firstSchedule = activeSchedules[0] ?? workspace.schedules[0];
+  const firstSchedule =
+    workspace.schedules.find((snapshot) => !isProjectArchived(snapshot.project)) ??
+    workspace.schedules[0];
   const hashProjectId = getProjectIdFromHash();
   const hashSchedule = hashProjectId
     ? (workspace.schedules.find(
@@ -323,7 +340,7 @@ export function createInitialAppState(
     calendarAware: draft?.calendarAware ?? true,
     columnVisibility: normalizeColumnVisibility(draft?.columnVisibility),
     collapsedIdsByProject: draft?.collapsedIdsByProject ?? {},
-    favoriteProjectIds: new Set(draft?.favoriteProjectIds ?? []),
+    favoriteProjectIds: new Set(draft?.favoriteProjectIds),
     // フィルターは作業領域を狭めるため、起動時は常に閉じます。
     filterOpen: false,
     filters: draft?.filters ?? initialFilters,
@@ -364,13 +381,21 @@ export function createInitialAppState(
 export function getHealthIssueFocusTarget(
   issue: ScheduleHealthIssue,
 ): TaskInspectorFocusTarget | undefined {
-  if (issue.category === "assign") return "assignees";
+  if (issue.category === "assign") {
+    return "assignees";
+  }
   if (issue.category === "calendar") {
     return issue.id.includes("-end-non-working") ? "end" : "start";
   }
-  if (issue.category === "dependency") return "dependencies";
-  if (issue.category === "load") return "allocations";
-  if (issue.category === "schedule") return "start";
+  if (issue.category === "dependency") {
+    return "dependencies";
+  }
+  if (issue.category === "load") {
+    return "allocations";
+  }
+  if (issue.category === "schedule") {
+    return "start";
+  }
   return undefined;
 }
 
@@ -383,7 +408,9 @@ export function mergeProjectScopedSavedDraft(
   const currentSchedule = currentDraft.workspace.schedules.find(
     (snapshot) => snapshot.project.id === projectId,
   );
-  if (!currentSchedule) return savedDraft;
+  if (!currentSchedule) {
+    return savedDraft;
+  }
   const savedSchedule = savedDraft.workspace.schedules.find(
     (snapshot) => snapshot.project.id === projectId,
   );

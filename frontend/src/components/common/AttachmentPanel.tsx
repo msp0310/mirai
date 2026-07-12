@@ -1,16 +1,18 @@
 import {
   ArrowDownTrayIcon,
+  DocumentIcon,
   PaperClipIcon,
   TrashIcon,
-  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import { useRef, useState } from "react";
-import type { Attachment, AttachmentOwnerType } from "../../types/schedule";
+
 import {
   deleteAttachment,
   downloadAttachment,
   uploadAttachment,
 } from "../../data/attachmentRepository";
+import type { Attachment, AttachmentOwnerType } from "../../types/schedule";
+
 import * as styles from "./AttachmentPanel.css";
 
 type AttachmentPanelProps = {
@@ -39,7 +41,9 @@ export function AttachmentPanel({
   const [error, setError] = useState<string | null>(null);
 
   async function uploadFiles(files: File[]) {
-    if (files.length === 0 || busy) return;
+    if (files.length === 0 || busy) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -59,12 +63,16 @@ export function AttachmentPanel({
       );
     } finally {
       setBusy(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   }
 
   async function removeAttachment(attachment: Attachment) {
-    if (!window.confirm(`「${attachment.fileName}」を削除しますか？`)) return;
+    if (!window.confirm(`「${attachment.fileName}」を削除しますか？`)) {
+      return;
+    }
     setError(null);
     try {
       await deleteAttachment(projectId, attachment.id);
@@ -106,14 +114,16 @@ export function AttachmentPanel({
         className={`${styles.dropzone} ${dragging ? styles.dropzoneActive : ""} ${busy ? styles.dropzoneDisabled : ""}`}
         onDragEnter={(event) => {
           event.preventDefault();
-          if (!busy) setDragging(true);
+          if (!busy) {
+            setDragging(true);
+          }
         }}
         onDragLeave={() => setDragging(false)}
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
           event.preventDefault();
           setDragging(false);
-          void uploadFiles(Array.from(event.dataTransfer.files));
+          void uploadFiles([...event.dataTransfer.files]);
         }}
       >
         <input
@@ -121,7 +131,7 @@ export function AttachmentPanel({
           disabled={busy}
           hidden
           multiple
-          onChange={(event) => void uploadFiles(Array.from(event.target.files ?? []))}
+          onChange={(event) => void uploadFiles([...(event.target.files ?? [])])}
           type="file"
         />
         <span>
@@ -177,8 +187,12 @@ export function AttachmentPanel({
 }
 
 function formatFileSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 

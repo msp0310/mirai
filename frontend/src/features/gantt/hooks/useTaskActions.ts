@@ -1,16 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
-import type {
-  ActivityCategory,
-  ActivityTone,
-  CalendarDefinition,
-  CreateMilestoneInput,
-  CreateTaskInput,
-  Member,
-  ScheduleTask,
-  TaskAssigneeAllocation,
-  TaskStatus,
-} from "../../../types/schedule";
+
+import type { TaskClipboard } from "../../../app/appTypes";
+import { statusLabels } from "../../../lib/schedule";
 import {
+  type TaskInsertionResult,
+  type TaskPasteMode,
+  type TaskSiblingReorderPlacement,
   addMilestone,
   addTask,
   deleteTaskSubtrees,
@@ -28,12 +23,18 @@ import {
   pasteTaskSubtree,
   resizeTaskByDays,
   updateTaskById,
-  type TaskInsertionResult,
-  type TaskPasteMode,
-  type TaskSiblingReorderPlacement,
 } from "../../../lib/taskOperations";
-import { statusLabels } from "../../../lib/schedule";
-import type { TaskClipboard } from "../../../app/appTypes";
+import type {
+  ActivityCategory,
+  ActivityTone,
+  CalendarDefinition,
+  CreateMilestoneInput,
+  CreateTaskInput,
+  Member,
+  ScheduleTask,
+  TaskAssigneeAllocation,
+  TaskStatus,
+} from "../../../types/schedule";
 
 type CollapsedIdUpdate = Set<string> | ((current: Set<string>) => Set<string>);
 
@@ -77,8 +78,16 @@ type UseTaskActionsOptions = {
   taskClipboardRef: { current: TaskClipboard | null };
   taskPasteMode: TaskPasteMode;
   tasks: ScheduleTask[];
-  visibleRows: Array<Pick<ScheduleTask, "id" | "title" | "type">>;
+  visibleRows: Pick<ScheduleTask, "id" | "title" | "type">[];
 };
+
+function scrollTask(taskId: string) {
+  window.requestAnimationFrame(() => {
+    document
+      .querySelector(`[data-task-id="${taskId}"]`)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+}
 
 /**
  * Ganttのタスク変更操作をまとめます。
@@ -113,7 +122,9 @@ export function useTaskActions({
   visibleRows,
 }: UseTaskActionsOptions) {
   function getSelectedTaskIdList(taskIdOverride?: string | null) {
-    if (taskIdOverride) return [taskIdOverride];
+    if (taskIdOverride) {
+      return [taskIdOverride];
+    }
     const ids =
       selectedTaskIds.size > 0 ? selectedTaskIds : new Set(selectedTaskId ? [selectedTaskId] : []);
     return tasks.filter((task) => ids.has(task.id)).map((task) => task.id);
@@ -121,9 +132,13 @@ export function useTaskActions({
 
   function commitTaskInsertion(createNext: (current: ScheduleTask[]) => TaskInsertionResult) {
     const result = createNext(tasks);
-    if (result.tasks === tasks) return;
+    if (result.tasks === tasks) {
+      return;
+    }
     commitTasks(() => result.tasks);
-    if (result.insertedTaskId) selectAndFocusTaskTitle(result.insertedTaskId);
+    if (result.insertedTaskId) {
+      selectAndFocusTaskTitle(result.insertedTaskId);
+    }
   }
 
   function getEditableSelectedTasks(taskIdOverride?: string | null) {
@@ -154,7 +169,9 @@ export function useTaskActions({
     commitTasks((current) =>
       normalizeSummaryTasks(
         current.map((task) => {
-          if (task.id !== taskId) return task;
+          if (task.id !== taskId) {
+            return task;
+          }
           const start = patch.start ?? task.start;
           const end = task.type === "milestone" ? start : (patch.end ?? task.end);
           return { ...task, end: end < start ? start : end, start };
@@ -265,7 +282,9 @@ export function useTaskActions({
     commitTasks((current) => {
       const next = addTask(current, input, calendar, calendarAware);
       const created = next.at(-1);
-      if (created) selectOnlyTask(created.id);
+      if (created) {
+        selectOnlyTask(created.id);
+      }
       return next;
     });
     setShowCreateSheet(false);
@@ -333,10 +352,14 @@ export function useTaskActions({
 
   function copySelectedTask(taskIdOverride?: string | null) {
     const taskIds = getSelectedTaskIdList(taskIdOverride);
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     const copiedTasks = getTaskSubtrees(tasks, taskIds);
-    const rootTask = copiedTasks[0];
-    if (!rootTask || rootTask.parentId === null) return;
+    const [rootTask] = copiedTasks;
+    if (!rootTask || rootTask.parentId === null) {
+      return;
+    }
     const nextClipboard = { copiedAt: Date.now(), label: rootTask.title, tasks: copiedTasks };
     taskClipboardRef.current = nextClipboard;
     setTaskClipboard(nextClipboard);
@@ -375,7 +398,9 @@ export function useTaskActions({
 
   function duplicateSelectedTask(taskIdOverride?: string | null) {
     const taskIds = getSelectedTaskIdList(taskIdOverride);
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     commitTaskInsertion((current) =>
       duplicateTaskSubtrees(current, taskIds, taskIds.at(-1) ?? null),
     );
@@ -391,7 +416,9 @@ export function useTaskActions({
 
   function deleteSelectedTasks(taskIdOverride?: string | null) {
     const taskIds = getSelectedTaskIdList(taskIdOverride);
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     commitTasks((current) => deleteTaskSubtrees(current, taskIds));
     clearTaskSelection();
     onToast({ detail: `${taskIds.length}行`, title: "削除しました", tone: "warning" });
@@ -476,9 +503,11 @@ export function useTaskActions({
     return tasks
       .filter((task) => selectedIds.has(task.id) && task.parentId !== null)
       .filter((task) => {
-        let parentId = task.parentId;
+        let { parentId } = task;
         while (parentId) {
-          if (selectedIds.has(parentId)) return false;
+          if (selectedIds.has(parentId)) {
+            return false;
+          }
           parentId = taskById.get(parentId)?.parentId ?? null;
         }
         return true;
@@ -488,10 +517,12 @@ export function useTaskActions({
 
   function indentSelectedTasks() {
     const taskIds = getSelectedTaskIdList();
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     const selectedIds = new Set(taskIds);
     const firstSelectedIndex = visibleRows.findIndex((row) => selectedIds.has(row.id));
-    let targetParent: Pick<ScheduleTask, "id" | "title" | "type"> | undefined;
+    let targetParent: Pick<ScheduleTask, "id" | "title" | "type"> | undefined = undefined;
     for (let index = firstSelectedIndex - 1; index >= 0; index -= 1) {
       const row = visibleRows[index];
       if (!selectedIds.has(row.id) && row.type !== "milestone") {
@@ -539,17 +570,11 @@ export function useTaskActions({
     });
   }
 
-  function scrollTask(taskId: string) {
-    window.requestAnimationFrame(() => {
-      document
-        .querySelector(`[data-task-id="${taskId}"]`)
-        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
-    });
-  }
-
   function moveSelectedTaskWithinSiblings(direction: -1 | 1, taskIdOverride?: string | null) {
     const taskIds = getSelectedTaskIdList(taskIdOverride);
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     if (moveTaskSubtreesWithinSiblings(tasks, taskIds, direction) === tasks) {
       onToast({
         title: direction > 0 ? "これ以上下へ移動できません" : "これ以上上へ移動できません",
@@ -581,7 +606,9 @@ export function useTaskActions({
     taskIdsOverride?: string[],
   ) {
     const taskIds = taskIdsOverride?.length ? taskIdsOverride : getSelectedTaskIdList();
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     const targetTask = tasks.find((task) => task.id === targetTaskId);
     if (moveTaskSubtreesToSiblingPosition(tasks, taskIds, targetTaskId, placement) === tasks) {
       onToast({ title: "同じ階層内で移動できません", tone: "warning" });
@@ -617,7 +644,9 @@ export function useTaskActions({
     placement: TaskSiblingReorderPlacement = "after",
   ) {
     const taskIds = taskIdsOverride.length ? taskIdsOverride : getSelectedTaskIdList();
-    if (taskIds.length === 0) return;
+    if (taskIds.length === 0) {
+      return;
+    }
     if (
       moveTaskSubtreesToParentPosition(
         tasks,
@@ -694,7 +723,9 @@ export function useTaskActions({
 /** 担当者をできるだけ均等な割合で割り当てます。 */
 function buildEvenAssigneeAllocations(assigneeIds: string[]) {
   const ids = [...new Set(assigneeIds)];
-  if (ids.length === 0) return undefined;
+  if (ids.length === 0) {
+    return undefined;
+  }
   const base = Math.floor(100 / ids.length);
   const remainder = 100 - base * ids.length;
   return ids.map(

@@ -1,6 +1,6 @@
 type MarkdownBlock =
   | { language?: string; text: string; type: "code" }
-  | { items: Array<{ checked?: boolean; text: string }>; type: "list" }
+  | { items: { checked?: boolean; text: string }[]; type: "list" }
   | { level: 1 | 2 | 3; text: string; type: "heading" }
   | { text: string; type: "paragraph" }
   | { text: string; type: "quote" };
@@ -49,17 +49,21 @@ function parseMarkdown(content: string): MarkdownBlock[] {
   const blocks: MarkdownBlock[] = [];
   const lines = content.replace(/\r\n/g, "\n").split("\n");
   let paragraph: string[] = [];
-  let list: Array<{ checked?: boolean; text: string }> = [];
+  let list: { checked?: boolean; text: string }[] = [];
   let codeFence: { language?: string; lines: string[] } | null = null;
 
   function flushParagraph() {
-    if (paragraph.length === 0) return;
+    if (paragraph.length === 0) {
+      return;
+    }
     blocks.push({ text: paragraph.join(" "), type: "paragraph" });
     paragraph = [];
   }
 
   function flushList() {
-    if (list.length === 0) return;
+    if (list.length === 0) {
+      return;
+    }
     blocks.push({ items: list, type: "list" });
     list = [];
   }

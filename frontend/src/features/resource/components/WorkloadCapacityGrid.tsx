@@ -1,6 +1,7 @@
-import type { ResourceRowModel, Team } from "../../../types/schedule";
 import { Avatar } from "../../../components/ui/Avatar";
-import { buildWeekColumns } from "../../../lib/schedule";
+import type { buildWeekColumns } from "../../../lib/schedule";
+import type { ResourceRowModel, Team } from "../../../types/schedule";
+
 import * as styles from "./WorkloadOverviewPage.css";
 
 function TimelineHeader({
@@ -115,7 +116,7 @@ export function TeamCapacityGrid({
 }: {
   onOpenProject: (projectId: string) => void;
   onOpenTeam: (teamId: string) => void;
-  rows: Array<{ projectCount: number; rows: ResourceRowModel[]; team: Team }>;
+  rows: { projectCount: number; rows: ResourceRowModel[]; team: Team }[];
   todayKey: string;
   weeks: ReturnType<typeof buildWeekColumns>;
 }) {
@@ -252,7 +253,7 @@ export function aggregateTeamCapacityCell(
 }
 
 function buildMonthGroups(weeks: ReturnType<typeof buildWeekColumns>) {
-  return weeks.reduce<Array<{ key: string; label: string; span: number }>>((groups, week) => {
+  return weeks.reduce<{ key: string; label: string; span: number }[]>((groups, week) => {
     const key = week.start?.slice(0, 7) ?? "unknown";
     const current = groups.at(-1);
     if (current?.key === key) {
@@ -285,7 +286,9 @@ function buildMonthWeekLabels(weeks: ReturnType<typeof buildWeekColumns>) {
 }
 
 function addDateDays(dateKey: string | undefined, days: number) {
-  if (!dateKey) return undefined;
+  if (!dateKey) {
+    return undefined;
+  }
   const date = new Date(`${dateKey}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);

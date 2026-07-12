@@ -1,4 +1,9 @@
+import type { ScheduleChangeLog } from "../types/schedule";
+import { requestJson } from "./apiClient";
+import { getProjectAttachments } from "./attachmentRepository";
+import { authRepository } from "./authRepository";
 import type {
+  ProjectSummary,
   ScheduleRepository,
   ScheduleRepositorySaveOptions,
   ScheduleRepositorySaveResult,
@@ -6,12 +11,7 @@ import type {
   ScheduleSnapshot,
   ScheduleWorkspace,
   ScheduleWorkspaceSummary,
-  ProjectSummary,
 } from "./scheduleRepository";
-import type { ScheduleChangeLog } from "../types/schedule";
-import { authRepository } from "./authRepository";
-import { requestJson } from "./apiClient";
-import { getProjectAttachments } from "./attachmentRepository";
 export { ApiRequestError } from "./apiClient";
 
 type SaveScheduleResponse = {
@@ -52,7 +52,7 @@ export const apiScheduleRepository: ScheduleRepository = {
       ),
       getProjectAttachments(projectId),
       requestAuthenticatedJson<ScheduleChangeLog[]>(
-        "/projects/" + encodeURIComponent(projectId) + "/changes",
+        `/projects/${encodeURIComponent(projectId)}/changes`,
       ),
     ]);
     return { ...schedule, attachments, changeLogs };
@@ -186,7 +186,7 @@ export const apiScheduleRepository: ScheduleRepository = {
       },
     );
     const changeLogs = await requestAuthenticatedJson<ScheduleChangeLog[]>(
-      "/projects/" + encodeURIComponent(options.activeProjectId) + "/changes",
+      `/projects/${encodeURIComponent(options.activeProjectId)}/changes`,
     );
 
     return {

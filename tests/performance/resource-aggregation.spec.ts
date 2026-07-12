@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { buildCrossProjectResourceRows } from "../../frontend/src/lib/resourceCalculations";
+
 import type { ScheduleSnapshot } from "../../frontend/src/data/scheduleRepository";
-import type { CalendarDefinition, Member, ScheduleTask, TimelineColumn } from "../../frontend/src/types/schedule";
+import { buildCrossProjectResourceRows } from "../../frontend/src/lib/resourceCalculations";
+import type {
+  CalendarDefinition,
+  Member,
+  ScheduleTask,
+  TimelineColumn,
+} from "../../frontend/src/types/schedule";
 
 const calendar: CalendarDefinition = {
   id: "performance-calendar",
@@ -32,8 +38,8 @@ function createPerformanceData(): {
     startIndex: index * 5,
     span: 5,
   }));
-  const schedules = Array.from({ length: 10 }, (_, projectIndex) => {
-    const tasks: ScheduleTask[] = Array.from({ length: 300 }, (_, taskIndex) => ({
+  const schedules = Array.from({ length: 10 }, (_projectValue, projectIndex) => {
+    const tasks: ScheduleTask[] = Array.from({ length: 300 }, (_taskValue, taskIndex) => ({
       id: `project-${projectIndex}-task-${taskIndex}`,
       parentId: null,
       title: `性能測定タスク ${projectIndex}-${taskIndex}`,
@@ -81,5 +87,5 @@ test("30人・10案件・3,000タスクのResource集計を1秒以内に完了�
 
   expect(rows).toHaveLength(30);
   expect(rows.every((row) => row.cells.length === 52)).toBe(true);
-  expect(elapsedMs, `Resource集計が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1_000);
+  expect(elapsedMs, `Resource集計が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1000);
 });

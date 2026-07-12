@@ -5,6 +5,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
+
 import * as styles from "./ToastViewport.css";
 
 export type ToastTone = "success" | "info" | "warning";
@@ -30,13 +31,15 @@ const toneIcon = {
 
 /** 画面右下に通知メッセージを表示し、個別に閉じられるようにする領域です。 */
 export function ToastViewport({ onDismiss, toasts }: ToastViewportProps) {
-  if (toasts.length === 0) return null;
+  if (toasts.length === 0) {
+    return null;
+  }
 
   return (
     <section aria-label="操作結果" aria-live="polite" className={styles.viewport}>
-      {toasts.map((toast) => {
-        return <ToastCard key={toast.id} onDismiss={onDismiss} toast={toast} />;
-      })}
+      {toasts.map((toast) => (
+        <ToastCard key={toast.id} onDismiss={onDismiss} toast={toast} />
+      ))}
     </section>
   );
 }

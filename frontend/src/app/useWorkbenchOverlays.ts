@@ -1,11 +1,12 @@
 import { useState } from "react";
-import type { Member } from "../types/schedule";
+
 import type {
   ProjectImportData,
   ProjectImportValidation,
   TaskCsvImportData,
   TaskCsvImportDraft,
 } from "../data/scheduleImportExport";
+import type { Member } from "../types/schedule";
 
 // 取込データの型は画面本体から切り離し、オーバーレイの状態と一緒に管理します。
 export type PendingProjectImport = {

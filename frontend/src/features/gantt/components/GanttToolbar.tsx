@@ -10,6 +10,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+import { getActiveMembers } from "../../../lib/members";
+import { statusLabels } from "../../../lib/schedule";
 import type {
   GanttColumnKey,
   GanttColumnVisibility,
@@ -19,10 +22,8 @@ import type {
   ScheduleFilters,
   TaskStatus,
 } from "../../../types/schedule";
-import { getActiveMembers } from "../../../lib/members";
-import { statusLabels } from "../../../lib/schedule";
 
-const columnOptions: Array<{ key: GanttColumnKey; label: string }> = [
+const columnOptions: { key: GanttColumnKey; label: string }[] = [
   { key: "assignee", label: "担当者" },
   { key: "status", label: "状況" },
   { key: "progress", label: "進捗" },
@@ -100,10 +101,12 @@ export function GanttToolbar({
   }, [members]);
 
   useEffect(() => {
-    if (!columnsOpen) return;
+    if (!columnsOpen) {
+      return;
+    }
 
     function closeWhenOutside(event: PointerEvent) {
-      const target = event.target;
+      const { target } = event;
       if (target instanceof Node && !columnsPopoverRef.current?.contains(target)) {
         setColumnsOpen(false);
       }
@@ -155,7 +158,9 @@ export function GanttToolbar({
           <select
             aria-label="選択行の状態を一括変更"
             onChange={(event) => {
-              if (!event.target.value) return;
+              if (!event.target.value) {
+                return;
+              }
               onBulkStatusChange(event.target.value as TaskStatus);
             }}
             value=""
@@ -170,7 +175,9 @@ export function GanttToolbar({
           <select
             aria-label="選択行の担当者を一括変更"
             onChange={(event) => {
-              if (!event.target.value) return;
+              if (!event.target.value) {
+                return;
+              }
               onBulkAssigneeChange(event.target.value);
             }}
             value=""

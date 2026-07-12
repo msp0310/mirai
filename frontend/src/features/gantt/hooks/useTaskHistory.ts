@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
-import type { ActivityCategory, ActivityTone, ScheduleTask } from "../../../types/schedule";
+
 import type { TaskHistory } from "../../../app/appTypes";
 import { normalizeSummaryTasks } from "../../../lib/taskOperations";
+import type { ActivityCategory, ActivityTone, ScheduleTask } from "../../../types/schedule";
 
 type UseTaskHistoryOptions = {
   initialHistories: Record<string, TaskHistory>;
@@ -49,7 +50,9 @@ export function useTaskHistory({
             present: normalizeSummaryTasks(sourceTasks),
           } satisfies TaskHistory);
         const next = updater(history.present);
-        if (next === history.present) return current;
+        if (next === history.present) {
+          return current;
+        }
         return {
           ...current,
           [projectId]: {
@@ -91,10 +94,14 @@ export function useTaskHistory({
 
   const undo = useCallback(() => {
     const previous = taskHistory.past.at(-1);
-    if (!previous) return;
+    if (!previous) {
+      return;
+    }
     setHistories((current) => {
       const history = current[projectId];
-      if (!history) return current;
+      if (!history) {
+        return current;
+      }
       return {
         ...current,
         [projectId]: {
@@ -114,11 +121,15 @@ export function useTaskHistory({
   }, [onActivity, onToast, projectId, taskHistory]);
 
   const redo = useCallback(() => {
-    const next = taskHistory.future[0];
-    if (!next) return;
+    const [next] = taskHistory.future;
+    if (!next) {
+      return;
+    }
     setHistories((current) => {
       const history = current[projectId];
-      if (!history) return current;
+      if (!history) {
+        return current;
+      }
       return {
         ...current,
         [projectId]: {

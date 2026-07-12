@@ -1,4 +1,3 @@
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -10,6 +9,8 @@ import {
   UserMinusIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
+
 import type { SaveMemberAccountInput } from "../../../../data/authRepository";
 import { getMemberStatusLabel, isMemberActive } from "../../../../lib/members";
 import type { Member, MemberAvailabilityOverride, Team } from "../../../../types/schedule";
@@ -90,8 +91,12 @@ export function MemberAccountTable({
   const filteredRows = useMemo(
     () =>
       baseRows.filter(({ member, memberTeams }) => {
-        if (!matchesAccountFilter(filter, member)) return false;
-        if (!normalizedQuery) return true;
+        if (!matchesAccountFilter(filter, member)) {
+          return false;
+        }
+        if (!normalizedQuery) {
+          return true;
+        }
         return [
           member.name,
           member.initials,
@@ -250,7 +255,7 @@ function MemberAccountRow({
   const [detailOpen, setDetailOpen] = useState(false);
   const [availabilityDate, setAvailabilityDate] = useState("");
   const [availabilityLabel, setAvailabilityLabel] = useState("休暇");
-  const availabilityOverrides = [...(member.availabilityOverrides ?? [])].sort((a, b) =>
+  const availabilityOverrides = [...(member.availabilityOverrides ?? [])].toSorted((a, b) =>
     a.date.localeCompare(b.date),
   );
 
@@ -297,7 +302,9 @@ function MemberAccountRow({
   }
 
   function resetPassword() {
-    if (!accountExists) return;
+    if (!accountExists) {
+      return;
+    }
     void onResetPassword(member.id, password.trim(), rowKey);
     setPassword("");
   }
@@ -308,7 +315,9 @@ function MemberAccountRow({
   }
 
   function addAvailabilityOverride() {
-    if (!availabilityDate) return;
+    if (!availabilityDate) {
+      return;
+    }
     const label = availabilityLabel.trim() || "休暇";
     const override: MemberAvailabilityOverride = {
       date: availabilityDate,
@@ -317,9 +326,9 @@ function MemberAccountRow({
       type: "unavailable",
     };
     const nextOverrides: MemberAvailabilityOverride[] = [
-      ...availabilityOverrides.filter((override) => override.date !== availabilityDate),
+      ...availabilityOverrides.filter((item) => item.date !== availabilityDate),
       override,
-    ].sort((a, b) => a.date.localeCompare(b.date));
+    ].toSorted((a, b) => a.date.localeCompare(b.date));
     onSaveMember({
       ...member,
       availabilityOverrides: nextOverrides,
@@ -684,16 +693,21 @@ function RoleSelect({ onChange, value }: { onChange: (role: string) => void; val
 
 function matchesAccountFilter(filter: MemberAccountFilter, member: Member) {
   switch (filter) {
-    case "admin":
+    case "admin": {
       return hasLoginAccount(member) && normalizeRole(member.permissionRole ?? "") === "admin";
-    case "inactive":
+    }
+    case "inactive": {
       return !isMemberActive(member);
-    case "loginEnabled":
+    }
+    case "loginEnabled": {
       return hasEmailAddress(member);
-    case "missing":
+    }
+    case "missing": {
       return !hasEmailAddress(member);
-    case "all":
+    }
+    case "all": {
       return true;
+    }
   }
 }
 

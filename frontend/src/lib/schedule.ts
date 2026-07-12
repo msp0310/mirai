@@ -61,7 +61,9 @@ export function isWorkingDay(
   calendar: CalendarDefinition,
   includeCalendar = true,
 ): boolean {
-  if (!includeCalendar) return true;
+  if (!includeCalendar) {
+    return true;
+  }
   const key = toDateKey(date);
   const isHoliday = calendar.holidays.some((item) => item.date === key);
   return calendar.workWeek.includes(date.getDay()) && !isHoliday;
@@ -84,7 +86,9 @@ export function addWorkingDays(
     if (isWorkingDay(date, calendar, includeCalendar)) {
       counted += 1;
     }
-    if (counted >= requiredDays) break;
+    if (counted >= requiredDays) {
+      break;
+    }
     date = addDays(date, 1);
   }
 
@@ -103,7 +107,9 @@ export function getDateDeltaForTimeUnit(
   unit: GanttTimeUnit,
   deltaUnits: number,
 ): number {
-  if (deltaUnits === 0) return 0;
+  if (deltaUnits === 0) {
+    return 0;
+  }
   const date = parseDate(dateKey);
   const next =
     unit === "month"
@@ -188,8 +194,12 @@ function buildTimelineSlot(
 }
 
 function getTimelineSlotLabel(date: Date, unit: GanttTimeUnit): string {
-  if (unit === "month") return `${date.getMonth() + 1}月`;
-  if (unit === "week") return `W${getWeekNumber(date)}`;
+  if (unit === "month") {
+    return `${date.getMonth() + 1}月`;
+  }
+  if (unit === "week") {
+    return `W${getWeekNumber(date)}`;
+  }
   return String(date.getDate());
 }
 export function buildWeekColumns(days: TimelineDay[]): TimelineColumn[] {
@@ -300,25 +310,32 @@ export function flattenTasks(tasks: ScheduleTask[], collapsedIds = new Set<strin
   tasks.forEach((task) => {
     const key = task.parentId ?? "root-level";
     const children = childrenByParent.get(key);
-    if (children) children.push(task);
-    else childrenByParent.set(key, [task]);
+    if (children) {
+      children.push(task);
+    } else {
+      childrenByParent.set(key, [task]);
+    }
   });
 
   const rows: TaskRow[] = [];
   const stack = [...(childrenByParent.get("root-level") ?? [])]
-    .reverse()
+    .toReversed()
     .map((task) => ({ depth: 0, task }));
 
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!current) continue;
+    if (!current) {
+      continue;
+    }
     const children = childrenByParent.get(current.task.id) ?? [];
     rows.push({
       ...current.task,
       depth: current.depth,
       hasChildren: children.length > 0,
     });
-    if (collapsedIds.has(current.task.id)) continue;
+    if (collapsedIds.has(current.task.id)) {
+      continue;
+    }
     for (let index = children.length - 1; index >= 0; index -= 1) {
       stack.push({ depth: current.depth + 1, task: children[index] });
     }
@@ -373,17 +390,25 @@ export function getTaskSpan(
   return { offset, duration };
 }
 export function getTimelineSlotIndex(dateKey: string, timeline: TimelineDay[]): number {
-  if (timeline.length === 0) return 0;
+  if (timeline.length === 0) {
+    return 0;
+  }
   const slotIndex = timeline.findIndex((day) => dateKey >= day.start && dateKey <= day.end);
-  if (slotIndex >= 0) return slotIndex;
-  if (dateKey < timeline[0].start) return 0;
+  if (slotIndex !== -1) {
+    return slotIndex;
+  }
+  if (dateKey < timeline[0].start) {
+    return 0;
+  }
   return timeline.length - 1;
 }
 export function getTaskTimelineSpan(
   task: ScheduleTask,
   timeline: TimelineDay[],
 ): { offset: number; duration: number } {
-  if (timeline.length === 0) return { offset: 0, duration: 1 };
+  if (timeline.length === 0) {
+    return { offset: 0, duration: 1 };
+  }
   const offset = getTimelineSlotIndex(task.start, timeline);
   const end = getTimelineSlotIndex(task.end, timeline);
   return {
@@ -409,7 +434,9 @@ export function getWorkingDays(
   calendar: CalendarDefinition,
   includeCalendar = true,
 ): number {
-  if (end < start) return 0;
+  if (end < start) {
+    return 0;
+  }
   const first = parseDate(start);
   const total = daysInclusive(start, end);
   return Array.from({ length: total }, (_, index) => addDays(first, index)).filter((date) =>
@@ -431,7 +458,9 @@ function getMemberAvailableWorkingDays(
   member: Pick<Member, "availabilityOverrides">,
   includeCalendar = true,
 ): number {
-  if (end < start) return 0;
+  if (end < start) {
+    return 0;
+  }
   const unavailableDates = getMemberUnavailableDates(member);
   const first = parseDate(start);
   const total = daysInclusive(start, end);
@@ -471,7 +500,9 @@ export function getTaskAssigneeAllocationMap(
 ) {
   const allocationMap = new Map<string, number>();
   const assigneeIds = [...new Set(task.assigneeIds)];
-  if (assigneeIds.length === 0) return allocationMap;
+  if (assigneeIds.length === 0) {
+    return allocationMap;
+  }
   if (assigneeIds.length === 1) {
     allocationMap.set(assigneeIds[0], 100);
     return allocationMap;
@@ -521,12 +552,10 @@ export function getTaskAssigneeAllocationPercent(
   return getTaskAssigneeAllocationMap(task).get(memberId) ?? 0;
 }
 export function buildResourceMatrix(
-  tasks: Array<
-    ScheduleTask & {
-      sourceProjectId?: string;
-      sourceProjectName?: string;
-    }
-  >,
+  tasks: (ScheduleTask & {
+    sourceProjectId?: string;
+    sourceProjectName?: string;
+  })[],
   members: Member[],
   weeks: TimelineColumn[],
   calendar: CalendarDefinition,
@@ -535,12 +564,12 @@ export function buildResourceMatrix(
   const actionable = tasks.filter((task) => task.type === "task");
   const actionableByMember = new Map<
     string,
-    Array<{
+    {
       allocationPercent: number;
       task: (typeof actionable)[number];
       taskHours: number;
       totalWorkingDays: number;
-    }>
+    }[]
   >();
   actionable.forEach((task) => {
     const totalWorkingDays = Math.max(
@@ -550,7 +579,9 @@ export function buildResourceMatrix(
     const taskHours = task.effortHours ?? totalWorkingDays * 8;
     task.assigneeIds.forEach((memberId) => {
       const allocationPercent = getTaskAssigneeAllocationPercent(task, memberId);
-      if (allocationPercent <= 0) return;
+      if (allocationPercent <= 0) {
+        return;
+      }
       actionableByMember.set(memberId, [
         ...(actionableByMember.get(memberId) ?? []),
         {
@@ -594,7 +625,9 @@ export function buildResourceMatrix(
           const taskEnd = parseDate(task.end);
           const overlapStart = taskStart > weekStart ? taskStart : weekStart;
           const overlapEnd = taskEnd < weekEnd ? taskEnd : weekEnd;
-          if (overlapStart > overlapEnd) return [];
+          if (overlapStart > overlapEnd) {
+            return [];
+          }
           const workingDays = getWorkingDays(
             toDateKey(overlapStart),
             toDateKey(overlapEnd),
@@ -603,7 +636,9 @@ export function buildResourceMatrix(
           );
           const contributionHours =
             ((taskHours / totalWorkingDays) * workingDays * allocationPercent) / 100;
-          if (contributionHours <= 0) return [];
+          if (contributionHours <= 0) {
+            return [];
+          }
           return [
             {
               allocationPercent: Math.round(allocationPercent),
@@ -620,13 +655,16 @@ export function buildResourceMatrix(
             },
           ];
         })
-        .sort((a, b) => b.hours - a.hours || a.start.localeCompare(b.start));
+        .toSorted((a, b) => b.hours - a.hours || a.start.localeCompare(b.start));
       const hours = contributions.reduce((sum, contribution) => sum + contribution.hours, 0);
       const percent =
         capacityHours > 0 ? Math.round((hours / capacityHours) * 100) : hours > 0 ? 100 : 0;
       let tone: UtilizationTone = "good";
-      if (percent >= 100) tone = "danger";
-      else if (percent >= 82) tone = "warning";
+      if (percent >= 100) {
+        tone = "danger";
+      } else if (percent >= 82) {
+        tone = "warning";
+      }
       return {
         capacityHours: Math.round(capacityHours),
         contributions,

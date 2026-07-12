@@ -9,6 +9,9 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
+
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
+import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import type { AuthUser } from "../../../data/authRepository";
 import type {
   Attachment,
@@ -19,8 +22,6 @@ import type {
   ScheduleTask,
   WorkLogCategory,
 } from "../../../types/schedule";
-import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
-import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type WorkLogPanelProps = {
   attachments: Attachment[];
@@ -88,10 +89,18 @@ export function WorkLogPanel({
     () =>
       [...workLogs]
         .filter((log) => {
-          if (memberFilter !== "all" && log.memberId !== memberFilter) return false;
-          if (monthFilter !== "all" && !log.date.startsWith(monthFilter)) return false;
-          if (categoryFilter !== "all" && log.category !== categoryFilter) return false;
-          if (!normalizedQuery) return true;
+          if (memberFilter !== "all" && log.memberId !== memberFilter) {
+            return false;
+          }
+          if (monthFilter !== "all" && !log.date.startsWith(monthFilter)) {
+            return false;
+          }
+          if (categoryFilter !== "all" && log.category !== categoryFilter) {
+            return false;
+          }
+          if (!normalizedQuery) {
+            return true;
+          }
           const memberName = memberById.get(log.memberId)?.name ?? "";
           const taskTitle = log.taskId ? (taskById.get(log.taskId)?.title ?? "") : "";
           const issueTitle = log.issueId ? (issueById.get(log.issueId)?.title ?? "") : "";
@@ -152,7 +161,9 @@ export function WorkLogPanel({
   }
 
   function saveEditorWorkLog() {
-    if (!editorState) return;
+    if (!editorState) {
+      return;
+    }
     const workLog = normalizeWorkLogDraft(editorState.workLog);
     if (editorState.mode === "create") {
       const createdId = onCreateWorkLog(workLog);
@@ -679,7 +690,7 @@ function normalizeWorkLogDraft(workLog: ProjectWorkLog): ProjectWorkLog {
 }
 
 function buildMonthOptions(workLogs: ProjectWorkLog[]) {
-  return [...new Set(workLogs.map((log) => log.date.slice(0, 7)))].sort().reverse();
+  return [...new Set(workLogs.map((log) => log.date.slice(0, 7)))].toSorted().toReversed();
 }
 
 function sumHours(workLogs: ProjectWorkLog[]) {
@@ -692,25 +703,33 @@ function formatHours(hours: number) {
 
 function formatShortDate(date: string) {
   const [, year, month, day] = date.match(/^(\d{4})-(\d{2})-(\d{2})$/) ?? [];
-  if (!year || !month || !day) return date;
+  if (!year || !month || !day) {
+    return date;
+  }
   return `${year}/${Number(month)}/${Number(day)}`;
 }
 
 function formatLongDate(date: string) {
   const [, year, month, day] = date.match(/^(\d{4})-(\d{2})-(\d{2})$/) ?? [];
-  if (!year || !month || !day) return date;
+  if (!year || !month || !day) {
+    return date;
+  }
   return `${year}/${Number(month)}/${Number(day)}`;
 }
 
 function formatMonth(month: string) {
   const [, year, monthValue] = month.match(/^(\d{4})-(\d{2})$/) ?? [];
-  if (!year || !monthValue) return month;
+  if (!year || !monthValue) {
+    return month;
+  }
   return `${year}年${Number(monthValue)}月`;
 }
 
 function formatDateTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
   return `${date.getMonth() + 1}/${date.getDate()} ${date
     .getHours()
     .toString()

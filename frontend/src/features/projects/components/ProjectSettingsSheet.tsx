@@ -1,11 +1,19 @@
 import { type CSSProperties, useEffect, useState } from "react";
+
 import { isMemberActive } from "../../../lib/members";
 import {
   getProjectLifecycleStatus,
   projectLifecycleLabels,
   projectLifecycleOptions,
 } from "../../../lib/projects";
-import type { Member, Project, ProjectLifecycleStatus, ProjectMembership, ProjectRole, Team } from "../../../types/schedule";
+import type {
+  Member,
+  Project,
+  ProjectLifecycleStatus,
+  ProjectMembership,
+  ProjectRole,
+  Team,
+} from "../../../types/schedule";
 
 type ProjectSettingsPageProps = {
   activeProjectCount: number;
@@ -38,7 +46,11 @@ export function ProjectSettingsPage({
     project.memberIds ?? team?.memberIds ?? [],
   );
   const [projectMemberships, setProjectMemberships] = useState<ProjectMembership[]>(
-    project.memberships ?? (project.memberIds ?? team?.memberIds ?? []).map((memberId) => ({ memberId, role: "member" })),
+    project.memberships ??
+      (project.memberIds ?? team?.memberIds ?? []).map((memberId) => ({
+        memberId,
+        role: "member",
+      })),
   );
   const [rangeStart, setRangeStart] = useState(project.rangeStart);
   const [rangeEnd, setRangeEnd] = useState(project.rangeEnd);
@@ -53,7 +65,13 @@ export function ProjectSettingsPage({
     setProjectTeamId(project.teamId ?? "");
     setLifecycleStatus(getProjectLifecycleStatus(project));
     setProjectMemberIds(project.memberIds ?? team?.memberIds ?? []);
-    setProjectMemberships(project.memberships ?? (project.memberIds ?? team?.memberIds ?? []).map((memberId) => ({ memberId, role: "member" })));
+    setProjectMemberships(
+      project.memberships ??
+        (project.memberIds ?? team?.memberIds ?? []).map((memberId) => ({
+          memberId,
+          role: "member",
+        })),
+    );
     setRangeStart(project.rangeStart);
     setRangeEnd(project.rangeEnd);
     setMilestoneTitle(project.nextMilestone.title);
@@ -76,15 +94,22 @@ export function ProjectSettingsPage({
     setProjectTeamId(teamId);
     const nextTeam = teams.find((item) => item.id === teamId);
     setProjectMemberIds(nextTeam?.memberIds ?? []);
-    setProjectMemberships((nextTeam?.memberIds ?? []).map((memberId) => ({ memberId, role: "member" })));
+    setProjectMemberships(
+      (nextTeam?.memberIds ?? []).map((memberId) => ({ memberId, role: "member" })),
+    );
   }
 
   function toggleProjectMember(memberId: string) {
     setProjectMemberIds((current) => {
       const enabled = !current.includes(memberId);
-      setProjectMemberships((memberships) => enabled
-        ? [...memberships.filter((item) => item.memberId !== memberId), { memberId, role: "member" }]
-        : memberships.filter((item) => item.memberId !== memberId));
+      setProjectMemberships((memberships) =>
+        enabled
+          ? [
+              ...memberships.filter((item) => item.memberId !== memberId),
+              { memberId, role: "member" },
+            ]
+          : memberships.filter((item) => item.memberId !== memberId),
+      );
       return enabled ? [...current, memberId] : current.filter((id) => id !== memberId);
     });
   }
@@ -97,13 +122,17 @@ export function ProjectSettingsPage({
   }
 
   function saveProject() {
-    if (invalidRange) return;
-    const availableMemberIds = new Set(selectedProjectTeam?.memberIds ?? team?.memberIds ?? []);
+    if (invalidRange) {
+      return;
+    }
+    const availableMemberIds = new Set(selectedProjectTeam?.memberIds ?? team?.memberIds);
     onSaveProject({
       ...project,
       lifecycleStatus,
       memberIds: projectMemberIds.filter((memberId) => availableMemberIds.has(memberId)),
-      memberships: projectMemberships.filter((item) => projectMemberIds.includes(item.memberId) && availableMemberIds.has(item.memberId)),
+      memberships: projectMemberships.filter(
+        (item) => projectMemberIds.includes(item.memberId) && availableMemberIds.has(item.memberId),
+      ),
       teamId: projectTeamId || null,
       name: name.trim() || project.name,
       projectNo: projectNo.trim() || null,
@@ -258,8 +287,13 @@ export function ProjectSettingsPage({
                 {projectMemberIds.includes(member.id) ? (
                   <select
                     aria-label={`${member.name}のプロジェクト権限`}
-                    onChange={(event) => changeProjectRole(member.id, event.target.value as ProjectRole)}
-                    value={projectMemberships.find((item) => item.memberId === member.id)?.role ?? "member"}
+                    onChange={(event) =>
+                      changeProjectRole(member.id, event.target.value as ProjectRole)
+                    }
+                    value={
+                      projectMemberships.find((item) => item.memberId === member.id)?.role ??
+                      "member"
+                    }
                   >
                     <option value="owner">PM / オーナー</option>
                     <option value="planner">PL / 計画編集</option>

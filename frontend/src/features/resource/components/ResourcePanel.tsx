@@ -1,5 +1,7 @@
 import { ChevronDownIcon, Cog6ToothIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
+
+import { Avatar } from "../../../components/ui/Avatar";
 import { formatShortDate, statusLabels } from "../../../lib/schedule";
 import type {
   ResourceCell,
@@ -10,7 +12,6 @@ import type {
   TimelineColumn,
   UtilizationTone,
 } from "../../../types/schedule";
-import { Avatar } from "../../../components/ui/Avatar";
 
 type ResourcePanelProps = {
   displaySettings: ResourceDisplaySettings;
@@ -501,7 +502,7 @@ function buildResourceAdjustmentSuggestions(
             : [],
       };
     })
-    .sort(
+    .toSorted(
       (a, b) =>
         b.reliefHours - a.reliefHours || a.contribution.start.localeCompare(b.contribution.start),
     )
@@ -540,7 +541,7 @@ function buildResourceShareCandidates(
         tone: getLoadTone(targetNextPercent),
       };
     })
-    .sort(
+    .toSorted(
       (a, b) =>
         Math.max(a.currentNextPercent, a.targetNextPercent) -
           Math.max(b.currentNextPercent, b.targetNextPercent) ||
@@ -552,7 +553,9 @@ function buildResourceShareCandidates(
 }
 
 function findResourceCell(resourceRows: ResourceRowModel[], selectedCellKey: string | null) {
-  if (!selectedCellKey) return null;
+  if (!selectedCellKey) {
+    return null;
+  }
   for (const row of resourceRows) {
     for (const cell of row.cells) {
       if (getResourceCellKey(row.member.id, cell.week) === selectedCellKey) {
@@ -572,12 +575,18 @@ function formatResourceHours(hours: number) {
 }
 
 function calculateResourcePercent(hours: number, capacityHours: number) {
-  if (capacityHours <= 0) return hours > 0 ? 100 : 0;
+  if (capacityHours <= 0) {
+    return hours > 0 ? 100 : 0;
+  }
   return Math.round((hours / capacityHours) * 100);
 }
 
 function getLoadTone(value: number): UtilizationTone {
-  if (value >= 90) return "danger";
-  if (value >= 80) return "warning";
+  if (value >= 90) {
+    return "danger";
+  }
+  if (value >= 80) {
+    return "warning";
+  }
   return "good";
 }

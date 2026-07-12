@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
+import { type APIRequestContext, type Locator, type Page, expect, test } from "@playwright/test";
 
 function todayKey() {
   const now = new Date();
@@ -19,7 +19,9 @@ async function loginApi(request: APIRequestContext) {
   expect(response.ok()).toBe(true);
   const state = await request.storageState();
   const csrf = state.cookies.find((cookie) => cookie.name === "mirai_csrf")?.value;
-  if (!csrf) throw new Error("CSRF Cookieを取得できませんでした。");
+  if (!csrf) {
+    throw new Error("CSRF Cookieを取得できませんでした。");
+  }
   return { "X-CSRF-Token": csrf };
 }
 
@@ -212,9 +214,12 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     const reportDate = todayKey();
     const reportYear = reportDate.slice(0, 4);
     const headers = await loginApi(request);
-    const existing = (await (
-      await request.get("/api/daily-reports", { headers })
-    ).json()) as Array<{ date: string; id: string; memberId: string }>;
+    const existingResponse = await request.get("/api/daily-reports", { headers });
+    const existing = (await existingResponse.json()) as {
+      date: string;
+      id: string;
+      memberId: string;
+    }[];
     for (const report of existing.filter(
       (item) => item.date === reportDate && item.memberId === "yk",
     )) {
@@ -272,12 +277,17 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect(personalAnalytics).toContainText("レビュー指摘の整理");
     await expect(personalAnalytics).toContainText("これまでのプロジェクト実績");
 
-    const savedReports = (await (
-      await request.get("/api/daily-reports", { headers })
-    ).json()) as Array<{ date: string; id: string; memberId: string }>;
+    const savedReportsResponse = await request.get("/api/daily-reports", { headers });
+    const savedReports = (await savedReportsResponse.json()) as {
+      date: string;
+      id: string;
+      memberId: string;
+    }[];
     const saved = savedReports.find((item) => item.date === reportDate && item.memberId === "yk");
     expect(saved).toBeTruthy();
-    if (saved) await request.delete(`/api/daily-reports/${saved.id}`, { headers });
+    if (saved) {
+      await request.delete(`/api/daily-reports/${saved.id}`, { headers });
+    }
   });
 
   test("プロジェクトカードからGanttへ移動し、ショートカットを開ける", async ({ page }) => {
@@ -378,7 +388,7 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
         exact: true,
       }),
     ).toHaveCount(0);
-    expect(Date.now() - filterStartedAt).toBeLessThan(1_000);
+    expect(Date.now() - filterStartedAt).toBeLessThan(1000);
 
     await assigneeFilter.selectOption("all");
     const rows = page.locator(".task-table-row");
@@ -449,7 +459,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     await expect.poll(() => timelineBody.evaluate((element) => element.scrollLeft)).toBe(0);
 
     const initialBox = await taskBar.boundingBox();
-    if (!initialBox) throw new Error("操作対象のガントバーが見つかりません。");
+    if (!initialBox) {
+      throw new Error("操作対象のガントバーが見つかりません。");
+    }
     const initialScrollLeft = await timelineBody.evaluate((element) => element.scrollLeft);
     const centerX = initialBox.x + initialBox.width / 2;
     const centerY = initialBox.y + initialBox.height / 2;
@@ -534,7 +546,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
       .toBeGreaterThan(0);
     const bodyBox = await timelineBody.boundingBox();
     const barBox = await taskBar.boundingBox();
-    if (!bodyBox || !barBox) throw new Error("開始日位置を取得できません。");
+    if (!bodyBox || !barBox) {
+      throw new Error("開始日位置を取得できません。");
+    }
     expect(barBox.x - bodyBox.x).toBeCloseTo(bodyBox.width * 0.14 + 7, 0);
   });
 
@@ -556,7 +570,9 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
     const secondBar = page.locator('.timeline-canvas .gantt-bar[data-task-id="basic-review"]');
     const firstBefore = await firstBar.boundingBox();
     const secondBefore = await secondBar.boundingBox();
-    if (!firstBefore || !secondBefore) throw new Error("複数移動するバーが見つかりません。");
+    if (!firstBefore || !secondBefore) {
+      throw new Error("複数移動するバーが見つかりません。");
+    }
 
     await page.mouse.move(
       firstBefore.x + firstBefore.width / 2,

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { LoginScreen } from "./features/auth/components/LoginScreen";
-import { PasswordChangeScreen } from "./features/auth/components/PasswordChangeScreen";
-import { AppWorkbench } from "./app/AppWorkbench";
-import { authRepository, AuthRequestError } from "./data/authRepository";
-import { apiScheduleRepository, ApiRequestError } from "./data/apiScheduleRepository";
-import { clearLocalScheduleDraft, loadLocalScheduleDraft } from "./data/localScheduleStorage";
+
 import { createInitialAppState, getProjectIdFromHash } from "./app/appState";
 import type { AppBootState, AuthState } from "./app/appTypes";
+import { AppWorkbench } from "./app/AppWorkbench";
 import { createInitialScheduleWorkspace, selectInitialProject } from "./app/projectLoading";
+import { ApiRequestError, apiScheduleRepository } from "./data/apiScheduleRepository";
+import { AuthRequestError, authRepository } from "./data/authRepository";
+import { clearLocalScheduleDraft, loadLocalScheduleDraft } from "./data/localScheduleStorage";
+import { LoginScreen } from "./features/auth/components/LoginScreen";
+import { PasswordChangeScreen } from "./features/auth/components/PasswordChangeScreen";
 
 /** 認証状態とAPI初期化中に表示する共通プレースホルダーです。 */
 function AppBootScreen({
@@ -52,12 +53,18 @@ export function App() {
     authRepository
       .getCurrentUser()
       .then((user) => {
-        if (cancelled) return;
-        if (!user) clearLocalScheduleDraft();
+        if (cancelled) {
+          return;
+        }
+        if (!user) {
+          clearLocalScheduleDraft();
+        }
         setAuthState(user ? { status: "signedIn", user } : { error: null, status: "signedOut" });
       })
       .catch((error: unknown) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setAuthState({
           error:
             error instanceof Error
@@ -73,7 +80,9 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (authState.status !== "signedIn") return;
+    if (authState.status !== "signedIn") {
+      return;
+    }
 
     let cancelled = false;
     setBootState({ status: "loading" });
@@ -93,7 +102,9 @@ export function App() {
 
     loadInitialWorkspace()
       .then((workspace) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setBootState({
           initialAppState: createInitialAppState(workspace),
           loadId: Date.now(),
@@ -101,7 +112,9 @@ export function App() {
         });
       })
       .catch((error: unknown) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         if (error instanceof ApiRequestError && error.status === 401) {
           authRepository.clearSession();
           clearLocalScheduleDraft();

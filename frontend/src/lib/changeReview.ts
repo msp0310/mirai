@@ -1,3 +1,4 @@
+import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import type {
   Member,
   Project,
@@ -5,9 +6,8 @@ import type {
   TaskInspectorFocusTarget,
   Team,
 } from "../types/schedule";
-import type { ScheduleWorkspace } from "../data/scheduleRepository";
-import { getTaskAssigneeAllocationMap, statusLabels } from "./schedule";
 import { getProjectLifecycleStatus, projectLifecycleLabels } from "./projects";
+import { getTaskAssigneeAllocationMap, statusLabels } from "./schedule";
 
 export type TaskChangeKind = "added" | "removed" | "updated";
 
@@ -145,10 +145,14 @@ export function buildTaskChangeReview({
       return;
     }
 
-    if (!before || !after) return;
+    if (!before || !after) {
+      return;
+    }
 
     const fields = getTaskFieldChanges(before, after, currentTasks, savedTasks, members);
-    if (fields.length === 0) return;
+    if (fields.length === 0) {
+      return;
+    }
     rows.push({
       assigneeLabel: formatAssignees(after.assigneeIds, members),
       changeCount: fields.length,
@@ -189,7 +193,9 @@ export function buildWorkspaceTaskChangeReview({
   });
 
   savedSchedules.forEach((savedSchedule) => {
-    if (currentByProjectId.has(savedSchedule.project.id)) return;
+    if (currentByProjectId.has(savedSchedule.project.id)) {
+      return;
+    }
     rows.push(
       ...buildTaskChangeReview({
         currentTasks: [],
@@ -275,7 +281,9 @@ export function buildWorkspaceConfigChangeReview({
       return;
     }
 
-    if (!currentSchedule || !savedSchedule) return;
+    if (!currentSchedule || !savedSchedule) {
+      return;
+    }
 
     const projectFields = getProjectFieldChanges(
       savedSchedule.project,
@@ -426,9 +434,11 @@ function formatProjectAssignments(
   assignments: NonNullable<Project["assignments"]>,
   membersById: Map<string, string>,
 ) {
-  if (assignments.length === 0) return "なし";
+  if (assignments.length === 0) {
+    return "なし";
+  }
   return [...assignments]
-    .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+    .toSorted((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
     .map(
       (assignment) =>
         `${membersById.get(assignment.memberId) ?? assignment.memberId} ${assignment.role} ${assignment.allocationPercent}% ${assignment.startDate}-${assignment.endDate} ${assignment.status === "confirmed" ? "確定" : "仮"}`,
@@ -437,9 +447,11 @@ function formatProjectAssignments(
 }
 
 function formatStaffingDemands(demands: NonNullable<Project["staffingDemands"]>) {
-  if (demands.length === 0) return "なし";
+  if (demands.length === 0) {
+    return "なし";
+  }
   return [...demands]
-    .sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+    .toSorted((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
     .map(
       (demand) =>
         `${demand.role} ${demand.requiredCount}名 ${demand.allocationPercent}% ${demand.startDate}-${demand.endDate} ${demand.status === "filled" ? "充足" : "未充足"}`,
@@ -541,7 +553,9 @@ function getTeamChangeRows({
       });
       return;
     }
-    if (!before || !after) return;
+    if (!before || !after) {
+      return;
+    }
     const fields: TaskFieldChange[] = [];
     addChange(fields, "チーム名", before.name, after.name);
     addChange(fields, "チーム記号", before.code, after.code);
@@ -552,7 +566,9 @@ function getTeamChangeRows({
       formatTeamMemberIds(before.memberIds, savedMembersById),
       formatTeamMemberIds(after.memberIds, currentMembersById),
     );
-    if (fields.length === 0) return;
+    if (fields.length === 0) {
+      return;
+    }
     rows.push({
       category: "team",
       detail: `${fields.length}項目を変更`,
@@ -631,12 +647,16 @@ function addChange(
   after: string,
   focusTarget?: TaskInspectorFocusTarget,
 ) {
-  if (before === after) return;
+  if (before === after) {
+    return;
+  }
   changes.push({ after, before, focusTarget, label });
 }
 
 function formatAssignees(assigneeIds: string[], members: Member[]) {
-  if (assigneeIds.length === 0) return "未設定";
+  if (assigneeIds.length === 0) {
+    return "未設定";
+  }
   return assigneeIds
     .map((id) => {
       const member = members.find((item) => item.id === id);
@@ -646,7 +666,9 @@ function formatAssignees(assigneeIds: string[], members: Member[]) {
 }
 
 function formatAssigneeAllocations(task: ScheduleTask, members: Member[]) {
-  if (task.assigneeIds.length <= 1) return "100%";
+  if (task.assigneeIds.length <= 1) {
+    return "100%";
+  }
   const allocationMap = getTaskAssigneeAllocationMap(task);
   return task.assigneeIds
     .map((id) => {
@@ -657,12 +679,16 @@ function formatAssigneeAllocations(task: ScheduleTask, members: Member[]) {
 }
 
 function formatParent(parentId: string | null, tasks: ScheduleTask[]) {
-  if (!parentId) return "最上位";
+  if (!parentId) {
+    return "最上位";
+  }
   return tasks.find((task) => task.id === parentId)?.title ?? parentId;
 }
 
 function formatDependencies(dependencyIds: string[], tasks: ScheduleTask[]) {
-  if (dependencyIds.length === 0) return "なし";
+  if (dependencyIds.length === 0) {
+    return "なし";
+  }
   return dependencyIds.map((id) => tasks.find((task) => task.id === id)?.title ?? id).join(" / ");
 }
 
@@ -671,7 +697,9 @@ function formatEffort(effortHours?: number) {
 }
 
 function formatBaseline(task: ScheduleTask) {
-  if (!task.baselineStart || !task.baselineEnd) return "なし";
+  if (!task.baselineStart || !task.baselineEnd) {
+    return "なし";
+  }
   return `${task.baselineStart} - ${task.baselineEnd}`;
 }
 
@@ -684,14 +712,16 @@ function formatProjectLifecycleStatus(project: Project) {
 }
 
 function formatTeamName(teamId: string | null, teams: Team[]) {
-  if (teamId === null) return "未所属";
+  if (teamId === null) {
+    return "未所属";
+  }
   return teams.find((team) => team.id === teamId)?.name ?? teamId;
 }
 
 function formatWorkWeek(days: number[]) {
   const labels = ["日", "月", "火", "水", "木", "金", "土"];
   return [...days]
-    .sort((a, b) => a - b)
+    .toSorted((a, b) => a - b)
     .map((day) => labels[day] ?? String(day))
     .join(", ");
 }
@@ -699,9 +729,11 @@ function formatWorkWeek(days: number[]) {
 function formatCalendarHolidays(
   holidays: ScheduleWorkspace["schedules"][number]["calendar"]["holidays"],
 ) {
-  if (holidays.length === 0) return "なし";
+  if (holidays.length === 0) {
+    return "なし";
+  }
   return [...holidays]
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .toSorted((a, b) => a.date.localeCompare(b.date))
     .map((holiday) => `${holiday.date} ${holiday.name}`)
     .join(" / ");
 }
@@ -712,7 +744,7 @@ function formatMemberNames(members: Member[], status: "active" | "inactive") {
       status === "active" ? member.status !== "inactive" : member.status === "inactive",
     )
     .map((member) => member.name)
-    .sort((a, b) => a.localeCompare(b, "ja"));
+    .toSorted((a, b) => a.localeCompare(b, "ja"));
   return names.length > 0 ? names.join(", ") : "なし";
 }
 
@@ -730,21 +762,23 @@ function formatAvailabilitySummary(members: Member[]) {
         (override) => `${member.name}:${override.date} ${override.label}`,
       ),
     )
-    .sort((a, b) => a.localeCompare(b, "ja"));
+    .toSorted((a, b) => a.localeCompare(b, "ja"));
   return rows.length > 0 ? rows.join(" / ") : "なし";
 }
 
 function formatMemberRoles(members: Member[]) {
   return members
     .map((member) => `${member.initials}:${member.role}`)
-    .sort((a, b) => a.localeCompare(b, "ja"))
+    .toSorted((a, b) => a.localeCompare(b, "ja"))
     .join(", ");
 }
 
 function formatTeamMemberIds(memberIds: string[], membersById: Map<string, string>) {
-  if (memberIds.length === 0) return "なし";
+  if (memberIds.length === 0) {
+    return "なし";
+  }
   return [...memberIds]
-    .sort((a, b) => a.localeCompare(b))
+    .toSorted((a, b) => a.localeCompare(b))
     .map((memberId) => membersById.get(memberId) ?? memberId)
     .join(", ");
 }

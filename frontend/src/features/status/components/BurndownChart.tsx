@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { CalendarDefinition, ScheduleTask } from "../../../types/schedule";
+
 import {
   addDays,
   daysInclusive,
@@ -9,6 +9,7 @@ import {
   parseDate,
   toDateKey,
 } from "../../../lib/schedule";
+import type { CalendarDefinition, ScheduleTask } from "../../../types/schedule";
 
 type BurndownChartProps = {
   calendar: CalendarDefinition;
@@ -91,7 +92,7 @@ export function BurndownChart({
           aria-label={`${hasBaseline ? "基準計画" : "理想線"}と現在予測の残タスク数の推移`}
           className="burndown-chart"
           role="img"
-          viewBox={"0 0 " + chartWidth + " " + chartHeight}
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
         >
           {yTicks.map((tick) => {
             const y = chartPadding.top + plotHeight * (1 - tick);
@@ -117,16 +118,18 @@ export function BurndownChart({
             const y = getChartY(point.actual, maxTasks, plotHeight);
             return (
               <circle className="burndown-point" cx={x} cy={y} key={point.date} r="3">
-                <title>{formatShortDate(point.date) + ": " + formatTasks(point.actual)}</title>
+                <title>{`${formatShortDate(point.date)}: ${formatTasks(point.actual)}`}</title>
               </circle>
             );
           })}
           {points.map((point, index) => {
-            if (index !== 0 && index !== points.length - 1 && index % 2 !== 0) return null;
+            if (index !== 0 && index !== points.length - 1 && index % 2 !== 0) {
+              return null;
+            }
             return (
               <text
                 className="burndown-date-label"
-                key={point.date + "-label"}
+                key={`${point.date}-label`}
                 textAnchor={index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}
                 x={getChartX(index, points.length, plotWidth)}
                 y={chartHeight - 7}
@@ -140,7 +143,7 @@ export function BurndownChart({
       <small className="burndown-note">
         現在予測は、現在の進捗から終了日までを線形に補間した参考値です。
         {hasBaseline && baselineCapturedAt
-          ? " 基準計画: " + formatShortDate(baselineCapturedAt.slice(0, 10))
+          ? ` 基準計画: ${formatShortDate(baselineCapturedAt.slice(0, 10))}`
           : " 基準計画が未設定のため理想線と比較しています。"}
       </small>
     </section>
@@ -219,11 +222,11 @@ function toChartPath(
     .map((point, index) => {
       const x = getChartX(index, points.length, plotWidth);
       const y = getChartY(point[key], maxEffort, plotHeight);
-      return (index === 0 ? "M" : "L") + x + " " + y;
+      return `${(index === 0 ? "M" : "L") + x} ${y}`;
     })
     .join(" ");
 }
 
 function formatTasks(value: number) {
-  return Math.round(value) + "件";
+  return `${Math.round(value)}件`;
 }

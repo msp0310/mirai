@@ -1,12 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
-import type {
-  CalendarDefinition,
-  CalendarHoliday,
-  Project,
-  ScheduleTask,
-  TaskInspectorFocusTarget,
-} from "../../../types/schedule";
+
+import { fetchJapanesePublicHolidays, mergeCalendarHolidays } from "../../../data/publicHolidays";
 import {
   addDays,
   daysInclusive,
@@ -17,7 +12,13 @@ import {
   statusLabels,
   toDateKey,
 } from "../../../lib/schedule";
-import { fetchJapanesePublicHolidays, mergeCalendarHolidays } from "../../../data/publicHolidays";
+import type {
+  CalendarDefinition,
+  CalendarHoliday,
+  Project,
+  ScheduleTask,
+  TaskInspectorFocusTarget,
+} from "../../../types/schedule";
 
 type CalendarPanelProps = {
   calendar: CalendarDefinition;
@@ -95,7 +96,7 @@ export function CalendarPanel({
     const exists = calendar.workWeek.includes(weekday);
     const workWeek = exists
       ? calendar.workWeek.filter((day) => day !== weekday)
-      : [...calendar.workWeek, weekday].sort((a, b) => a - b);
+      : [...calendar.workWeek, weekday].toSorted((a, b) => a - b);
     onCalendarChange({ ...calendar, workWeek });
   }
 
@@ -105,7 +106,7 @@ export function CalendarPanel({
     const holidays = [
       ...calendar.holidays.filter((holiday) => holiday.date !== date),
       { date, name },
-    ].sort((a, b) => a.date.localeCompare(b.date));
+    ].toSorted((a, b) => a.date.localeCompare(b.date));
     onCalendarChange({ ...calendar, holidays });
     setHolidayName("");
   }
@@ -129,8 +130,8 @@ export function CalendarPanel({
       removeHoliday(selectedHoliday);
       return;
     }
-    const holidays = [...calendar.holidays, { date: selectedDate, name: "会社休日" }].sort((a, b) =>
-      a.date.localeCompare(b.date),
+    const holidays = [...calendar.holidays, { date: selectedDate, name: "会社休日" }].toSorted(
+      (a, b) => a.date.localeCompare(b.date),
     );
     onCalendarChange({ ...calendar, holidays });
   }
@@ -158,7 +159,7 @@ export function CalendarPanel({
     return tasks
       .filter((task) => task.type === "task" || task.type === "milestone")
       .filter((task) => task.start <= dateKey && task.end >= dateKey)
-      .sort(
+      .toSorted(
         (a, b) =>
           getCalendarEventPriority(a, dateKey) - getCalendarEventPriority(b, dateKey) ||
           a.start.localeCompare(b.start) ||
@@ -171,7 +172,7 @@ export function CalendarPanel({
       .filter((task) => task.type === "task" || task.type === "milestone")
       .filter((task) => task.start <= dateKey && task.end >= dateKey)
       .filter((task) => task.type === "milestone" || task.start === dateKey || task.end === dateKey)
-      .sort(
+      .toSorted(
         (a, b) =>
           getCalendarEventPriority(a, dateKey) - getCalendarEventPriority(b, dateKey) ||
           a.start.localeCompare(b.start),
@@ -385,16 +386,28 @@ export function CalendarPanel({
 }
 
 function getCalendarEventPriority(task: ScheduleTask, dateKey: string) {
-  if (task.type === "milestone") return 0;
-  if (task.start === dateKey) return 1;
-  if (task.end === dateKey) return 2;
+  if (task.type === "milestone") {
+    return 0;
+  }
+  if (task.start === dateKey) {
+    return 1;
+  }
+  if (task.end === dateKey) {
+    return 2;
+  }
   return 3;
 }
 
 function getCalendarEventLabel(task: ScheduleTask, dateKey: string) {
-  if (task.type === "milestone") return "MS";
-  if (task.start === dateKey) return "開始";
-  if (task.end === dateKey) return "終了";
+  if (task.type === "milestone") {
+    return "MS";
+  }
+  if (task.start === dateKey) {
+    return "開始";
+  }
+  if (task.end === dateKey) {
+    return "終了";
+  }
   return "進行";
 }
 
@@ -402,8 +415,12 @@ function getCalendarEventFocusTarget(
   task: ScheduleTask,
   dateKey: string,
 ): TaskInspectorFocusTarget {
-  if (task.type === "milestone" || task.start === dateKey) return "start";
-  if (task.end === dateKey) return "end";
+  if (task.type === "milestone" || task.start === dateKey) {
+    return "start";
+  }
+  if (task.end === dateKey) {
+    return "end";
+  }
   return "title";
 }
 

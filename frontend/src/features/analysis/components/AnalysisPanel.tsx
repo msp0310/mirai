@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+
+import { getProgressStats } from "../../../lib/schedule";
 import type {
   CalendarDefinition,
   Project,
@@ -6,7 +8,6 @@ import type {
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../../../types/schedule";
-import { getProgressStats } from "../../../lib/schedule";
 import { BurndownChart } from "../../status/components/BurndownChart";
 import { ScheduleChangeAnalysis } from "./ScheduleChangeAnalysis";
 
@@ -219,7 +220,9 @@ function AnalysisKpi({
 }
 
 function formatDate(value: string) {
-  if (value.length >= 10) return value.slice(0, 10).replaceAll("-", "/");
+  if (value.length >= 10) {
+    return value.slice(0, 10).replaceAll("-", "/");
+  }
   return value;
 }
 

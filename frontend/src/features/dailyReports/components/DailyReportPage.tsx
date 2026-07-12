@@ -1,12 +1,14 @@
 import {
-  EyeIcon,
   ExclamationTriangleIcon,
+  EyeIcon,
   PencilSquareIcon,
   PlusIcon,
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
+
+import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import type { AuthUser } from "../../../data/authRepository";
 import {
   addDailyReportComment,
@@ -24,8 +26,8 @@ import type {
   Team,
   WorkLogCategory,
 } from "../../../types/schedule";
-import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import { TeamDailyReportsView } from "./TeamDailyReportsView";
+
 import * as styles from "./DailyReportPage.css";
 
 type DailyReportPageProps = {
@@ -90,7 +92,9 @@ export function DailyReportPage({ currentUser, schedules, team, todayKey }: Dail
     let active = true;
     listDailyReports(team.id)
       .then((items) => {
-        if (!active) return;
+        if (!active) {
+          return;
+        }
         setReports(items);
         setMessage(items.length === 0 ? "日報はまだありません。" : "");
       })
@@ -101,7 +105,9 @@ export function DailyReportPage({ currentUser, schedules, team, todayKey }: Dail
   }, [team.id]);
 
   function createReport(date = todayKey) {
-    if (!currentMember || schedules.length === 0) return;
+    if (!currentMember || schedules.length === 0) {
+      return;
+    }
     const existing = personalReports.find((report) => report.date === date);
     if (existing) {
       selectReport(existing);
@@ -143,7 +149,9 @@ export function DailyReportPage({ currentUser, schedules, team, todayKey }: Dail
   }
 
   async function persist(status: DailyReport["status"] = draft?.status ?? "draft") {
-    if (!draft) return;
+    if (!draft) {
+      return;
+    }
     setMessage("保存中...");
     try {
       const saved = await saveDailyReport({ ...draft, status });
@@ -174,7 +182,9 @@ export function DailyReportPage({ currentUser, schedules, team, todayKey }: Dail
   }
 
   async function addComment() {
-    if (!draft || !comment.trim()) return;
+    if (!draft || !comment.trim()) {
+      return;
+    }
     try {
       const saved = await addDailyReportComment(draft.id, comment.trim());
       setDraft(saved);
@@ -231,8 +241,11 @@ export function DailyReportPage({ currentUser, schedules, team, todayKey }: Dail
           onOpenReport={openTeamReport}
           onOpenOwnReport={(date) => {
             const ownReport = personalReports.find((report) => report.date === date);
-            if (ownReport) openTeamReport(ownReport);
-            else createReport(date);
+            if (ownReport) {
+              openTeamReport(ownReport);
+            } else {
+              createReport(date);
+            }
           }}
           onRemind={async (date, memberIds) => {
             await sendDailyReportReminders(team.id, date, memberIds);
@@ -338,7 +351,9 @@ function DailyReportEditor({
     return totals;
   }, new Map());
   const projectPlans = report.entries.reduce<Map<string, number>>((plans, entry) => {
-    if (!entry.taskId) return plans;
+    if (!entry.taskId) {
+      return plans;
+    }
     const task = schedules
       .find((schedule) => schedule.project.id === entry.projectId)
       ?.tasks.find((item) => item.id === entry.taskId);
@@ -721,7 +736,9 @@ function sumHours(entries: DailyReportEntry[]) {
 
 function formatReportDate(date: string) {
   const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
   return new Intl.DateTimeFormat("ja-JP", {
     month: "numeric",
     day: "numeric",

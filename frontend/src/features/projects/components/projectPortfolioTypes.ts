@@ -2,8 +2,8 @@ import type { ProjectSummary, ScheduleSnapshot } from "../../../data/scheduleRep
 import type {
   Member,
   Project,
-  ScheduleTask,
   ProjectLifecycleStatus,
+  ScheduleTask,
   Team,
 } from "../../../types/schedule";
 

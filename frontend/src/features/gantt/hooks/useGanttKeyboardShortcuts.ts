@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { viewTabs, type ViewTab } from "../../../components/layout/ViewTabs";
+
+import { type ViewTab, viewTabs } from "../../../components/layout/ViewTabs";
 import type { GanttTimeUnit } from "../../../types/schedule";
 
 type SelectionRow = { id: string };
@@ -115,12 +116,16 @@ export function useGanttKeyboardShortcuts({
 }: UseGanttKeyboardShortcutsOptions) {
   useEffect(() => {
     function isEditingTarget(target: EventTarget | null) {
-      if (!(target instanceof HTMLElement)) return false;
+      if (!(target instanceof HTMLElement)) {
+        return false;
+      }
       return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
     }
 
     function getEventTaskId(target: EventTarget | null) {
-      if (!(target instanceof Element)) return null;
+      if (!(target instanceof Element)) {
+        return null;
+      }
       return target.closest(".task-table-row")?.getAttribute("data-task-id") ?? null;
     }
 
@@ -134,14 +139,21 @@ export function useGanttKeyboardShortcuts({
 
     function selectByIndex(nextIndex: number, range = false) {
       const nextTask = visibleRows[nextIndex];
-      if (!nextTask) return;
-      if (range && selectionAnchorTaskId) onSelectTask(nextTask.id, { range: true });
-      else onSelectOnlyTask(nextTask.id);
+      if (!nextTask) {
+        return;
+      }
+      if (range && selectionAnchorTaskId) {
+        onSelectTask(nextTask.id, { range: true });
+      } else {
+        onSelectOnlyTask(nextTask.id);
+      }
       scrollTaskIntoView(nextTask.id);
     }
 
     function selectByOffset(offset: number, range = false) {
-      if (visibleRows.length === 0) return;
+      if (visibleRows.length === 0) {
+        return;
+      }
       const currentIndex = visibleRows.findIndex((row) => row.id === selectedTaskId);
       const fallbackIndex = offset > 0 ? 0 : visibleRows.length - 1;
       const nextIndex =
@@ -152,7 +164,9 @@ export function useGanttKeyboardShortcuts({
     }
 
     function selectByPage(direction: -1 | 1, range = false) {
-      if (visibleRows.length === 0) return;
+      if (visibleRows.length === 0) {
+        return;
+      }
       const currentIndex = visibleRows.findIndex((row) => row.id === selectedTaskId);
       const table = document.querySelector<HTMLElement>(".task-table");
       const visibleRowCount = table ? Math.max(Math.floor(table.clientHeight / 34) - 2, 6) : 10;
@@ -168,7 +182,9 @@ export function useGanttKeyboardShortcuts({
     }
 
     function selectBoundary(position: "first" | "last", range = false) {
-      if (visibleRows.length === 0) return;
+      if (visibleRows.length === 0) {
+        return;
+      }
       selectByIndex(position === "first" ? 0 : visibleRows.length - 1, range);
     }
 
@@ -230,7 +246,9 @@ export function useGanttKeyboardShortcuts({
     }
 
     function handleShortcut(event: KeyboardEvent) {
-      if (event.defaultPrevented) return;
+      if (event.defaultPrevented) {
+        return;
+      }
 
       const key = event.key.toLowerCase();
       const commandKey = event.metaKey || event.ctrlKey;
@@ -239,10 +257,14 @@ export function useGanttKeyboardShortcuts({
         onRequestSave();
         return;
       }
-      if (isEditingTarget(event.target)) return;
+      if (isEditingTarget(event.target)) {
+        return;
+      }
 
       if (event.key === "Escape") {
-        if (closeActiveSurface()) event.preventDefault();
+        if (closeActiveSurface()) {
+          event.preventDefault();
+        }
         return;
       }
       if (event.key === "?") {
@@ -250,7 +272,9 @@ export function useGanttKeyboardShortcuts({
         onOpenShortcutHelp();
         return;
       }
-      if (showHelpPage) return;
+      if (showHelpPage) {
+        return;
+      }
       if (
         event.altKey &&
         !commandKey &&
@@ -268,8 +292,11 @@ export function useGanttKeyboardShortcuts({
 
       if (commandKey && key === "z") {
         event.preventDefault();
-        if (event.shiftKey) onRedo();
-        else onUndo();
+        if (event.shiftKey) {
+          onRedo();
+        } else {
+          onUndo();
+        }
         return;
       }
       if (commandKey && key === "y") {
@@ -325,7 +352,9 @@ export function useGanttKeyboardShortcuts({
         return;
       }
 
-      if (activeTab !== "Gantt" || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (activeTab !== "Gantt" || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
 
       if (event.shiftKey && event.key === "ArrowDown") {
         event.preventDefault();
@@ -359,8 +388,11 @@ export function useGanttKeyboardShortcuts({
       }
       if (event.key === "Home") {
         event.preventDefault();
-        if (event.shiftKey || !selectedTaskId) selectBoundary("first", event.shiftKey);
-        else onFocusTaskStart();
+        if (event.shiftKey || !selectedTaskId) {
+          selectBoundary("first", event.shiftKey);
+        } else {
+          onFocusTaskStart();
+        }
         return;
       }
       if (event.key === "End") {
@@ -380,8 +412,11 @@ export function useGanttKeyboardShortcuts({
       }
       if (event.key === "Enter") {
         event.preventDefault();
-        if (event.shiftKey) onInsertTaskBelow(getEventTaskId(event.target) ?? undefined);
-        else onFocusSelectedTitle();
+        if (event.shiftKey) {
+          onInsertTaskBelow(getEventTaskId(event.target) ?? undefined);
+        } else {
+          onFocusSelectedTitle();
+        }
         return;
       }
       if (event.key === "F2") {
@@ -444,17 +479,25 @@ export function useGanttKeyboardShortcuts({
     }
 
     function handleCopy(event: ClipboardEvent) {
-      if (activeTab !== "Gantt" || isEditingTarget(event.target)) return;
+      if (activeTab !== "Gantt" || isEditingTarget(event.target)) {
+        return;
+      }
       const taskId = getEventTaskId(event.target) ?? selectedTaskId;
-      if (!taskId) return;
+      if (!taskId) {
+        return;
+      }
       onCopyTask(taskId && !selectedTaskIds.has(taskId) ? taskId : undefined);
       event.clipboardData?.setData("text/plain", getTaskTitle(taskId) ?? "");
       event.preventDefault();
     }
 
     function handlePaste(event: ClipboardEvent) {
-      if (activeTab !== "Gantt" || isEditingTarget(event.target)) return;
-      if (!hasTaskClipboard) return;
+      if (activeTab !== "Gantt" || isEditingTarget(event.target)) {
+        return;
+      }
+      if (!hasTaskClipboard) {
+        return;
+      }
       onPasteTask(getEventTaskId(event.target) ?? undefined);
       event.preventDefault();
     }

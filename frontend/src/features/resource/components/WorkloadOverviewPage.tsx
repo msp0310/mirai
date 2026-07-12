@@ -1,9 +1,11 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useMemo, useState } from "react";
+
+import { Avatar } from "../../../components/ui/Avatar";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
+import { isMemberActive } from "../../../lib/members";
 import { buildCrossProjectResourceRows } from "../../../lib/resourceCalculations";
 import { buildTimeline, buildWeekColumns } from "../../../lib/schedule";
-import { isMemberActive } from "../../../lib/members";
 import type {
   CalendarDefinition,
   Member,
@@ -11,12 +13,10 @@ import type {
   StaffingDemand,
   Team,
 } from "../../../types/schedule";
-import { Avatar } from "../../../components/ui/Avatar";
-import * as styles from "./WorkloadOverviewPage.css";
 import {
   AssignmentEditor,
-  DemandEditor,
   type AssignmentEditorState,
+  DemandEditor,
   type DemandEditorState,
 } from "./StaffingEditors";
 import {
@@ -24,6 +24,8 @@ import {
   TeamCapacityGrid,
   aggregateTeamCapacityCell,
 } from "./WorkloadCapacityGrid";
+
+import * as styles from "./WorkloadOverviewPage.css";
 
 type WorkloadOverviewPageProps = {
   calendar: CalendarDefinition;
@@ -73,9 +75,10 @@ export function WorkloadOverviewPage({
   const currentMonth = `${todayKey.slice(0, 7)}-01`;
   const periodStart = addDateMonths(currentMonth, periodOffset * 12);
   const periodEnd = addDateDays(addDateMonths(periodStart, 12), -1)!;
-  const weeks = useMemo(() => {
-    return buildWeekColumns(buildTimeline(periodStart, periodEnd, calendar, calendarAware, "day"));
-  }, [calendar, calendarAware, periodEnd, periodStart]);
+  const weeks = useMemo(
+    () => buildWeekColumns(buildTimeline(periodStart, periodEnd, calendar, calendarAware, "day")),
+    [calendar, calendarAware, periodEnd, periodStart],
+  );
   const visibleWeeks = weeks;
   const scopedSchedules = useMemo(
     () =>
@@ -198,7 +201,9 @@ export function WorkloadOverviewPage({
   ) {
     const project = scopedSchedules.find((item) => item.project.id === projectId)?.project;
     const member = scopedMembers.find((item) => item.id === memberId) ?? scopedMembers[0];
-    if (!project || !member) return;
+    if (!project || !member) {
+      return;
+    }
     setEditorState({
       assignment: {
         allocationPercent: demand?.allocationPercent ?? 50,
@@ -216,7 +221,9 @@ export function WorkloadOverviewPage({
 
   function saveAssignment(state: AssignmentEditorState) {
     const snapshot = activeSchedules.find((item) => item.project.id === state.projectId);
-    if (!snapshot) return;
+    if (!snapshot) {
+      return;
+    }
     const assignments = getProjectAssignments(snapshot, members);
     const exists = assignments.some((item) => item.id === state.assignment.id);
     const nextAssignments = exists
@@ -231,7 +238,9 @@ export function WorkloadOverviewPage({
 
   function deleteAssignment(state: AssignmentEditorState) {
     const snapshot = activeSchedules.find((item) => item.project.id === state.projectId);
-    if (!snapshot) return;
+    if (!snapshot) {
+      return;
+    }
     onUpdateProjectStaffing(
       state.projectId,
       getProjectAssignments(snapshot, members).filter((item) => item.id !== state.assignment.id),
@@ -242,7 +251,9 @@ export function WorkloadOverviewPage({
 
   function openNewDemand() {
     const project = scopedSchedules[0]?.project;
-    if (!project) return;
+    if (!project) {
+      return;
+    }
     setDemandEditorState({
       demand: {
         allocationPercent: 50,
@@ -259,7 +270,9 @@ export function WorkloadOverviewPage({
 
   function saveDemand(state: DemandEditorState) {
     const snapshot = activeSchedules.find((item) => item.project.id === state.projectId);
-    if (!snapshot) return;
+    if (!snapshot) {
+      return;
+    }
     const demands = snapshot.project.staffingDemands ?? [];
     const exists = demands.some((item) => item.id === state.demand.id);
     onUpdateProjectStaffing(
@@ -496,7 +509,7 @@ function StaffingDecisionPanel({
       }));
     })
     .filter((item) => item.allocation > 100)
-    .sort((left, right) => right.allocation - left.allocation)
+    .toSorted((left, right) => right.allocation - left.allocation)
     .slice(0, 5);
   const available = members
     .flatMap((member) => {
@@ -513,7 +526,7 @@ function StaffingDecisionPanel({
         .find((item) => item.allocation <= 50);
       return candidate ? [candidate] : [];
     })
-    .sort((left, right) => left.allocation - right.allocation)
+    .toSorted((left, right) => left.allocation - right.allocation)
     .slice(0, 5);
   const shortages = demands
     .flatMap((item) =>
@@ -782,8 +795,12 @@ function Summary({ detail, label, value }: { detail?: string; label: string; val
 }
 
 function matchesCapacityFilter(percentages: number[], filter: CapacityFilter) {
-  if (filter === "overloaded") return percentages.some((percent) => percent >= 100);
-  if (filter === "available") return percentages.every((percent) => percent < 70);
+  if (filter === "overloaded") {
+    return percentages.some((percent) => percent >= 100);
+  }
+  if (filter === "available") {
+    return percentages.every((percent) => percent < 70);
+  }
   return true;
 }
 
@@ -799,7 +816,7 @@ function getScopedMembers(members: Member[], schedules: ScheduleSnapshot[], team
   const assignedIds = new Set(
     schedules.flatMap((snapshot) => snapshot.tasks.flatMap((task) => task.assigneeIds)),
   );
-  const teamIds = new Set(team?.memberIds ?? []);
+  const teamIds = new Set(team?.memberIds);
   return members.filter((member) => !team || teamIds.has(member.id) || assignedIds.has(member.id));
 }
 
@@ -808,7 +825,7 @@ function formatYearPeriod(start: string, end: string) {
 }
 
 function buildMonthGroups(weeks: ReturnType<typeof buildWeekColumns>) {
-  return weeks.reduce<Array<{ key: string; label: string; span: number; startIndex: number }>>(
+  return weeks.reduce<{ key: string; label: string; span: number; startIndex: number }[]>(
     (groups, week, index) => {
       const key = week.start?.slice(0, 7) ?? "unknown";
       const current = groups.at(-1);
@@ -849,7 +866,9 @@ function getMonthlyAllocation(
   weeks: ReturnType<typeof buildWeekColumns>,
 ) {
   return weeks.reduce((peak, week) => {
-    if (!week.start) return peak;
+    if (!week.start) {
+      return peak;
+    }
     const weekEnd = addDateDays(week.start, 6)!;
     const allocation = assignments
       .filter((assignment) => assignment.startDate <= weekEnd && assignment.endDate >= week.start!)
@@ -859,9 +878,15 @@ function getMonthlyAllocation(
 }
 
 function getAllocationTone(allocation: number) {
-  if (allocation > 100) return styles.monthlyAllocationOver;
-  if (allocation >= 80) return styles.monthlyAllocationFull;
-  if (allocation > 0) return styles.monthlyAllocationAvailable;
+  if (allocation > 100) {
+    return styles.monthlyAllocationOver;
+  }
+  if (allocation >= 80) {
+    return styles.monthlyAllocationFull;
+  }
+  if (allocation > 0) {
+    return styles.monthlyAllocationAvailable;
+  }
   return styles.monthlyAllocationEmpty;
 }
 
@@ -871,7 +896,9 @@ function aggregateDemandRoles(
 ) {
   const start = weeks[0]?.start;
   const end = addDateDays(weeks.at(-1)?.start, 6);
-  if (!start || !end) return [];
+  if (!start || !end) {
+    return [];
+  }
   const counts = new Map<string, number>();
   demands
     .filter(({ demand }) => demand.startDate <= end && demand.endDate >= start)
@@ -887,7 +914,9 @@ function formatYearMonth(dateKey: string) {
 }
 
 function getProjectAssignments(snapshot: ScheduleSnapshot, members: Member[]): ProjectAssignment[] {
-  if ((snapshot.project.assignments?.length ?? 0) > 0) return snapshot.project.assignments ?? [];
+  if ((snapshot.project.assignments?.length ?? 0) > 0) {
+    return snapshot.project.assignments ?? [];
+  }
   const memberById = new Map(members.map((member) => [member.id, member]));
   return (snapshot.project.memberIds ?? []).map((memberId) => ({
     allocationPercent: 50,
@@ -901,7 +930,9 @@ function getProjectAssignments(snapshot: ScheduleSnapshot, members: Member[]): P
 }
 
 function addDateDays(dateKey: string | undefined, days: number) {
-  if (!dateKey) return undefined;
+  if (!dateKey) {
+    return undefined;
+  }
   const date = new Date(`${dateKey}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);

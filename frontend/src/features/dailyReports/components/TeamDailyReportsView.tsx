@@ -10,11 +10,12 @@ import {
   PencilSquareIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { Fragment, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode, useMemo, useState } from "react";
+
+import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import type { DailyReport, Member } from "../../../types/schedule";
-import { MarkdownPreview } from "../../../components/common/MarkdownPreview";
+
 import * as styles from "./TeamDailyReportsView.css";
 
 type TeamDailyReportsViewProps = {
@@ -52,7 +53,7 @@ export function TeamDailyReportsView({
   const [quickComment, setQuickComment] = useState("");
   const [commenting, setCommenting] = useState(false);
   const dateOptions = useMemo(
-    () => [...new Set([todayKey, ...reports.map((report) => report.date)])].sort().reverse(),
+    () => [...new Set([todayKey, ...reports.map((report) => report.date)])].toSorted().reverse(),
     [reports, todayKey],
   );
   const reportsForDate = reports.filter((report) => report.date === selectedDate);
@@ -73,7 +74,9 @@ export function TeamDailyReportsView({
   }
 
   async function remindSelected() {
-    if (selectedMemberIds.size === 0) return;
+    if (selectedMemberIds.size === 0) {
+      return;
+    }
     setSending(true);
     try {
       await onRemind(selectedDate, [...selectedMemberIds]);
@@ -84,7 +87,9 @@ export function TeamDailyReportsView({
   }
 
   async function submitComment() {
-    if (!commentReportId || !quickComment.trim()) return;
+    if (!commentReportId || !quickComment.trim()) {
+      return;
+    }
     setCommenting(true);
     try {
       await onComment(commentReportId, quickComment.trim());
@@ -226,8 +231,11 @@ export function TeamDailyReportsView({
                             checked={selectedMemberIds.has(member.id)}
                             onChange={(event) => {
                               const next = new Set(selectedMemberIds);
-                              if (event.target.checked) next.add(member.id);
-                              else next.delete(member.id);
+                              if (event.target.checked) {
+                                next.add(member.id);
+                              } else {
+                                next.delete(member.id);
+                              }
                               setSelectedMemberIds(next);
                             }}
                             type="checkbox"
@@ -409,7 +417,9 @@ function sumHours(report: DailyReport) {
 
 function formatLongDate(date: string) {
   const parsed = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
   return new Intl.DateTimeFormat("ja-JP", {
     year: "numeric",
     month: "long",

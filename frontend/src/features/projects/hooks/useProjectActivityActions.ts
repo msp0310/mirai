@@ -1,12 +1,12 @@
-import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useCallback } from "react";
+
+import type { ScheduleWorkspace } from "../../../data/scheduleRepository";
 import type {
   ActivityCategory,
   ActivityTone,
   ProjectIssue,
   ProjectWorkLog,
 } from "../../../types/schedule";
-import type { ScheduleWorkspace } from "../../../data/scheduleRepository";
 
 type UseProjectActivityActionsOptions = {
   currentUserName: string;
@@ -102,7 +102,9 @@ export function useProjectActivityActions({
       const now = new Date().toISOString();
       commitProjectIssues((current) =>
         current.map((issue) => {
-          if (issue.id !== issueId) return issue;
+          if (issue.id !== issueId) {
+            return issue;
+          }
           const nextStatus = patch.status ?? issue.status;
           return {
             ...issue,

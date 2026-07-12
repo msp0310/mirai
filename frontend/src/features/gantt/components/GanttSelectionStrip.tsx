@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import type { Member, ScheduleTask, TaskStatus } from "../../../types/schedule";
+
 import { statusLabels } from "../../../lib/schedule";
+import type { Member, ScheduleTask, TaskStatus } from "../../../types/schedule";
 
 type SelectedTaskSummary = {
   assigneeCount: number;
@@ -30,7 +31,9 @@ const taskTypeLabels: Record<ScheduleTask["type"], string> = {
 
 function formatDateShort(date: string) {
   const [, month, day] = date.split("-");
-  if (!month || !day) return date;
+  if (!month || !day) {
+    return date;
+  }
   return `${Number(month)}/${Number(day)}`;
 }
 
@@ -44,7 +47,9 @@ export function GanttSelectionStrip({
   primaryTask,
   summary,
 }: GanttSelectionStripProps) {
-  if (!summary) return null;
+  if (!summary) {
+    return null;
+  }
 
   const canEditSelectedTasks = summary.editableCount > 0;
   const title =
@@ -102,7 +107,9 @@ export function GanttSelectionStrip({
           aria-label="選択行の状態を変更"
           disabled={!canEditSelectedTasks}
           onChange={(event) => {
-            if (!event.target.value) return;
+            if (!event.target.value) {
+              return;
+            }
             onStatusChange(event.target.value as TaskStatus);
           }}
           value=""
@@ -118,7 +125,9 @@ export function GanttSelectionStrip({
           aria-label="選択行の担当者を変更"
           disabled={!canEditSelectedTasks}
           onChange={(event) => {
-            if (!event.target.value) return;
+            if (!event.target.value) {
+              return;
+            }
             onAssigneeChange(event.target.value);
           }}
           value=""

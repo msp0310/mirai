@@ -1,6 +1,8 @@
 import { useState } from "react";
+
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
 import type { Member, ProjectAssignment, StaffingDemand } from "../../../types/schedule";
+
 import * as styles from "./WorkloadOverviewPage.css";
 
 export type AssignmentEditorState = {

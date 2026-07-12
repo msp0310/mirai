@@ -1,5 +1,5 @@
-import { isMemberActive } from "./members";
 import type { Member, Project, ProjectLifecycleStatus, Team } from "../types/schedule";
+import { isMemberActive } from "./members";
 
 export const projectLifecycleLabels: Record<ProjectLifecycleStatus, string> = {
   completed: "完了済み",

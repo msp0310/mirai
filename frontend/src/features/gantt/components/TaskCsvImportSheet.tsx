@@ -1,13 +1,15 @@
 import { ArrowPathIcon, DocumentTextIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
-import type {
-  ProjectImportValidation,
-  TaskCsvColumn,
-  TaskCsvImportDraft,
-  TaskCsvImportData,
-  TaskCsvImportMapping,
+
+import {
+  type ProjectImportValidation,
+  type TaskCsvColumn,
+  type TaskCsvImportData,
+  type TaskCsvImportDraft,
+  type TaskCsvImportMapping,
+  taskCsvColumnLabels,
+  taskCsvRequiredColumns,
 } from "../../../data/scheduleImportExport";
-import { taskCsvColumnLabels, taskCsvRequiredColumns } from "../../../data/scheduleImportExport";
 import type { Member, Project } from "../../../types/schedule";
 
 export type TaskCsvImportOptions = {
@@ -42,22 +44,14 @@ export function TaskCsvImportSheet({
 }: TaskCsvImportSheetProps) {
   const summary = useMemo(() => {
     const tasks = imported?.tasks ?? [];
-    const starts = tasks.map((task) => task.start).sort();
-    const ends = tasks.map((task) => task.end).sort();
+    const starts = tasks.map((task) => task.start).toSorted();
+    const ends = tasks.map((task) => task.end).toSorted();
     const assigneeIds = new Set(tasks.flatMap((task) => task.assigneeIds));
     const dependencies = tasks.reduce((total, task) => total + (task.dependencies?.length ?? 0), 0);
-    const typeCounts = tasks.reduce(
-      (counts, task) => ({
-        ...counts,
-        [task.type]: counts[task.type] + 1,
-      }),
-      {
-        milestone: 0,
-        phase: 0,
-        summary: 0,
-        task: 0,
-      },
-    );
+    const typeCounts = { milestone: 0, phase: 0, summary: 0, task: 0 };
+    tasks.forEach((task) => {
+      typeCounts[task.type] += 1;
+    });
     const memberLabels = [...assigneeIds]
       .map(
         (id) =>
@@ -92,7 +86,9 @@ export function TaskCsvImportSheet({
   const requiredColumnSet = useMemo(() => new Set<TaskCsvColumn>(taskCsvRequiredColumns), []);
 
   useEffect(() => {
-    if (rangeExpansion.needed) setExpandProjectRange(true);
+    if (rangeExpansion.needed) {
+      setExpandProjectRange(true);
+    }
   }, [rangeExpansion.needed, rangeExpansion.start, rangeExpansion.end]);
 
   const hasErrors = validation.errors.length > 0;
@@ -365,7 +361,9 @@ const taskCsvMappingFields: TaskCsvColumn[] = [
 ];
 
 function formatAssignees(assigneeIds: string[], members: Member[]) {
-  if (assigneeIds.length === 0) return "-";
+  if (assigneeIds.length === 0) {
+    return "-";
+  }
   return assigneeIds
     .map(
       (id) =>

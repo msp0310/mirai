@@ -1,4 +1,5 @@
 import { ArrowPathIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+
 import type {
   ConfigChangeReview,
   ConfigChangeRow,
@@ -223,9 +224,13 @@ const configCategoryLabels: Record<ConfigChangeRow["category"], string> = {
 };
 
 function formatSavedAt(value: string | null) {
-  if (!value) return "-";
+  if (!value) {
+    return "-";
+  }
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
   return date.toLocaleTimeString("ja-JP", {
     hour: "2-digit",
     minute: "2-digit",

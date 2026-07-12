@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
+
 import type { Member } from "../../types/schedule";
+
 import * as styles from "./Avatar.css";
 
 type AvatarProps = {

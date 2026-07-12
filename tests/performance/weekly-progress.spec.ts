@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+
 import {
   buildWeeklyProgressRows,
   getIssuesDueByWeek,
@@ -38,7 +39,7 @@ test("10,000タスクの週次進捗集計を1秒以内に完了する", () => {
   expect(rows.reduce((sum, row) => sum + row.planned, 0)).toBe(tasks.length);
   expect(rows.some((row) => row.targetCount > 0)).toBe(true);
   expect(rows.some((row) => row.delayed > 0)).toBe(true);
-  expect(elapsedMs, `週次進捗集計が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1_000);
+  expect(elapsedMs, `週次進捗集計が${elapsedMs.toFixed(1)}msかかりました`).toBeLessThan(1000);
 });
 
 test("選択週までの未解消課題を優先して抽出する", () => {

@@ -1,9 +1,10 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
+
 import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import { saveLocalScheduleDraft } from "../data/localScheduleStorage";
+import type { ScheduleWorkspace } from "../data/scheduleRepository";
 import { createDraftSignature } from "./appState";
 import type { ApiSyncState, PersistableDraft } from "./appTypes";
-import type { ScheduleWorkspace } from "../data/scheduleRepository";
 
 type UseScheduleSyncOptions = {
   addToast: (input: {
@@ -69,7 +70,9 @@ export function useScheduleSync({
         },
         savedDraftRef.current.workspace,
       );
-      if (saveOperationIdRef.current !== operationId) return;
+      if (saveOperationIdRef.current !== operationId) {
+        return;
+      }
       const successAt = new Date().toISOString();
       const syncedDraft = { ...draftToSync, workspace: result.workspace };
       const saved = saveLocalScheduleDraft(syncedDraft);
@@ -93,7 +96,9 @@ export function useScheduleSync({
         title: "API送信が完了しました",
       });
     } catch (error) {
-      if (saveOperationIdRef.current !== operationId) return;
+      if (saveOperationIdRef.current !== operationId) {
+        return;
+      }
       const errorMessage =
         error instanceof Error ? error.message : "API送信中に不明なエラーが発生しました。";
       setApiSyncState((current) => ({
@@ -113,7 +118,9 @@ export function useScheduleSync({
 
   /** 失敗した送信を、現在の未保存内容を失わずに再試行します。 */
   function retryApiSync() {
-    if (apiSyncState.status === "sending") return;
+    if (apiSyncState.status === "sending") {
+      return;
+    }
     if (hasUnsavedChangesRef.current) {
       requestSaveDraft();
       return;

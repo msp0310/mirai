@@ -1,9 +1,10 @@
 import { FlagIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
-import type { CreateMilestoneInput, Member, Project, ScheduleTask } from "../../../types/schedule";
-import { formatDateWithWeekday, formatShortDate, statusLabels } from "../../../lib/schedule";
-import { getActiveMembers } from "../../../lib/members";
+
 import { Avatar } from "../../../components/ui/Avatar";
+import { getActiveMembers } from "../../../lib/members";
+import { formatDateWithWeekday, formatShortDate, statusLabels } from "../../../lib/schedule";
+import type { CreateMilestoneInput, Member, Project, ScheduleTask } from "../../../types/schedule";
 
 type MilestonePanelProps = {
   members: Member[];
@@ -43,7 +44,9 @@ export function MilestonePanel({
     milestones.find((milestone) => milestone.status !== "done") ?? milestones[0];
 
   useEffect(() => {
-    if (assigneeOptions.some((member) => member.id === assigneeId)) return;
+    if (assigneeOptions.some((member) => member.id === assigneeId)) {
+      return;
+    }
     setAssigneeId(assigneeOptions[0]?.id ?? "");
   }, [assigneeId, assigneeOptions]);
 

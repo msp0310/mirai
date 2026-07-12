@@ -99,7 +99,7 @@ This is no longer just a Gantt screen. It is becoming a project operations conso
    - Project Gantt: tasks, hierarchy, dates, dependencies, milestones, project calendar, project settings.
    - Master settings: teams, members, default calendars.
    - Local display state: filters, open panels, zoom, collapsed rows, favorites.
-   Decide which are synced to the backend and which remain user preferences.
+     Decide which are synced to the backend and which remain user preferences.
 
 2. Add a project activity / schedule-change analytics model next.
    This should become a first-class `Activity` or `Analytics` view, not just a log. Track task date change count, before/after dates, changedBy, changedAt, reason, and impact days.
@@ -116,7 +116,7 @@ This is no longer just a Gantt screen. It is becoming a project operations conso
    - `このプロジェクト`
    - `このチーム`
    - `管理設定`
-   Avoid mixing `プロジェクト`, `案件`, and `ガント` in the same operation unless the distinction is intentional.
+     Avoid mixing `プロジェクト`, `案件`, and `ガント` in the same operation unless the distinction is intentional.
 
 6. Add role-based scenarios before backend design.
    At minimum:

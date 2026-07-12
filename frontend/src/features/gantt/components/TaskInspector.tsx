@@ -8,6 +8,21 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+
+import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
+import { MemberChecklist } from "../../../components/ui/MemberChecklist";
+import {
+  addDays,
+  daysInclusive,
+  formatShortDate,
+  getTaskAssigneeAllocationMap,
+  getWorkingDaySpan,
+  isWorkingDay,
+  parseDate,
+  statusLabels,
+  toDateKey,
+} from "../../../lib/schedule";
+import { normalizeProgressStatus } from "../../../lib/taskOperations";
 import type {
   Attachment,
   CalendarDefinition,
@@ -18,20 +33,6 @@ import type {
   TaskInspectorFocusTarget,
   TaskReferenceLink,
 } from "../../../types/schedule";
-import {
-  addDays,
-  daysInclusive,
-  formatShortDate,
-  getWorkingDaySpan,
-  getTaskAssigneeAllocationMap,
-  isWorkingDay,
-  parseDate,
-  statusLabels,
-  toDateKey,
-} from "../../../lib/schedule";
-import { normalizeProgressStatus } from "../../../lib/taskOperations";
-import { MemberChecklist } from "../../../components/ui/MemberChecklist";
-import { AttachmentPanel } from "../../../components/common/AttachmentPanel";
 
 type TaskInspectorProps = {
   attachments: Attachment[];
@@ -102,7 +103,9 @@ export function TaskInspector({
   }, [task?.id]);
 
   useEffect(() => {
-    if (!task || !focusRequest || focusRequest.taskId !== task.id) return;
+    if (!task || !focusRequest || focusRequest.taskId !== task.id) {
+      return;
+    }
     if (focusRequest.target === "comments") {
       setActiveSection("collaboration");
     } else if (focusRequest.target === "dependencies") {
@@ -113,14 +116,20 @@ export function TaskInspector({
   }, [focusRequest?.requestId, focusRequest?.target, focusRequest?.taskId, task?.id]);
 
   useEffect(() => {
-    if (!task || !focusRequest || focusRequest.taskId !== task.id) return;
+    if (!task || !focusRequest || focusRequest.taskId !== task.id) {
+      return;
+    }
     const frameId = window.requestAnimationFrame(() => {
       const root = inspectorRef.current;
-      if (!root) return;
+      if (!root) {
+        return;
+      }
       const target =
         root.querySelector<HTMLElement>(`[data-task-focus-target="${focusRequest.target}"]`) ??
         root.querySelector<HTMLElement>('[data-task-focus-target="title"]');
-      if (!target) return;
+      if (!target) {
+        return;
+      }
       target.scrollIntoView({ block: "center", inline: "nearest" });
       target.focus({ preventScroll: true });
       if (target instanceof HTMLInputElement && target.type === "text") {
@@ -128,9 +137,17 @@ export function TaskInspector({
       }
     });
     return () => window.cancelAnimationFrame(frameId);
-  }, [activeSection, focusRequest?.requestId, focusRequest?.target, focusRequest?.taskId, task?.id]);
+  }, [
+    activeSection,
+    focusRequest?.requestId,
+    focusRequest?.target,
+    focusRequest?.taskId,
+    task?.id,
+  ]);
 
-  if (!task) return null;
+  if (!task) {
+    return null;
+  }
   const currentTask = task;
   const workingDays = getWorkingDaySpan(
     currentTask.start,
@@ -159,17 +176,23 @@ export function TaskInspector({
   const normalizedDependencyQuery = dependencyQuery.trim().toLowerCase();
   const filteredDependencyCandidates = dependencyCandidates
     .filter((candidate) => {
-      if (selectedDependencyIdSet.has(candidate.id)) return true;
-      if (!normalizedDependencyQuery) return true;
+      if (selectedDependencyIdSet.has(candidate.id)) {
+        return true;
+      }
+      if (!normalizedDependencyQuery) {
+        return true;
+      }
       return (
         candidate.title.toLowerCase().includes(normalizedDependencyQuery) ||
         candidate.id.toLowerCase().includes(normalizedDependencyQuery)
       );
     })
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aSelected = selectedDependencyIdSet.has(a.id);
       const bSelected = selectedDependencyIdSet.has(b.id);
-      if (aSelected !== bSelected) return aSelected ? -1 : 1;
+      if (aSelected !== bSelected) {
+        return aSelected ? -1 : 1;
+      }
       return a.start.localeCompare(b.start) || a.title.localeCompare(b.title);
     });
   const dependencyWarnings = selectedDependencyIds
@@ -250,8 +273,10 @@ export function TaskInspector({
     const blockingDependencies = dependencyWarnings
       .filter((warning) => warning.dateConflict)
       .map((warning) => warning.dependency);
-    const latestDependency = blockingDependencies.sort((a, b) => b.end.localeCompare(a.end))[0];
-    if (!latestDependency) return;
+    const [latestDependency] = blockingDependencies.toSorted((a, b) => b.end.localeCompare(a.end));
+    if (!latestDependency) {
+      return;
+    }
 
     const start = getNextWorkingStartAfter(latestDependency.end, calendar, calendarAware);
     if (currentTask.type === "phase") {
@@ -291,7 +316,9 @@ export function TaskInspector({
 
   function addChecklistItem() {
     const label = checklistText.trim();
-    if (!label) return;
+    if (!label) {
+      return;
+    }
     const nextItem: TaskChecklistItem = {
       done: false,
       id: createTaskDetailId(currentTask.id, "check"),
@@ -330,7 +357,9 @@ export function TaskInspector({
 
   function addComment() {
     const body = commentText.trim();
-    if (!body) return;
+    if (!body) {
+      return;
+    }
     const nextComment: TaskComment = {
       author: "操作ユーザー",
       body,
@@ -345,7 +374,9 @@ export function TaskInspector({
   function addLink() {
     const url = normalizeUrl(linkUrl.trim());
     const label = linkLabel.trim() || url;
-    if (!url) return;
+    if (!url) {
+      return;
+    }
     const nextLink: TaskReferenceLink = {
       createdAt: new Date().toISOString(),
       id: createTaskDetailId(currentTask.id, "link"),
@@ -402,481 +433,493 @@ export function TaskInspector({
       </nav>
       {activeSection === "basic" ? (
         <>
-      <label className="field-stack">
-        タスク名
-        <input
-          data-task-focus-target="title"
-          value={task.title}
-          onChange={(event) => onUpdateTask(task.id, { title: event.target.value })}
-        />
-      </label>
-      <label className="field-stack">
-        作業メモ
-        <textarea
-          data-task-focus-target="description"
-          disabled={task.type === "summary" || task.type === "phase"}
-          onChange={(event) => onUpdateTask(task.id, { description: event.target.value })}
-          placeholder="前提、顧客確認事項、実装メモなど"
-          value={task.description ?? ""}
-        />
-      </label>
-      <div className="inspector-grid">
-        <span>期間</span>
-        <strong>
-          {formatShortDate(task.start)} - {formatShortDate(task.end)}
-        </strong>
-        <span>実働日数</span>
-        <strong>{workingDays}日</strong>
-        <span>暦日数</span>
-        <strong>{calendarDays}日</strong>
-        <span>状態</span>
-        <strong>{statusLabels[task.status]}</strong>
-        <span>進捗</span>
-        <strong>{task.progress}%</strong>
-        <span>担当</span>
-        <div className="assignee-list">
-          {assignees.map((member) => (
-            <span key={member.id}>{member.initials}</span>
-          ))}
-        </div>
-      </div>
-      <section className="baseline-summary" data-task-focus-target="baseline" tabIndex={-1}>
-        <div>
-          <span>基準計画</span>
-          {baseline?.capturedAt ? <small>{formatDateTimeLabel(baseline.capturedAt)}</small> : null}
-        </div>
-        {baseline ? (
-          <>
+          <label className="field-stack">
+            タスク名
+            <input
+              data-task-focus-target="title"
+              value={task.title}
+              onChange={(event) => onUpdateTask(task.id, { title: event.target.value })}
+            />
+          </label>
+          <label className="field-stack">
+            作業メモ
+            <textarea
+              data-task-focus-target="description"
+              disabled={task.type === "summary" || task.type === "phase"}
+              onChange={(event) => onUpdateTask(task.id, { description: event.target.value })}
+              placeholder="前提、顧客確認事項、実装メモなど"
+              value={task.description ?? ""}
+            />
+          </label>
+          <div className="inspector-grid">
+            <span>期間</span>
             <strong>
-              {formatShortDate(baseline.start)} - {formatShortDate(baseline.end)}
+              {formatShortDate(task.start)} - {formatShortDate(task.end)}
             </strong>
-            <div className="baseline-delta-grid">
-              <span>開始</span>
-              <em className={getDeltaToneClass(baseline.startDelta)}>
-                {formatDeltaDays(baseline.startDelta)}
-              </em>
-              <span>終了</span>
-              <em className={getDeltaToneClass(baseline.endDelta)}>
-                {formatDeltaDays(baseline.endDelta)}
-              </em>
+            <span>実働日数</span>
+            <strong>{workingDays}日</strong>
+            <span>暦日数</span>
+            <strong>{calendarDays}日</strong>
+            <span>状態</span>
+            <strong>{statusLabels[task.status]}</strong>
+            <span>進捗</span>
+            <strong>{task.progress}%</strong>
+            <span>担当</span>
+            <div className="assignee-list">
+              {assignees.map((member) => (
+                <span key={member.id}>{member.initials}</span>
+              ))}
             </div>
-          </>
-        ) : (
-          <p>分析画面で現在の日程を基準計画として設定できます</p>
-        )}
-      </section>
-      <div className="two-col inspector-fields">
-        <label>
-          開始日
-          <input
-            data-task-focus-target="start"
-            disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) => onUpdateTask(task.id, { start: event.target.value })}
-            type="date"
-            value={task.start}
-          />
-        </label>
-        <label>
-          終了日
-          <input
-            data-task-focus-target="end"
-            disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) => onUpdateTask(task.id, { end: event.target.value })}
-            type="date"
-            value={task.end}
-          />
-        </label>
-      </div>
-      {startIsNonWorking || endIsNonWorking ? (
-        <div className="non-working-date-warning">
-          {startIsNonWorking ? (
+          </div>
+          <section className="baseline-summary" data-task-focus-target="baseline" tabIndex={-1}>
             <div>
-              <ExclamationTriangleIcon />
-              <span>開始日が非稼働日です</span>
-              <button onClick={moveStartToWorkingDay} type="button">
-                開始を稼働日に
-              </button>
+              <span>基準計画</span>
+              {baseline?.capturedAt ? (
+                <small>{formatDateTimeLabel(baseline.capturedAt)}</small>
+              ) : null}
+            </div>
+            {baseline ? (
+              <>
+                <strong>
+                  {formatShortDate(baseline.start)} - {formatShortDate(baseline.end)}
+                </strong>
+                <div className="baseline-delta-grid">
+                  <span>開始</span>
+                  <em className={getDeltaToneClass(baseline.startDelta)}>
+                    {formatDeltaDays(baseline.startDelta)}
+                  </em>
+                  <span>終了</span>
+                  <em className={getDeltaToneClass(baseline.endDelta)}>
+                    {formatDeltaDays(baseline.endDelta)}
+                  </em>
+                </div>
+              </>
+            ) : (
+              <p>分析画面で現在の日程を基準計画として設定できます</p>
+            )}
+          </section>
+          <div className="two-col inspector-fields">
+            <label>
+              開始日
+              <input
+                data-task-focus-target="start"
+                disabled={task.type === "summary" || task.type === "phase"}
+                onChange={(event) => onUpdateTask(task.id, { start: event.target.value })}
+                type="date"
+                value={task.start}
+              />
+            </label>
+            <label>
+              終了日
+              <input
+                data-task-focus-target="end"
+                disabled={task.type === "summary" || task.type === "phase"}
+                onChange={(event) => onUpdateTask(task.id, { end: event.target.value })}
+                type="date"
+                value={task.end}
+              />
+            </label>
+          </div>
+          {startIsNonWorking || endIsNonWorking ? (
+            <div className="non-working-date-warning">
+              {startIsNonWorking ? (
+                <div>
+                  <ExclamationTriangleIcon />
+                  <span>開始日が非稼働日です</span>
+                  <button onClick={moveStartToWorkingDay} type="button">
+                    開始を稼働日に
+                  </button>
+                </div>
+              ) : null}
+              {endIsNonWorking ? (
+                <div>
+                  <ExclamationTriangleIcon />
+                  <span>終了日が非稼働日です</span>
+                  <button onClick={moveEndToWorkingDay} type="button">
+                    終了を稼働日に
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
-          {endIsNonWorking ? (
-            <div>
-              <ExclamationTriangleIcon />
-              <span>終了日が非稼働日です</span>
-              <button onClick={moveEndToWorkingDay} type="button">
-                終了を稼働日に
-              </button>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="date-nudge">
-        <button
-          disabled={task.type === "summary"}
-          onClick={() => onMoveTask(task.id, -1)}
-          type="button"
-        >
-          1日戻す
-        </button>
-        <button
-          disabled={task.type === "summary"}
-          onClick={() => onMoveTask(task.id, 1)}
-          type="button"
-        >
-          1日進める
-        </button>
-        <button
-          disabled={task.type !== "task"}
-          onClick={() => onResizeTask(task.id, "end", -1)}
-          type="button"
-        >
-          期間短縮
-        </button>
-        <button
-          disabled={task.type !== "task"}
-          onClick={() => onResizeTask(task.id, "end", 1)}
-          type="button"
-        >
-          期間延長
-        </button>
-      </div>
-      <div className="two-col inspector-fields">
-        <label>
-          状態
-          <select
-            data-task-focus-target="status"
+          <div className="date-nudge">
+            <button
+              disabled={task.type === "summary"}
+              onClick={() => onMoveTask(task.id, -1)}
+              type="button"
+            >
+              1日戻す
+            </button>
+            <button
+              disabled={task.type === "summary"}
+              onClick={() => onMoveTask(task.id, 1)}
+              type="button"
+            >
+              1日進める
+            </button>
+            <button
+              disabled={task.type !== "task"}
+              onClick={() => onResizeTask(task.id, "end", -1)}
+              type="button"
+            >
+              期間短縮
+            </button>
+            <button
+              disabled={task.type !== "task"}
+              onClick={() => onResizeTask(task.id, "end", 1)}
+              type="button"
+            >
+              期間延長
+            </button>
+          </div>
+          <div className="two-col inspector-fields">
+            <label>
+              状態
+              <select
+                data-task-focus-target="status"
+                disabled={task.type === "summary" || task.type === "phase"}
+                onChange={(event) =>
+                  onUpdateTask(task.id, {
+                    status: event.target.value as ScheduleTask["status"],
+                  })
+                }
+                value={task.status}
+              >
+                {Object.entries(statusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              予定工数
+              <input
+                data-task-focus-target="effort"
+                disabled={task.type !== "task"}
+                min="0"
+                onChange={(event) =>
+                  onUpdateTask(task.id, {
+                    effortHours: Number(event.target.value) || undefined,
+                  })
+                }
+                type="number"
+                value={task.effortHours ?? 0}
+              />
+            </label>
+          </div>
+          <label className="progress-editor">
+            <span>進捗率</span>
+            <input
+              data-task-focus-target="progress"
+              disabled={task.type === "summary" || task.type === "phase"}
+              max="100"
+              min="0"
+              onChange={(event) => {
+                const progress = Number(event.target.value);
+                onUpdateTask(task.id, {
+                  progress,
+                  status: normalizeProgressStatus(progress),
+                });
+              }}
+              type="range"
+              value={task.progress}
+            />
+          </label>
+          <MemberChecklist
             disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) =>
-              onUpdateTask(task.id, {
-                status: event.target.value as ScheduleTask["status"],
-              })
-            }
-            value={task.status}
-          >
-            {Object.entries(statusLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          予定工数
-          <input
-            data-task-focus-target="effort"
-            disabled={task.type !== "task"}
-            min="0"
-            onChange={(event) =>
-              onUpdateTask(task.id, {
-                effortHours: Number(event.target.value) || undefined,
-              })
-            }
-            type="number"
-            value={task.effortHours ?? 0}
+            focusTarget="assignees"
+            members={members}
+            onToggle={toggleAssignee}
+            selectedIds={task.assigneeIds}
+            title="担当者"
           />
-        </label>
-      </div>
-      <label className="progress-editor">
-        <span>進捗率</span>
-        <input
-          data-task-focus-target="progress"
-          disabled={task.type === "summary" || task.type === "phase"}
-          max="100"
-          min="0"
-          onChange={(event) => {
-            const progress = Number(event.target.value);
-            onUpdateTask(task.id, {
-              progress,
-              status: normalizeProgressStatus(progress),
-            });
-          }}
-          type="range"
-          value={task.progress}
-        />
-      </label>
-      <MemberChecklist
-        disabled={task.type === "summary" || task.type === "phase"}
-        focusTarget="assignees"
-        members={members}
-        onToggle={toggleAssignee}
-        selectedIds={task.assigneeIds}
-        title="担当者"
-      />
-      <AssigneeAllocationEditor
-        disabled={task.type === "summary" || task.type === "phase"}
-        members={assignees}
-        onChange={updateAssigneeAllocation}
-        task={currentTask}
-      />
+          <AssigneeAllocationEditor
+            disabled={task.type === "summary" || task.type === "phase"}
+            members={assignees}
+            onChange={updateAssigneeAllocation}
+            task={currentTask}
+          />
         </>
       ) : null}
       {activeSection === "relations" ? (
         <>
-      <section className="task-detail-section">
-        <div className="task-detail-heading">
-          <span>完了条件</span>
-          <small>
-            {doneChecklistCount} / {checklist.length}
-          </small>
-        </div>
-        <div className="inline-create-control task-detail-create">
-          <input
-            disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) => setChecklistText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                addChecklistItem();
-              }
-            }}
-            placeholder="例: 顧客レビュー指摘を反映"
-            value={checklistText}
-          />
-          <button
-            disabled={task.type === "summary" || task.type === "phase"}
-            onClick={addChecklistItem}
-            title="完了条件を追加"
-            type="button"
-          >
-            <PlusIcon />
-          </button>
-        </div>
-        <div className="task-checklist">
-          {checklist.map((item) => (
-            <label className={item.done ? "done" : ""} key={item.id}>
+          <section className="task-detail-section">
+            <div className="task-detail-heading">
+              <span>完了条件</span>
+              <small>
+                {doneChecklistCount} / {checklist.length}
+              </small>
+            </div>
+            <div className="inline-create-control task-detail-create">
               <input
-                checked={item.done}
                 disabled={task.type === "summary" || task.type === "phase"}
-                onChange={() => toggleChecklistItem(item.id)}
-                type="checkbox"
+                onChange={(event) => setChecklistText(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addChecklistItem();
+                  }
+                }}
+                placeholder="例: 顧客レビュー指摘を反映"
+                value={checklistText}
               />
-              <span>{item.label}</span>
               <button
                 disabled={task.type === "summary" || task.type === "phase"}
-                onClick={(event) => {
-                  event.preventDefault();
-                  deleteChecklistItem(item.id);
-                }}
-                title="削除"
+                onClick={addChecklistItem}
+                title="完了条件を追加"
                 type="button"
               >
-                <TrashIcon />
+                <PlusIcon />
               </button>
+            </div>
+            <div className="task-checklist">
+              {checklist.map((item) => (
+                <label className={item.done ? "done" : ""} key={item.id}>
+                  <input
+                    checked={item.done}
+                    disabled={task.type === "summary" || task.type === "phase"}
+                    onChange={() => toggleChecklistItem(item.id)}
+                    type="checkbox"
+                  />
+                  <span>{item.label}</span>
+                  <button
+                    disabled={task.type === "summary" || task.type === "phase"}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      deleteChecklistItem(item.id);
+                    }}
+                    title="削除"
+                    type="button"
+                  >
+                    <TrashIcon />
+                  </button>
+                </label>
+              ))}
+              {checklist.length === 0 ? (
+                <p className="task-detail-empty">完了条件は未登録です</p>
+              ) : null}
+            </div>
+          </section>
+          <div className="check-list dependency-list">
+            <div className="dependency-list-heading">
+              <span>前提タスク</span>
+              <small>
+                {selectedDependencyIds.length}件選択 / {filteredDependencyCandidates.length}
+                件表示
+              </small>
+            </div>
+            <label className="dependency-search">
+              <MagnifyingGlassIcon />
+              <input
+                data-task-focus-target="dependencies"
+                aria-label="前提タスクを検索"
+                disabled={task.type === "summary"}
+                onChange={(event) => setDependencyQuery(event.target.value)}
+                placeholder="タスク名で検索"
+                value={dependencyQuery}
+              />
             </label>
-          ))}
-          {checklist.length === 0 ? (
-            <p className="task-detail-empty">完了条件は未登録です</p>
-          ) : null}
-        </div>
-      </section>
-      <div className="check-list dependency-list">
-        <div className="dependency-list-heading">
-          <span>前提タスク</span>
-          <small>
-            {selectedDependencyIds.length}件選択 / {filteredDependencyCandidates.length}
-            件表示
-          </small>
-        </div>
-        <label className="dependency-search">
-          <MagnifyingGlassIcon />
-          <input
-            data-task-focus-target="dependencies"
-            aria-label="前提タスクを検索"
-            disabled={task.type === "summary"}
-            onChange={(event) => setDependencyQuery(event.target.value)}
-            placeholder="タスク名で検索"
-            value={dependencyQuery}
-          />
-        </label>
-        {dependencyWarnings.length > 0 ? (
-          <div className="dependency-warning-stack">
-            {dependencyWarnings.some((warning) => warning.dateConflict) ? (
-              <div className="dependency-repair-card">
-                <div>
-                  <strong>日程競合があります</strong>
-                  <small>最も遅い前提タスクの翌稼働日に開始を合わせます</small>
-                </div>
-                <button
-                  disabled={task.type === "summary"}
-                  onClick={alignAfterBlockingDependencies}
-                  type="button"
-                >
-                  日程調整
-                </button>
-              </div>
-            ) : null}
-            {dependencyWarnings.slice(0, 3).map((warning) => (
-              <article
-                className={warning.dateConflict ? "dependency-warning" : "dependency-warning muted"}
-                key={warning.dependency.id}
-              >
-                <ExclamationTriangleIcon />
-                <div>
-                  <span>
-                    {warning.dependency.title}
-                    {warning.dateConflict
-                      ? " はこのタスク開始日以降に完了予定です"
-                      : " はまだ完了していません"}
-                  </span>
-                  <div className="dependency-warning-actions">
-                    {warning.incomplete ? (
-                      <button
-                        disabled={task.type === "summary"}
-                        onClick={() => completeDependency(warning.dependency)}
-                        type="button"
-                      >
-                        完了
-                      </button>
-                    ) : null}
+            {dependencyWarnings.length > 0 ? (
+              <div className="dependency-warning-stack">
+                {dependencyWarnings.some((warning) => warning.dateConflict) ? (
+                  <div className="dependency-repair-card">
+                    <div>
+                      <strong>日程競合があります</strong>
+                      <small>最も遅い前提タスクの翌稼働日に開始を合わせます</small>
+                    </div>
                     <button
                       disabled={task.type === "summary"}
-                      onClick={() => removeDependency(warning.dependency.id)}
+                      onClick={alignAfterBlockingDependencies}
                       type="button"
                     >
-                      外す
+                      日程調整
                     </button>
                   </div>
-                </div>
-              </article>
-            ))}
+                ) : null}
+                {dependencyWarnings.slice(0, 3).map((warning) => (
+                  <article
+                    className={
+                      warning.dateConflict ? "dependency-warning" : "dependency-warning muted"
+                    }
+                    key={warning.dependency.id}
+                  >
+                    <ExclamationTriangleIcon />
+                    <div>
+                      <span>
+                        {warning.dependency.title}
+                        {warning.dateConflict
+                          ? " はこのタスク開始日以降に完了予定です"
+                          : " はまだ完了していません"}
+                      </span>
+                      <div className="dependency-warning-actions">
+                        {warning.incomplete ? (
+                          <button
+                            disabled={task.type === "summary"}
+                            onClick={() => completeDependency(warning.dependency)}
+                            type="button"
+                          >
+                            完了
+                          </button>
+                        ) : null}
+                        <button
+                          disabled={task.type === "summary"}
+                          onClick={() => removeDependency(warning.dependency.id)}
+                          type="button"
+                        >
+                          外す
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+            <div className="dependency-candidates">
+              {filteredDependencyCandidates.map((candidate) => (
+                <label key={candidate.id}>
+                  <input
+                    checked={selectedDependencyIdSet.has(candidate.id)}
+                    disabled={task.type === "summary"}
+                    onChange={() => toggleDependency(candidate.id)}
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong>{candidate.title}</strong>
+                    <small>
+                      {formatShortDate(candidate.start)} - {formatShortDate(candidate.end)}
+                    </small>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {filteredDependencyCandidates.length === 0 ? (
+              <p className="dependency-empty">一致する前提タスクがありません</p>
+            ) : null}
           </div>
-        ) : null}
-        <div className="dependency-candidates">
-          {filteredDependencyCandidates.map((candidate) => (
-            <label key={candidate.id}>
-              <input
-                checked={selectedDependencyIdSet.has(candidate.id)}
-                disabled={task.type === "summary"}
-                onChange={() => toggleDependency(candidate.id)}
-                type="checkbox"
-              />
-              <span>
-                <strong>{candidate.title}</strong>
-                <small>
-                  {formatShortDate(candidate.start)} - {formatShortDate(candidate.end)}
-                </small>
-              </span>
-            </label>
-          ))}
-        </div>
-        {filteredDependencyCandidates.length === 0 ? (
-          <p className="dependency-empty">一致する前提タスクがありません</p>
-        ) : null}
-      </div>
         </>
       ) : null}
       {activeSection === "collaboration" ? (
         <>
-      <section className="task-detail-section" data-task-focus-target="comments" tabIndex={-1}>
-        <div className="task-detail-heading">
-          <span>
-            <ChatBubbleLeftRightIcon />
-            コメント
-          </span>
-          <small>{comments.length}件</small>
-        </div>
-        <textarea
-          className="task-comment-input"
-          disabled={!canComment || task.type === "summary" || task.type === "phase"}
-          onChange={(event) => setCommentText(event.target.value)}
-          placeholder="進捗メモ、確認結果、次アクションなど"
-          value={commentText}
-        />
-        <button
-          className="task-detail-primary"
-          disabled={!canComment || !commentText.trim() || task.type === "summary" || task.type === "phase"}
-          onClick={addComment}
-          type="button"
-        >
-          コメント追加
-        </button>
-        <div className="task-comment-list">
-          {comments.slice(0, 4).map((comment) => (
-            <article key={comment.id}>
-              <div>
-                <strong>{comment.author}</strong>
-                <span>{formatCommentTime(comment.createdAt)}</span>
-              </div>
-              <p>{comment.body}</p>
-              <AttachmentPanel
-                attachments={attachments.filter(
-                  (attachment) =>
-                    attachment.ownerType === "taskComment" && attachment.ownerId === comment.id,
-                )}
-                onAttachmentAdded={onAttachmentAdded}
-                onAttachmentDeleted={onAttachmentDeleted}
-                ownerId={comment.id}
-                ownerType="taskComment"
-                parentId={currentTask.id}
-                projectId={projectId}
-              />
-            </article>
-          ))}
-          {comments.length === 0 ? (
-            <p className="task-detail-empty">コメントはまだありません</p>
-          ) : null}
-        </div>
-      </section>
-      <AttachmentPanel
-        attachments={attachments.filter(
-          (attachment) => attachment.ownerType === "task" && attachment.ownerId === currentTask.id,
-        )}
-        onAttachmentAdded={onAttachmentAdded}
-        onAttachmentDeleted={onAttachmentDeleted}
-        ownerId={currentTask.id}
-        ownerType="task"
-        projectId={projectId}
-      />
+          <section className="task-detail-section" data-task-focus-target="comments" tabIndex={-1}>
+            <div className="task-detail-heading">
+              <span>
+                <ChatBubbleLeftRightIcon />
+                コメント
+              </span>
+              <small>{comments.length}件</small>
+            </div>
+            <textarea
+              className="task-comment-input"
+              disabled={!canComment || task.type === "summary" || task.type === "phase"}
+              onChange={(event) => setCommentText(event.target.value)}
+              placeholder="進捗メモ、確認結果、次アクションなど"
+              value={commentText}
+            />
+            <button
+              className="task-detail-primary"
+              disabled={
+                !canComment ||
+                !commentText.trim() ||
+                task.type === "summary" ||
+                task.type === "phase"
+              }
+              onClick={addComment}
+              type="button"
+            >
+              コメント追加
+            </button>
+            <div className="task-comment-list">
+              {comments.slice(0, 4).map((comment) => (
+                <article key={comment.id}>
+                  <div>
+                    <strong>{comment.author}</strong>
+                    <span>{formatCommentTime(comment.createdAt)}</span>
+                  </div>
+                  <p>{comment.body}</p>
+                  <AttachmentPanel
+                    attachments={attachments.filter(
+                      (attachment) =>
+                        attachment.ownerType === "taskComment" && attachment.ownerId === comment.id,
+                    )}
+                    onAttachmentAdded={onAttachmentAdded}
+                    onAttachmentDeleted={onAttachmentDeleted}
+                    ownerId={comment.id}
+                    ownerType="taskComment"
+                    parentId={currentTask.id}
+                    projectId={projectId}
+                  />
+                </article>
+              ))}
+              {comments.length === 0 ? (
+                <p className="task-detail-empty">コメントはまだありません</p>
+              ) : null}
+            </div>
+          </section>
+          <AttachmentPanel
+            attachments={attachments.filter(
+              (attachment) =>
+                attachment.ownerType === "task" && attachment.ownerId === currentTask.id,
+            )}
+            onAttachmentAdded={onAttachmentAdded}
+            onAttachmentDeleted={onAttachmentDeleted}
+            ownerId={currentTask.id}
+            ownerType="task"
+            projectId={projectId}
+          />
         </>
       ) : null}
       {activeSection === "relations" ? (
-      <section className="task-detail-section">
-        <div className="task-detail-heading">
-          <span>
-            <LinkIcon />
-            参考リンク
-          </span>
-          <small>{links.length}件</small>
-        </div>
-        <div className="task-link-form">
-          <input
-            disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) => setLinkLabel(event.target.value)}
-            placeholder="表示名"
-            value={linkLabel}
-          />
-          <input
-            disabled={task.type === "summary" || task.type === "phase"}
-            onChange={(event) => setLinkUrl(event.target.value)}
-            placeholder="https://..."
-            value={linkUrl}
-          />
-          <button
-            disabled={!linkUrl.trim() || task.type === "summary" || task.type === "phase"}
-            onClick={addLink}
-            type="button"
-          >
-            追加
-          </button>
-        </div>
-        <div className="task-link-list">
-          {links.map((link) => (
-            <div key={link.id}>
-              <a href={link.url} rel="noreferrer" target="_blank">
-                {link.label}
-              </a>
-              <button
-                disabled={task.type === "summary" || task.type === "phase"}
-                onClick={() => deleteLink(link.id)}
-                title="削除"
-                type="button"
-              >
-                <TrashIcon />
-              </button>
-            </div>
-          ))}
-          {links.length === 0 ? <p className="task-detail-empty">参考リンクは未登録です</p> : null}
-        </div>
-      </section>
+        <section className="task-detail-section">
+          <div className="task-detail-heading">
+            <span>
+              <LinkIcon />
+              参考リンク
+            </span>
+            <small>{links.length}件</small>
+          </div>
+          <div className="task-link-form">
+            <input
+              disabled={task.type === "summary" || task.type === "phase"}
+              onChange={(event) => setLinkLabel(event.target.value)}
+              placeholder="表示名"
+              value={linkLabel}
+            />
+            <input
+              disabled={task.type === "summary" || task.type === "phase"}
+              onChange={(event) => setLinkUrl(event.target.value)}
+              placeholder="https://..."
+              value={linkUrl}
+            />
+            <button
+              disabled={!linkUrl.trim() || task.type === "summary" || task.type === "phase"}
+              onClick={addLink}
+              type="button"
+            >
+              追加
+            </button>
+          </div>
+          <div className="task-link-list">
+            {links.map((link) => (
+              <div key={link.id}>
+                <a href={link.url} rel="noreferrer" target="_blank">
+                  {link.label}
+                </a>
+                <button
+                  disabled={task.type === "summary" || task.type === "phase"}
+                  onClick={() => deleteLink(link.id)}
+                  title="削除"
+                  type="button"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            ))}
+            {links.length === 0 ? (
+              <p className="task-detail-empty">参考リンクは未登録です</p>
+            ) : null}
+          </div>
+        </section>
       ) : null}
     </aside>
   );
@@ -907,7 +950,9 @@ function AssigneeAllocationEditor({
   onChange,
   task,
 }: AssigneeAllocationEditorProps) {
-  if (members.length <= 1) return null;
+  if (members.length <= 1) {
+    return null;
+  }
   const allocationMap = getTaskAssigneeAllocationMap(task);
   const total = Math.round(
     members.reduce((sum, member) => sum + (allocationMap.get(member.id) ?? 0), 0),
@@ -966,7 +1011,9 @@ function AssigneeAllocationEditor({
 
 function buildEqualAssigneeAllocations(assigneeIds: string[]) {
   const ids = [...new Set(assigneeIds)];
-  if (ids.length <= 1) return undefined;
+  if (ids.length <= 1) {
+    return undefined;
+  }
   const base = Math.floor(100 / ids.length);
   const remainder = 100 - base * ids.length;
   return ids.map((memberId, index) => ({
@@ -977,14 +1024,18 @@ function buildEqualAssigneeAllocations(assigneeIds: string[]) {
 
 function buildAdjustedAssigneeAllocations(task: ScheduleTask, memberId: string, percent: number) {
   const ids = [...new Set(task.assigneeIds)];
-  if (ids.length <= 1) return undefined;
+  if (ids.length <= 1) {
+    return undefined;
+  }
   const clamped = Math.min(Math.max(Math.round(percent), 0), 100);
   const currentMap = getTaskAssigneeAllocationMap(task);
   const otherIds = ids.filter((id) => id !== memberId);
   const otherTotal = otherIds.reduce((sum, id) => sum + (currentMap.get(id) ?? 0), 0);
   const remaining = 100 - clamped;
   const rawAllocations = ids.map((id) => {
-    if (id === memberId) return { memberId: id, percent: clamped };
+    if (id === memberId) {
+      return { memberId: id, percent: clamped };
+    }
     const currentPercent = currentMap.get(id) ?? 0;
     return {
       memberId: id,
@@ -995,7 +1046,7 @@ function buildAdjustedAssigneeAllocations(task: ScheduleTask, memberId: string, 
   return roundAllocationsTo100(rawAllocations);
 }
 
-function roundAllocationsTo100(allocations: Array<{ memberId: string; percent: number }>) {
+function roundAllocationsTo100(allocations: { memberId: string; percent: number }[]) {
   const rounded = allocations.map((allocation) => {
     const floored = Math.floor(allocation.percent);
     return {
@@ -1005,11 +1056,12 @@ function roundAllocationsTo100(allocations: Array<{ memberId: string; percent: n
     };
   });
   let remainder = 100 - rounded.reduce((sum, allocation) => sum + allocation.percent, 0);
-  rounded
-    .slice()
-    .sort((a, b) => b.fractional - a.fractional)
+  [...rounded]
+    .toSorted((a, b) => b.fractional - a.fractional)
     .forEach((allocation) => {
-      if (remainder <= 0) return;
+      if (remainder <= 0) {
+        return;
+      }
       allocation.percent += 1;
       remainder -= 1;
     });
@@ -1044,8 +1096,12 @@ function dependencyPathReaches(
   targetTaskId: string,
   visitedTaskIds: Set<string>,
 ): boolean {
-  if (sourceTaskId === targetTaskId) return true;
-  if (visitedTaskIds.has(sourceTaskId)) return false;
+  if (sourceTaskId === targetTaskId) {
+    return true;
+  }
+  if (visitedTaskIds.has(sourceTaskId)) {
+    return false;
+  }
   visitedTaskIds.add(sourceTaskId);
   const sourceTask = tasks.find((task) => task.id === sourceTaskId);
   return (sourceTask?.dependencies ?? []).some((dependencyId) =>
@@ -1067,7 +1123,9 @@ function getNextWorkingStartAfter(
   calendarAware: boolean,
 ) {
   let date = addDays(parseDate(dateKey), 1);
-  if (!calendarAware) return toDateKey(date);
+  if (!calendarAware) {
+    return toDateKey(date);
+  }
   while (!isWorkingDay(date, calendar, true)) {
     date = addDays(date, 1);
   }
@@ -1080,7 +1138,9 @@ function getNextWorkingDateOnOrAfter(
   calendarAware: boolean,
 ) {
   let date = parseDate(dateKey);
-  if (!calendarAware) return toDateKey(date);
+  if (!calendarAware) {
+    return toDateKey(date);
+  }
   while (!isWorkingDay(date, calendar, true)) {
     date = addDays(date, 1);
   }
@@ -1093,7 +1153,9 @@ function getPreviousWorkingDateOnOrBefore(
   calendarAware: boolean,
 ) {
   let date = parseDate(dateKey);
-  if (!calendarAware) return toDateKey(date);
+  if (!calendarAware) {
+    return toDateKey(date);
+  }
   while (!isWorkingDay(date, calendar, true)) {
     date = addDays(date, -1);
   }
@@ -1101,19 +1163,27 @@ function getPreviousWorkingDateOnOrBefore(
 }
 
 function formatDeltaDays(delta: number) {
-  if (delta === 0) return "差分なし";
+  if (delta === 0) {
+    return "差分なし";
+  }
   return `${Math.abs(delta)}日${delta > 0 ? "遅れ" : "前倒し"}`;
 }
 
 function getDeltaToneClass(delta: number) {
-  if (delta > 0) return "delayed";
-  if (delta < 0) return "ahead";
+  if (delta > 0) {
+    return "delayed";
+  }
+  if (delta < 0) {
+    return "ahead";
+  }
   return "same";
 }
 
 function formatDateTimeLabel(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
   return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(
     2,
     "0",
@@ -1121,14 +1191,20 @@ function formatDateTimeLabel(value: string) {
 }
 
 function normalizeUrl(value: string) {
-  if (!value) return "";
-  if (/^https?:\/\//i.test(value)) return value;
+  if (!value) {
+    return "";
+  }
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
   return `https://${value}`;
 }
 
 function formatCommentTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "--:--";
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
   return date.toLocaleString("ja-JP", {
     day: "2-digit",
     hour: "2-digit",

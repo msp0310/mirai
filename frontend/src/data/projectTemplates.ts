@@ -1,5 +1,5 @@
-import type { CalendarDefinition, Member, Project, ScheduleTask } from "../types/schedule";
 import { addWorkingDays } from "../lib/schedule";
+import type { CalendarDefinition, Member, Project, ScheduleTask } from "../types/schedule";
 import type { ScheduleSnapshot } from "./scheduleRepository";
 
 export type ProjectTemplateId = "empty" | "maintenance" | "standard-si";
@@ -442,11 +442,13 @@ function nextWorkingDate(dateKey: string, calendar: CalendarDefinition, includeC
 function normalizeGeneratedSummaryTasks(tasks: ScheduleTask[]) {
   const taskById = new Map(tasks.map((task) => [task.id, task]));
   [...tasks]
-    .reverse()
+    .toReversed()
     .filter((task) => task.type === "summary" || task.type === "phase")
     .forEach((parent) => {
       const children = tasks.filter((task) => task.parentId === parent.id);
-      if (children.length === 0) return;
+      if (children.length === 0) {
+        return;
+      }
       const start = children.reduce(
         (min, task) => (task.start < min ? task.start : min),
         children[0].start,

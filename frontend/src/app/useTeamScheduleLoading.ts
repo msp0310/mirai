@@ -1,8 +1,9 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+
+import type { ViewTab } from "../components/layout/ViewTabs";
 import { apiScheduleRepository } from "../data/apiScheduleRepository";
 import type { ProjectSummary, ScheduleWorkspace } from "../data/scheduleRepository";
 import type { ResourceScope } from "../types/schedule";
-import type { ViewTab } from "../components/layout/ViewTabs";
 import { findMissingProjectIds, mergeScheduleIntoWorkspace } from "./projectLoading";
 
 type UseTeamScheduleLoadingOptions = {
@@ -32,7 +33,9 @@ export function useTeamScheduleLoading({
   useEffect(() => {
     const loadsAllTeams =
       activeTab === "Workload" || activeTab === "DailyReports" || activeTab === "PersonalAnalytics";
-    if (resourceScope !== "team" && !loadsAllTeams) return;
+    if (resourceScope !== "team" && !loadsAllTeams) {
+      return;
+    }
 
     const targetTeamIds = loadsAllTeams
       ? workspace.teams.map((team) => team.id)
@@ -44,7 +47,9 @@ export function useTeamScheduleLoading({
         ),
       ),
     ];
-    if (missingProjectIds.length === 0) return;
+    if (missingProjectIds.length === 0) {
+      return;
+    }
 
     let cancelled = false;
     setLoading(true);
@@ -63,7 +68,9 @@ export function useTeamScheduleLoading({
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
 
     return () => {

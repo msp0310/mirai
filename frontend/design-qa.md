@@ -1,7 +1,9 @@
 **Findings**
+
 - No actionable P0/P1/P2 findings remain.
 
 **Open Questions**
+
 - The reference concept shows a denser full task list in the first viewport. The implementation intentionally keeps the same PMO/resource-planning structure but adds a fixed-height Gantt workspace with internal scrolling to support larger task sets and future virtualization.
 - The implementation starts with the task inspector closed so the filter panel remains the primary visible state, matching the selected concept more closely. Task details open on row selection.
 - The weekly workload table has been moved out of the main Gantt view and into the `Resource` tab. This is an intentional IA change for SI project management: the primary view stays focused on the Gantt schedule, while utilization review is one tab away.
@@ -45,6 +47,7 @@
 - Explicit local save no longer re-fires after subsequent task edits. Browser verification confirmed a prior save request does not auto-save again during delete/Undo operations.
 
 **Implementation Checklist**
+
 - Preserve the desktop SaaS layout from concept 2: sidebar, top navigation, Status-tab summary cards, Gantt workspace, filter panel, and Resource-tab workload table.
 - Keep task hierarchy, Gantt coordinates, dependency lines, holiday shading, filters, and resource utilization driven by typed data models.
 - Keep API boundary isolated in `src/data/scheduleRepository.ts` so a future ASP.NET Core API client can replace the mock repository.
@@ -52,6 +55,7 @@
 - Keep all Gantt edits flowing through typed task operations so API persistence can later be added at the repository boundary.
 
 **Follow-up Polish**
+
 - P3: Tune typography scale slightly smaller if the eventual production dataset has many more task rows.
 
 source visual truth path: `/Users/sawada/Documents/New project/frontend/src/assets/reference-concept-2.png`
@@ -73,6 +77,7 @@ full-view comparison evidence: `/Users/sawada/Documents/New project/frontend/scr
 focused region comparison evidence: the full-view comparison keeps the Gantt workspace, task table, filter panel, and resource panel legible side by side at the target desktop viewport. Additional focused crop was not required after the final comparison because the remaining deviations are intentional product choices or P3 polish.
 
 patches made since previous QA pass:
+
 - Fixed task table row class collision where `milestone` row styling inherited absolute positioning intended only for timeline milestones.
 - Changed initial selected task to `null` so the filter panel is visible without the task inspector competing for the right side.
 - Replaced CSS-pattern sparkline with an SVG path for cleaner summary-card rendering.

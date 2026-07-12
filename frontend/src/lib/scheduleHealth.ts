@@ -316,7 +316,7 @@ export function buildScheduleHealthReport({
       });
     });
 
-  const uniqueIssues = uniqueById(issues).sort(compareIssues);
+  const uniqueIssues = uniqueById(issues).toSorted(compareIssues);
   const dangerCount = uniqueIssues.filter((issue) => issue.severity === "danger").length;
   const warningCount = uniqueIssues.filter((issue) => issue.severity === "warning").length;
   const dangerPenalty = Math.min(dangerCount * 18, 100);
@@ -353,12 +353,16 @@ function findCycles(tasks: ScheduleTask[], getNextIds: (task: ScheduleTask) => s
       cyclicTasks.set(task.id, task);
       return;
     }
-    if (visited.has(task.id)) return;
+    if (visited.has(task.id)) {
+      return;
+    }
 
     visiting.add(task.id);
     getNextIds(task).forEach((nextId) => {
       const nextTask = taskById.get(nextId);
-      if (nextTask) visit(nextTask);
+      if (nextTask) {
+        visit(nextTask);
+      }
     });
     visiting.delete(task.id);
     visited.add(task.id);
@@ -370,7 +374,9 @@ function findCycles(tasks: ScheduleTask[], getNextIds: (task: ScheduleTask) => s
 
 function isDateKey(value: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
+  if (!match) {
+    return false;
+  }
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
@@ -400,7 +406,9 @@ function getDuplicates(values: string[]) {
   const seen = new Set<string>();
   const duplicates = new Set<string>();
   values.forEach((value) => {
-    if (seen.has(value)) duplicates.add(value);
+    if (seen.has(value)) {
+      duplicates.add(value);
+    }
     seen.add(value);
   });
   return [...duplicates];

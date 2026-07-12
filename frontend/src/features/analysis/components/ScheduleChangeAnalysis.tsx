@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+
 import type {
   ScheduleChangeLog,
   ScheduleTask,
@@ -21,10 +22,7 @@ export function ScheduleChangeAnalysis({
   onSelectTask,
   tasks,
 }: ScheduleChangeAnalysisProps) {
-  const taskNames = useMemo(
-    () => new Map(tasks.map((task) => [task.id, task.title])),
-    [tasks],
-  );
+  const taskNames = useMemo(() => new Map(tasks.map((task) => [task.id, task.title])), [tasks]);
   const scheduleChanges = useMemo(
     () => changeLogs.filter((log) => log.field === "start" || log.field === "end"),
     [changeLogs],
@@ -59,7 +57,7 @@ export function ScheduleChangeAnalysis({
           taskId,
         };
       })
-      .sort((left, right) => right.count - left.count || right.deltaDays - left.deltaDays)
+      .toSorted((left, right) => right.count - left.count || right.deltaDays - left.deltaDays)
       .slice(0, 8);
   }, [scheduleChanges, taskNames, tasks]);
 
@@ -109,14 +107,20 @@ function getDateDiffDays(before: string, after: string) {
 }
 
 function formatBaselineDelta(value: number | null) {
-  if (value == null) return "基準なし";
-  if (value === 0) return "基準差なし";
+  if (value == null) {
+    return "基準なし";
+  }
+  if (value === 0) {
+    return "基準差なし";
+  }
   return `終了 ${value > 0 ? "+" : ""}${value}日`;
 }
 
 function formatActivityDate(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "不明";
+  if (Number.isNaN(date.getTime())) {
+    return "不明";
+  }
   return date.toLocaleDateString("ja-JP", {
     month: "numeric",
     day: "numeric",

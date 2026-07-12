@@ -47,7 +47,7 @@ const tasks = [
 for (let phaseIndex = 0; phaseIndex < phaseCount; phaseIndex += 1) {
   const phaseNumber = String(phaseIndex + 1).padStart(3, "0");
   const phaseStart = toDateKey((phaseIndex * 6) % 600);
-  const phaseEnd = toDateKey(Math.min((phaseIndex * 6) % 600 + 20, 639));
+  const phaseEnd = toDateKey(Math.min(((phaseIndex * 6) % 600) + 20, 639));
   tasks.push({
     assigneeIds: [],
     color: colors[phaseIndex % colors.length],
@@ -77,7 +77,13 @@ for (let phaseIndex = 0; phaseIndex < phaseCount; phaseIndex += 1) {
       parentId: `performance-phase-${phaseNumber}`,
       progress: isDone ? 100 : isDelayed ? 35 : taskNumber % 4 === 0 ? 65 : 0,
       start,
-      status: isDone ? "done" : isDelayed ? "delayed" : taskNumber % 4 === 0 ? "inProgress" : "notStarted",
+      status: isDone
+        ? "done"
+        : isDelayed
+          ? "delayed"
+          : taskNumber % 4 === 0
+            ? "inProgress"
+            : "notStarted",
       title: `性能確認タスク ${String(taskNumber).padStart(5, "0")}`,
       type: "task",
     });

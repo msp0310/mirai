@@ -1,6 +1,7 @@
 import { CalendarDaysIcon, RectangleStackIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { projectTemplates, type ProjectTemplateId } from "../../../data/projectTemplates";
+
+import { type ProjectTemplateId, projectTemplates } from "../../../data/projectTemplates";
 import type { Team } from "../../../types/schedule";
 
 export type CreateProjectTemplateInput = {
@@ -36,7 +37,9 @@ export function ProjectCreateSheet({
   function submit() {
     const safeWorkspace = workspace.trim();
     const safeProjectName = projectName.trim();
-    if (!safeWorkspace || !safeProjectName || !startDate) return;
+    if (!safeWorkspace || !safeProjectName || !startDate) {
+      return;
+    }
     onCreateProject({
       projectName: safeProjectName,
       projectNo: projectNo.trim(),

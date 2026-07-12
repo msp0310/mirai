@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "target": "ES2023",
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "rootDir": "..",
@@ -13,5 +13,12 @@
     "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": ["./**/*.ts", "../frontend/src/data/scheduleRepository.ts", "../frontend/src/lib/resourceCalculations.ts", "../frontend/src/lib/schedule.ts", "../frontend/src/lib/members.ts", "../frontend/src/types/schedule.ts"]
+  "include": [
+    "./**/*.ts",
+    "../frontend/src/data/scheduleRepository.ts",
+    "../frontend/src/lib/resourceCalculations.ts",
+    "../frontend/src/lib/schedule.ts",
+    "../frontend/src/lib/members.ts",
+    "../frontend/src/types/schedule.ts"
+  ]
 }

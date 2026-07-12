@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+
 import type { ToastMessage, ToastTone } from "../components/ui/ToastViewport";
 
 export type ToastInput = {
@@ -20,11 +21,14 @@ export function useToastQueue() {
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
-  const addToast = useCallback(({ detail, durationMs = 4200, title, tone = "success" }: ToastInput) => {
-    const id = nextIdRef.current + 1;
-    nextIdRef.current = id;
-    setToasts((current) => [...current, { detail, durationMs, id, title, tone }].slice(-3));
-  }, []);
+  const addToast = useCallback(
+    ({ detail, durationMs = 4200, title, tone = "success" }: ToastInput) => {
+      const id = nextIdRef.current + 1;
+      nextIdRef.current = id;
+      setToasts((current) => [...current, { detail, durationMs, id, title, tone }].slice(-3));
+    },
+    [],
+  );
 
   return { addToast, dismissToast, toasts };
 }

@@ -1,5 +1,6 @@
 import { ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
+
 import type {
   ProjectImportValidation,
   TaskCsvImportData,
@@ -33,8 +34,8 @@ export function BrabioTaskImportSheet({
 }: BrabioTaskImportSheetProps) {
   const summary = useMemo(() => {
     const tasks = imported?.tasks ?? [];
-    const starts = tasks.map((task) => task.start).sort();
-    const ends = tasks.map((task) => task.end).sort();
+    const starts = tasks.map((task) => task.start).toSorted();
+    const ends = tasks.map((task) => task.end).toSorted();
     const assigneeIds = new Set(tasks.flatMap((task) => task.assigneeIds));
     const memberLabels = [...assigneeIds]
       .map(
@@ -66,7 +67,9 @@ export function BrabioTaskImportSheet({
   const [expandProjectRange, setExpandProjectRange] = useState(rangeExpansion.needed);
 
   useEffect(() => {
-    if (rangeExpansion.needed) setExpandProjectRange(true);
+    if (rangeExpansion.needed) {
+      setExpandProjectRange(true);
+    }
   }, [rangeExpansion.needed, rangeExpansion.start, rangeExpansion.end]);
 
   const hasErrors = validation.errors.length > 0;

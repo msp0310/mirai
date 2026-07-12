@@ -1,7 +1,7 @@
 import {
   ArrowDownTrayIcon,
-  ArrowRightOnRectangleIcon,
   ArrowPathIcon,
+  ArrowRightOnRectangleIcon,
   ArrowUpTrayIcon,
   BellIcon,
   ChevronDownIcon,
@@ -15,6 +15,7 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { type ChangeEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+
 import type { Project, Team } from "../../types/schedule";
 
 export type ExportFormat = "csv" | "json";
@@ -173,7 +174,9 @@ export function Topbar({
   const filteredProjects = useMemo(
     () =>
       allProjects.filter((item) => {
-        if (!normalizedProjectQuery) return true;
+        if (!normalizedProjectQuery) {
+          return true;
+        }
         const team = item.teamId ? teamById.get(item.teamId) : undefined;
         return [
           item.workspace,
@@ -203,7 +206,9 @@ export function Topbar({
 
   useEffect(() => {
     function handleGlobalProjectSearch(event: globalThis.KeyboardEvent) {
-      if (isAdminContext || isHelpContext) return;
+      if (isAdminContext || isHelpContext) {
+        return;
+      }
       const commandKey = event.metaKey || event.ctrlKey;
       if (
         event.defaultPrevented ||
@@ -237,7 +242,9 @@ export function Topbar({
   }, [isAdminContext, isHelpContext, isProjectContext, openMenu]);
 
   useEffect(() => {
-    if (openMenu === null) return;
+    if (openMenu === null) {
+      return;
+    }
 
     function closeMenuOnOutsideClick(event: PointerEvent) {
       if (event.target instanceof Node && !topbarRef.current?.contains(event.target)) {
@@ -246,7 +253,9 @@ export function Topbar({
     }
 
     function closeMenuOnEscape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape") setOpenMenu(null);
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
     }
 
     document.addEventListener("pointerdown", closeMenuOnOutsideClick);
@@ -258,7 +267,9 @@ export function Topbar({
   }, [openMenu]);
 
   useEffect(() => {
-    if (openMenu !== "projects") return;
+    if (openMenu !== "projects") {
+      return;
+    }
     const frameId = window.requestAnimationFrame(() => {
       projectSearchInputRef.current?.focus();
       projectSearchInputRef.current?.select();
@@ -286,7 +297,9 @@ export function Topbar({
 
   function focusProjectSwitcherRow(index: number) {
     const item = projectSwitcherItems[index];
-    if (!item) return;
+    if (!item) {
+      return;
+    }
     projectRowRefs.current.get(item.id)?.focus();
   }
 
@@ -367,7 +380,9 @@ export function Topbar({
   function importProject(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     onImportProject(file);
     setOpenMenu(null);
   }
@@ -375,7 +390,9 @@ export function Topbar({
   function importTaskCsv(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     onImportTaskCsv(file);
     setOpenMenu(null);
   }
@@ -383,7 +400,9 @@ export function Topbar({
   function importBrabioXlsx(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
     event.currentTarget.value = "";
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     onImportBrabioXlsx(file);
     setOpenMenu(null);
   }
@@ -839,7 +858,9 @@ export function Topbar({
 
 function formatSavedAt(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "保存日時不明";
+  if (Number.isNaN(date.getTime())) {
+    return "保存日時不明";
+  }
   return date.toLocaleTimeString("ja-JP", {
     hour: "2-digit",
     minute: "2-digit",

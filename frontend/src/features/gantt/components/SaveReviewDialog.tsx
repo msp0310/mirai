@@ -1,5 +1,6 @@
 import { CheckCircleIcon, CloudArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useState, type MouseEvent } from "react";
+import { type MouseEvent, useState } from "react";
+
 import type {
   ConfigChangeReview,
   ConfigChangeRow,
@@ -237,11 +238,13 @@ function getFocusTargetFromClick(
   event: MouseEvent<HTMLButtonElement>,
   row: TaskChangeReview["rows"][number],
 ): TaskInspectorFocusTarget | undefined {
-  const target = event.target;
+  const { target } = event;
   if (target instanceof HTMLElement) {
     const fieldElement = target.closest<HTMLElement>("[data-focus-target]");
     const fieldTarget = fieldElement?.dataset.focusTarget;
-    if (fieldTarget) return fieldTarget as TaskInspectorFocusTarget;
+    if (fieldTarget) {
+      return fieldTarget as TaskInspectorFocusTarget;
+    }
   }
   return row.fields.find((field) => field.focusTarget)?.focusTarget;
 }

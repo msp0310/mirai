@@ -3,12 +3,12 @@ const defaultRequestTimeoutMs = 20_000;
 
 /** APIがHTTPエラーを返したことを表す、画面で判定可能なエラーです。 */
 export class ApiRequestError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
     super(message);
     this.name = "ApiRequestError";
+    this.status = status;
   }
 }
 
@@ -29,7 +29,9 @@ export async function requestJson<T>(
       .split("; ")
       .find((item) => item.startsWith("mirai_csrf="))
       ?.slice("mirai_csrf=".length);
-    if (csrfToken) headers.set("X-CSRF-Token", decodeURIComponent(csrfToken));
+    if (csrfToken) {
+      headers.set("X-CSRF-Token", decodeURIComponent(csrfToken));
+    }
   }
 
   const controller = new AbortController();

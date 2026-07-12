@@ -40,14 +40,16 @@ export function mergeCalendarHolidays(
   let addedCount = 0;
 
   imported.forEach((holiday) => {
-    if (byDate.has(holiday.date)) return;
+    if (byDate.has(holiday.date)) {
+      return;
+    }
     byDate.set(holiday.date, holiday);
     addedCount += 1;
   });
 
   return {
     addedCount,
-    holidays: [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    holidays: [...byDate.values()].toSorted((a, b) => a.date.localeCompare(b.date)),
     importedCount: imported.length,
   };
 }

@@ -1,7 +1,8 @@
 import { CalendarDaysIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import type { Member, ScheduleFilters, TaskStatus } from "../../../types/schedule";
+
 import { isMemberActive } from "../../../lib/members";
 import { statusLabels } from "../../../lib/schedule";
+import type { Member, ScheduleFilters, TaskStatus } from "../../../types/schedule";
 
 type FilterPanelProps = {
   filters: ScheduleFilters;

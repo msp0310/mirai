@@ -42,9 +42,15 @@ export function isAttentionProject(item: ProjectPortfolioItem) {
 }
 
 export function matchesPortfolioFilter(item: ProjectPortfolioItem, filter: PortfolioFilter) {
-  if (filter === "attention") return isAttentionProject(item);
-  if (filter === "favorites") return item.favorite;
-  if (filter === "lowProgress") return item.progress < 50;
+  if (filter === "attention") {
+    return isAttentionProject(item);
+  }
+  if (filter === "favorites") {
+    return item.favorite;
+  }
+  if (filter === "lowProgress") {
+    return item.progress < 50;
+  }
   if (filter === "planning" || filter === "inProgress" || filter === "completed") {
     return item.lifecycleStatus === filter;
   }
@@ -52,7 +58,9 @@ export function matchesPortfolioFilter(item: ProjectPortfolioItem, filter: Portf
 }
 
 export function matchesPortfolioQuery(item: ProjectPortfolioItem, query: string) {
-  if (!query) return true;
+  if (!query) {
+    return true;
+  }
   return [
     item.project.workspace,
     item.project.name,
@@ -79,7 +87,9 @@ export function comparePortfolioItems(
       a.project.rangeEnd.localeCompare(b.project.rangeEnd)
     );
   }
-  if (sort === "name") return a.project.workspace.localeCompare(b.project.workspace, "ja");
+  if (sort === "name") {
+    return a.project.workspace.localeCompare(b.project.workspace, "ja");
+  }
   if (sort === "progressAsc") {
     return a.progress - b.progress || a.nextMilestone.start.localeCompare(b.nextMilestone.start);
   }
@@ -102,17 +112,17 @@ export function buildPortfolioItem({
   const stats = getProgressStats(snapshot.tasks);
   const delayedTasks = snapshot.tasks
     .filter((task) => task.type === "task" && task.status === "delayed")
-    .sort((a, b) => a.end.localeCompare(b.end));
+    .toSorted((a, b) => a.end.localeCompare(b.end));
   const nextMilestone =
     snapshot.tasks
       .filter((task) => task.type === "milestone" && task.status !== "done")
-      .sort((a, b) => a.start.localeCompare(b.start))[0] ??
+      .toSorted((a, b) => a.start.localeCompare(b.start))[0] ??
     ({
       start: snapshot.project.nextMilestone.date,
       status: "notStarted",
       title: snapshot.project.nextMilestone.title,
     } satisfies Pick<ScheduleTask, "start" | "status" | "title">);
-  const activeTeamMemberIds = new Set(team?.memberIds ?? []);
+  const activeTeamMemberIds = new Set(team?.memberIds);
   const assignedMembers = getProjectAssignedMembers({
     members: snapshot.members,
     project: snapshot.project,
@@ -190,7 +200,7 @@ export function buildTeamWorkloads({
   schedules: ScheduleSnapshot[];
   team: Team | undefined;
 }): TeamWorkloadItem[] {
-  const teamMemberIds = new Set(team?.memberIds ?? []);
+  const teamMemberIds = new Set(team?.memberIds);
   const workloads = new Map<
     string,
     TeamWorkloadItem & {
@@ -224,15 +234,23 @@ export function buildTeamWorkloads({
           task.effortHours ??
           getWorkingDays(task.start, task.end, snapshot.calendar, calendarAware) * 8;
         task.assigneeIds.forEach((memberId) => {
-          if (!teamMemberIds.has(memberId)) return;
+          if (!teamMemberIds.has(memberId)) {
+            return;
+          }
           const workload = workloads.get(memberId);
-          if (!workload) return;
+          if (!workload) {
+            return;
+          }
           const allocation = getTaskAssigneeAllocationPercent(task, memberId) / 100;
           const memberHours = workingHours * allocation * (1 - task.progress / 100);
-          if (memberHours <= 0) return;
+          if (memberHours <= 0) {
+            return;
+          }
           workload.remainingHours += memberHours;
           workload.openTaskCount += 1;
-          if (task.status === "delayed") workload.delayedTaskCount += 1;
+          if (task.status === "delayed") {
+            workload.delayedTaskCount += 1;
+          }
           workload.projectRefs.set(snapshot.project.id, snapshot.project);
           workload.projectHours.set(
             snapshot.project.id,
@@ -244,7 +262,7 @@ export function buildTeamWorkloads({
 
   return [...workloads.values()]
     .map((item) => {
-      const topProjectId = [...item.projectHours.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+      const topProjectId = [...item.projectHours.entries()].toSorted((a, b) => b[1] - a[1])[0]?.[0];
       const { projectRefs, ...workload } = item;
       return {
         ...workload,
@@ -254,7 +272,7 @@ export function buildTeamWorkloads({
       };
     })
     .filter((item) => item.remainingHours > 0)
-    .sort(
+    .toSorted(
       (a, b) =>
         b.delayedTaskCount - a.delayedTaskCount ||
         b.remainingHours - a.remainingHours ||

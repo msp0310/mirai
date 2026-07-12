@@ -2,7 +2,9 @@ import type { DailyReport, DailyReportReminder } from "../types/schedule";
 import { requestJson } from "./apiClient";
 export function listDailyReports(teamId?: string, page = 1, pageSize = 100) {
   const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-  if (teamId) query.set("teamId", teamId);
+  if (teamId) {
+    query.set("teamId", teamId);
+  }
   return requestJson<DailyReport[]>(`/daily-reports?${query}`);
 }
 
@@ -20,8 +22,7 @@ export function markDailyReportRead(reportId: string) {
 }
 
 export function listDailyReportReminders() {
-  return requestJson<DailyReportReminder[]>("/daily-reports/reminders", {
-  });
+  return requestJson<DailyReportReminder[]>("/daily-reports/reminders", {});
 }
 
 export function sendDailyReportReminders(teamId: string, date: string, memberIds: string[]) {

@@ -1,9 +1,9 @@
-import { useCallback } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useCallback } from "react";
+
+import { mergeScheduleIntoWorkspace } from "../../../app/projectLoading";
 import { apiScheduleRepository } from "../../../data/apiScheduleRepository";
 import type { ScheduleWorkspace } from "../../../data/scheduleRepository";
 import type { ScheduleTask } from "../../../types/schedule";
-import { mergeScheduleIntoWorkspace } from "../../../app/projectLoading";
 
 type UseTaskActualUpdaterOptions = {
   onReplaceProject: (projectId: string, tasks: ScheduleTask[]) => void;
@@ -30,7 +30,9 @@ export function useTaskActualUpdater({
   return useCallback(
     (taskId: string, patch: Partial<ScheduleTask>) => {
       const currentTask = tasks.find((task) => task.id === taskId);
-      if (!currentTask) return;
+      if (!currentTask) {
+        return;
+      }
 
       void apiScheduleRepository
         .updateTaskActual(

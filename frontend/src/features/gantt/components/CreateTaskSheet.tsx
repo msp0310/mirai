@@ -1,5 +1,6 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
+
 import { MemberChecklist } from "../../../components/ui/MemberChecklist";
 import { getActiveMembers } from "../../../lib/members";
 import type { CreateTaskInput, Member, ScheduleTask } from "../../../types/schedule";
@@ -37,7 +38,9 @@ export function CreateTaskSheet({ members, onClose, onCreateTask, tasks }: Creat
     setAssigneeIds((current) => {
       const availableIds = new Set(assigneeOptions.map((member) => member.id));
       const next = current.filter((memberId) => availableIds.has(memberId));
-      if (next.length > 0) return next;
+      if (next.length > 0) {
+        return next;
+      }
       return assigneeOptions[0] ? [assigneeOptions[0].id] : [];
     });
   }, [assigneeOptions]);
@@ -54,7 +57,9 @@ export function CreateTaskSheet({ members, onClose, onCreateTask, tasks }: Creat
   }
 
   function submit() {
-    if (assigneeIds.length === 0) return;
+    if (assigneeIds.length === 0) {
+      return;
+    }
     onCreateTask({
       title,
       parentId: parentId === "none" ? null : parentId,
@@ -94,7 +99,9 @@ export function CreateTaskSheet({ members, onClose, onCreateTask, tasks }: Creat
             value={start}
             onChange={(event) => {
               setStart(event.target.value);
-              if (end < event.target.value) setEnd(event.target.value);
+              if (end < event.target.value) {
+                setEnd(event.target.value);
+              }
             }}
             type="date"
           />

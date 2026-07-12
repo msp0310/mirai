@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
 import { MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
-import {
-  helpDocuments,
-  type HelpDocument,
-  type HelpDocumentId,
-} from "../../../help/helpDocuments";
-import { tourScenarios, type TourId } from "../../onboarding/tourScenarios";
+import { useEffect, useMemo, useState } from "react";
+
+import { type HelpDocument, type HelpDocumentId, helpDocuments } from "../../../help/helpDocuments";
+import { type TourId, tourScenarios } from "../../onboarding/tourScenarios";
+
 import * as styles from "./HelpPage.css";
 
 type HelpBlock =
@@ -31,7 +29,9 @@ export function HelpPage({ availableTourIds, initialDocumentId, onStartTour }: H
   }, [initialDocumentId]);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredDocuments = useMemo(() => {
-    if (!normalizedQuery) return helpDocuments;
+    if (!normalizedQuery) {
+      return helpDocuments;
+    }
     return helpDocuments.filter((document) =>
       [document.title, document.category, document.content]
         .join(" ")
@@ -158,13 +158,17 @@ function parseMarkdownBlocks(content: string): HelpBlock[] {
   let list: string[] = [];
 
   function flushParagraph() {
-    if (paragraph.length === 0) return;
+    if (paragraph.length === 0) {
+      return;
+    }
     blocks.push({ text: paragraph.join(" "), type: "paragraph" });
     paragraph = [];
   }
 
   function flushList() {
-    if (list.length === 0) return;
+    if (list.length === 0) {
+      return;
+    }
     blocks.push({ items: list, type: "list" });
     list = [];
   }
@@ -214,8 +218,12 @@ function parseMarkdownBlocks(content: string): HelpBlock[] {
 }
 
 function renderHeading(block: Extract<HelpBlock, { type: "heading" }>, key: string) {
-  if (block.level === 1) return <h1 key={key}>{renderInlineMarkdown(block.text)}</h1>;
-  if (block.level === 2) return <h2 key={key}>{renderInlineMarkdown(block.text)}</h2>;
+  if (block.level === 1) {
+    return <h1 key={key}>{renderInlineMarkdown(block.text)}</h1>;
+  }
+  if (block.level === 2) {
+    return <h2 key={key}>{renderInlineMarkdown(block.text)}</h2>;
+  }
   return <h3 key={key}>{renderInlineMarkdown(block.text)}</h3>;
 }
 
@@ -233,7 +241,7 @@ function renderInlineMarkdown(text: string) {
 }
 
 function groupByCategory(documents: HelpDocument[]) {
-  const groups: Array<[HelpDocument["category"], HelpDocument[]]> = [];
+  const groups: [HelpDocument["category"], HelpDocument[]][] = [];
   documents.forEach((document) => {
     const group = groups.find(([category]) => category === document.category);
     if (group) {
