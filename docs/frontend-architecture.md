@@ -33,12 +33,26 @@ Oxlintの`no-restricted-imports`を層ごとに設定し、`npm run check`で依
 - 派生値は保存せず、入力状態から`useMemo`または純粋関数で導出する
 - API保存、履歴追加、通知を伴う更新はController Hookを唯一の入口にする
 
+## Ganttの責務境界
+
+- `GanttWorkbench`: ツールバー、タイムライン、タスク表、補助パネルの調停だけを行う
+- `GanttTimelinePane`: 時間軸と表示期間外タスクへの移動導線を構成する
+- `TaskTableViewport`: 仮想化されたタスク行と選択・並べ替えガイドを描画する
+- `useGanttViewport`: 左表とタイムラインのスクロール同期、今日・開始日への移動を管理する
+- `useTaskDragSelection`: 空白領域からの範囲選択を管理する
+- `useTaskRowReorder`: 行の上下移動、子階層化、親階層化を管理する
+- `useTaskContextMenu`: 右クリックメニューの位置と終了条件を管理する
+- `taskTableModel`: 階層ソート、子孫探索、移動対象の判定を純粋関数として提供する
+
+ポインターイベントのリスナーは各操作Hookが所有し、アンマウント時に必ず解除します。
+表示コンポーネントはタスク更新規則を持たず、名前付きコールバック経由でControllerへ通知します。
+
 ## 現在の技術的債務
 
 | 優先度 | 債務                                            | 影響                               | 対応方針                                                    |
 | ------ | ----------------------------------------------- | ---------------------------------- | ----------------------------------------------------------- |
 | P0     | `AppWorkbench`に複数featureの状態変更が残る     | 変更影響が広く、レビューが難しい   | 案件、取込、保存、ナビゲーション単位のController Hookへ分離 |
-| P0     | 1,000行を超えるGantt UIがある                   | 操作回帰と再描画範囲を把握しにくい | Toolbar、Table、Timeline、Interaction Layerの境界で分割     |
+| P0     | `TimelineGrid`と`TaskInspector`が大きい          | 操作回帰と再描画範囲を把握しにくい | Bar、Drag、Inspector Sectionの境界で分割                    |
 | P1     | `scheduleImportExport.ts`が複数形式を扱う       | CSV、JSON、Brabio変更が干渉する    | format別adapterと共通validationへ分割                       |
 | P1     | `taskOperations.ts`に編集操作が集中する         | 単体テストと権限境界が不鮮明       | hierarchy、date、clipboard、dependencyへ分割                |
 | P1     | API DTOと画面モデルの変換がrepositoryへ集中する | API変更がUIへ波及する              | mapperをAPI feature境界へ分離                               |

@@ -1,4 +1,31 @@
+import type { TaskSiblingReorderPlacement } from "../../../lib/taskOperations";
 import type { ScheduleTask, TaskInspectorFocusTarget } from "../../../types/schedule";
+
+export type TaskTableSortKey = "assignee" | "end" | "progress" | "start" | "status" | "title";
+
+export type TaskTableSortState = {
+  direction: "asc" | "desc";
+  key: TaskTableSortKey | null;
+};
+
+export type TaskRowReorderMode = "child" | "outdent" | "sibling";
+
+export type TaskRowReorderState = {
+  draggingTaskIds: string[];
+  mode: TaskRowReorderMode;
+  placement: TaskSiblingReorderPlacement;
+  referenceTaskId: string | null;
+  reason: string;
+  sourceTaskId: string;
+  targetParentId: string | null;
+  targetTaskId: string | null;
+  valid: boolean;
+};
+
+export type VisibleTimelineSlotWindow = {
+  end: number;
+  start: number;
+};
 
 /** 1プロジェクト分のタスクに対するUndo/Redo状態です。 */
 export type TaskHistory = {

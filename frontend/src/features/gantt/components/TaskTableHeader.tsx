@@ -1,11 +1,5 @@
 import type { GanttColumnVisibility } from "../../../types/schedule";
-
-export type TaskTableSortKey = "assignee" | "end" | "progress" | "start" | "status" | "title";
-
-export type TaskTableSortState = {
-  direction: "asc" | "desc";
-  key: TaskTableSortKey | null;
-};
+import type { TaskTableSortKey, TaskTableSortState } from "../types/ganttState";
 
 type TaskTableHeaderProps = {
   columnVisibility: GanttColumnVisibility;

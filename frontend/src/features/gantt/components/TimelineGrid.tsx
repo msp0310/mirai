@@ -24,12 +24,12 @@ import type {
   TimelineDay,
 } from "../../../types/schedule";
 import { getTaskSelectionOptions } from "../utils/taskSelection";
+import type { VisibleTimelineSlotWindow } from "../types/ganttState";
 import { rowHeight } from "./constants";
-
-type VisibleSlotWindow = {
-  end: number;
-  start: number;
-};
+import { TimelineCalendarBackdrop } from "./TimelineCalendarBackdrop";
+import { TimelineDependencyOverlay } from "./TimelineDependencyOverlay";
+import { TimelineHeader } from "./TimelineHeader";
+import { buildDependencyPath } from "../lib/timelineGeometry";
 
 type PointerMode = "move" | "start" | "end";
 
@@ -60,7 +60,7 @@ type TimelineGridProps = {
   timeline: TimelineDay[];
   todayKey: string;
   totalRows: number;
-  visibleSlotWindow: VisibleSlotWindow;
+  visibleSlotWindow: VisibleTimelineSlotWindow;
   viewportHeight: number;
   weeks: TimelineColumn[];
 };
@@ -99,76 +99,19 @@ export function TimelineGrid({
 }: TimelineGridProps) {
   const timelineWidth = timeline.length * dayWidth;
   const bodyHeight = Math.max(totalRows * rowHeight, viewportHeight);
-  const todayOffset = getExactTimelineSlotIndex(todayKey, timeline);
-  const projectEndOffset = getExactTimelineSlotIndex(projectRangeEnd, timeline);
-  const showToday = todayOffset >= visibleSlotWindow.start && todayOffset < visibleSlotWindow.end;
-  const visibleMonths = getVisibleColumns(months, visibleSlotWindow);
-  const visibleWeeks = getVisibleColumns(weeks, visibleSlotWindow);
   return (
     <>
-      <div
-        className="timeline-header"
-        ref={headerRef}
-        style={{ "--timeline-width": `${timelineWidth}px` } as CSSProperties}
-      >
-        {showToday ? (
-          <div
-            className="today-header-band"
-            style={{ left: todayOffset * dayWidth, width: dayWidth }}
-          />
-        ) : null}
-        {projectEndOffset >= visibleSlotWindow.start && projectEndOffset < visibleSlotWindow.end ? (
-          <div
-            aria-label={`当初計画の終了日 ${formatShortDate(projectRangeEnd)}`}
-            className="project-range-end-header"
-            style={{ left: (projectEndOffset + 1) * dayWidth }}
-            title={`当初計画の終了日 ${formatShortDate(projectRangeEnd)}`}
-          />
-        ) : null}
-        <div className="month-row" style={{ width: timelineWidth }}>
-          {visibleMonths.map((month) => (
-            <div
-              className="month-cell"
-              key={month.key}
-              style={{
-                left: month.startIndex * dayWidth,
-                width: month.span * dayWidth,
-              }}
-            >
-              {month.label}
-            </div>
-          ))}
-        </div>
-        <div className="week-row" style={{ width: timelineWidth }}>
-          {visibleWeeks.map((week) => {
-            const day = timeUnit === "day" ? timeline[week.startIndex] : undefined;
-            const className = [
-              timeUnit === "day" ? "week-cell day-cell" : "week-cell",
-              day?.holiday ? "holiday-date" : "",
-              day && !day.holiday && day.isWeekend ? "weekend-date" : "",
-            ]
-              .filter(Boolean)
-              .join(" ");
-            return (
-              <div
-                className={className}
-                key={week.key}
-                style={{
-                  left: week.startIndex * dayWidth,
-                  width: week.span * dayWidth,
-                }}
-              >
-                {week.label}
-              </div>
-            );
-          })}
-        </div>
-        {showToday ? (
-          <div className="today-label" style={{ left: todayOffset * dayWidth + dayWidth / 2 }}>
-            今日
-          </div>
-        ) : null}
-      </div>
+      <TimelineHeader
+        dayWidth={dayWidth}
+        headerRef={headerRef}
+        months={months}
+        projectRangeEnd={projectRangeEnd}
+        timeUnit={timeUnit}
+        timeline={timeline}
+        todayKey={todayKey}
+        visibleSlotWindow={visibleSlotWindow}
+        weeks={weeks}
+      />
 
       <div className="timeline-body" onScroll={onBodyScroll} ref={timelineBodyRef}>
         <div
@@ -184,13 +127,13 @@ export function TimelineGrid({
           data-visible-slot-end={visibleSlotWindow.end}
           data-visible-slot-start={visibleSlotWindow.start}
         >
-          <CalendarBackdrop
+          <TimelineCalendarBackdrop
             bodyHeight={bodyHeight}
             dayWidth={dayWidth}
             days={timeline}
             projectRangeEnd={projectRangeEnd}
             projectRangeStart={projectRangeStart}
-            todayOffset={todayOffset}
+            todayKey={todayKey}
             visibleSlotWindow={visibleSlotWindow}
           />
           {rows.map((task, index) => (
@@ -218,7 +161,7 @@ export function TimelineGrid({
               visibleSlotWindow={visibleSlotWindow}
             />
           ))}
-          <DependencyOverlay
+          <TimelineDependencyOverlay
             dayWidth={dayWidth}
             dependencyIssueByTaskId={dependencyIssueByTaskId}
             rowIndexOffset={rowIndexOffset}
@@ -230,68 +173,6 @@ export function TimelineGrid({
       </div>
     </>
   );
-}
-
-type CalendarBackdropProps = {
-  bodyHeight: number;
-  dayWidth: number;
-  days: TimelineDay[];
-  projectRangeEnd: string;
-  projectRangeStart: string;
-  todayOffset: number;
-  visibleSlotWindow: VisibleSlotWindow;
-};
-
-function CalendarBackdrop({
-  bodyHeight,
-  dayWidth,
-  days,
-  projectRangeEnd,
-  projectRangeStart,
-  todayOffset,
-  visibleSlotWindow,
-}: CalendarBackdropProps) {
-  const visibleDays = days.slice(visibleSlotWindow.start, visibleSlotWindow.end);
-  return (
-    <div className="calendar-backdrop" style={{ height: bodyHeight }}>
-      {visibleDays.map((day) => {
-        const isToday = day.index === todayOffset;
-        const isOutsideProjectRange = day.end < projectRangeStart || day.start > projectRangeEnd;
-        const includesProjectEnd = projectRangeEnd >= day.start && projectRangeEnd <= day.end;
-        const className = [
-          "day-column",
-          day.isNonWorking ? "non-working" : "",
-          isToday ? "today" : "",
-          isOutsideProjectRange ? "outside-project-range" : "",
-          includesProjectEnd ? "project-range-end" : "",
-        ]
-          .filter(Boolean)
-          .join(" ");
-        const title = [
-          isToday ? "今日" : "",
-          day.holiday?.name ?? "",
-          isOutsideProjectRange ? "当初計画期間外" : "",
-          includesProjectEnd ? "当初計画の終了" : "",
-        ]
-          .filter(Boolean)
-          .join(" / ");
-
-        return (
-          <div
-            aria-hidden="true"
-            className={className}
-            key={day.key}
-            style={{ left: day.index * dayWidth, width: dayWidth }}
-            title={title}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-function getExactTimelineSlotIndex(dateKey: string, timeline: TimelineDay[]): number {
-  return timeline.findIndex((day) => dateKey >= day.start && dateKey <= day.end);
 }
 
 type TimelineRowProps = {
@@ -314,7 +195,7 @@ type TimelineRowProps = {
   task: TaskRow;
   timeUnit: GanttTimeUnit;
   timeline: TimelineDay[];
-  visibleSlotWindow: VisibleSlotWindow;
+  visibleSlotWindow: VisibleTimelineSlotWindow;
 };
 
 function TimelineRow({
@@ -810,115 +691,6 @@ function formatTimelineAssignees(assigneeIds: string[], members: Member[]) {
   };
 }
 
-type DependencyOverlayProps = {
-  dayWidth: number;
-  dependencyIssueByTaskId: Map<string, DependencyIssue[]>;
-  rowIndexOffset: number;
-  rows: TaskRow[];
-  timeline: TimelineDay[];
-  visibleSlotWindow: VisibleSlotWindow;
-};
-
-function DependencyOverlay({
-  dayWidth,
-  dependencyIssueByTaskId,
-  rowIndexOffset,
-  rows,
-  timeline,
-  visibleSlotWindow,
-}: DependencyOverlayProps) {
-  const rowById = new Map(
-    rows.map((task, index) => [task.id, { task, index: rowIndexOffset + index }]),
-  );
-  const paths: {
-    issue: boolean;
-    path: string;
-    sourceId: string;
-    targetId: string;
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-  }[] = [];
-  const visibleLeft = visibleSlotWindow.start * dayWidth - dayWidth;
-  const visibleRight = visibleSlotWindow.end * dayWidth + dayWidth;
-
-  rows.forEach((task, targetIndex) => {
-    (task.dependencies ?? []).forEach((dependencyId) => {
-      const source = rowById.get(dependencyId);
-      if (!source) {
-        return;
-      }
-      const sourceSpan = getTaskTimelineSpan(source.task, timeline);
-      const targetSpan = getTaskTimelineSpan(task, timeline);
-      const x1 = getDependencyAnchorX(source.task, sourceSpan, dayWidth, "end");
-      const y1 = source.index * rowHeight + rowHeight / 2;
-      const x2 = getDependencyAnchorX(task, targetSpan, dayWidth, "start");
-      const y2 = (rowIndexOffset + targetIndex) * rowHeight + rowHeight / 2;
-      const mid = Math.max(x1 + 16, (x1 + x2) / 2);
-      const pathLeft = Math.min(x1, x2, mid);
-      const pathRight = Math.max(x1, x2, mid);
-      if (pathRight < visibleLeft || pathLeft > visibleRight) {
-        return;
-      }
-      paths.push({
-        issue: (dependencyIssueByTaskId.get(task.id) ?? []).some(
-          (issue) => issue.dependency.id === dependencyId,
-        ),
-        path: buildDependencyPath(x1, y1, x2, y2),
-        sourceId: source.task.id,
-        targetId: task.id,
-        x1,
-        x2,
-        y1,
-        y2,
-      });
-    });
-  });
-
-  return (
-    <svg className="dependency-overlay" aria-hidden="true">
-      {paths.map((item, index) => (
-        <path
-          className={item.issue ? "dependency-warning-path" : undefined}
-          data-dependency-source-id={item.sourceId}
-          data-dependency-target-id={item.targetId}
-          data-source-x={item.x1}
-          data-source-y={item.y1}
-          data-target-x={item.x2}
-          data-target-y={item.y2}
-          d={item.path}
-          key={`${item.path}-${index}`}
-        />
-      ))}
-    </svg>
-  );
-}
-
-function buildDependencyPath(
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number,
-): string {
-  const mid = Math.max(sourceX + 16, (sourceX + targetX) / 2);
-  return `M ${sourceX} ${sourceY} H ${mid} V ${targetY} H ${targetX}`;
-}
-
-function getDependencyAnchorX(
-  task: TaskRow,
-  span: ReturnType<typeof getTaskTimelineSpan>,
-  dayWidth: number,
-  edge: "end" | "start",
-): number {
-  if (task.type === "milestone") {
-    return span.offset * dayWidth + 15;
-  }
-  const left = span.offset * dayWidth + 7;
-  const width = Math.max(span.duration * dayWidth - 12, 10);
-  return edge === "start" ? left : left + width;
-}
-
 function updateDependencyPreviewPaths(
   canvas: HTMLElement | null,
   taskId: string,
@@ -981,16 +753,6 @@ function resetDependencyPreviewPaths(canvas: HTMLElement | null) {
       return;
     }
     path.setAttribute("d", buildDependencyPath(sourceX, sourceY, targetX, targetY));
-  });
-}
-
-function getVisibleColumns(
-  columns: TimelineColumn[],
-  visibleSlotWindow: VisibleSlotWindow,
-): TimelineColumn[] {
-  return columns.filter((column) => {
-    const columnEnd = column.startIndex + column.span;
-    return columnEnd >= visibleSlotWindow.start && column.startIndex <= visibleSlotWindow.end;
   });
 }
 
