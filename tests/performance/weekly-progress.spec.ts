@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import {
   buildWeeklyProgressRows,
   getIssuesDueByWeek,
-} from "../../frontend/src/features/analysis/components/WeeklyProgressSummary";
+} from "../../frontend/src/features/analysis/model/weeklyProgress";
 import { addDays, parseDate, toDateKey } from "../../frontend/src/lib/schedule";
 import type { ProjectIssue, ScheduleTask } from "../../frontend/src/types/schedule";
 
