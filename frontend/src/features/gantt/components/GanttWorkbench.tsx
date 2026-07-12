@@ -18,6 +18,7 @@ import {
   useState,
 } from "react";
 import type {
+  CalendarDefinition,
   GanttColumnVisibility,
   GanttScale,
   GanttTimeUnit,
@@ -44,6 +45,7 @@ import { TimelineGrid } from "./TimelineGrid";
 
 type GanttWorkbenchProps = {
   activeFilterCount: number;
+  calendar: CalendarDefinition;
   calendarAware: boolean;
   canPasteTask: boolean;
   canEditPlan?: boolean;
@@ -215,6 +217,7 @@ function sortTaskRowsPreservingHierarchy(
 /** 大量のタスクを編集・選択・移動できるガントワークベンチです。 */
 export function GanttWorkbench({
   activeFilterCount,
+  calendar,
   calendarAware,
   canPasteTask,
   canEditPlan = true,
@@ -1044,6 +1047,8 @@ export function GanttWorkbench({
         />
         {displayMode === "gantt" ? (
           <TimelineGrid
+            calendar={calendar}
+            calendarAware={calendarAware}
             dayWidth={dayWidth}
             headerRef={timelineHeaderRef}
             members={members}

@@ -22,6 +22,8 @@ export type TaskInsertionResult = {
   tasks: ScheduleTask[];
 };
 
+export type TaskDateRange = Pick<ScheduleTask, "end" | "start">;
+
 export type TaskPasteMode = "child" | "sibling";
 export type TaskSiblingReorderPlacement = "before" | "after";
 
@@ -134,18 +136,43 @@ function moveTaskIdsByDays(
   return normalizeSummaryTasks(
     tasks.map((task) => {
       if (!targetIds.has(task.id)) return task;
-      const start = toDateKey(addDays(parseDate(task.start), deltaDays));
-      if (task.type === "milestone") {
-        return { ...task, start, end: start };
-      }
-      const workDays = getTaskWorkDays(task, calendar, calendarAware);
-      return {
-        ...task,
-        start,
-        end: resolveEndForWorkDays(start, workDays, calendar, calendarAware),
-      };
+      return { ...task, ...getMovedTaskDateRange(task, deltaDays, calendar, calendarAware) };
     }),
   );
+}
+
+/** 稼働日数を維持したまま、指定した暦日数だけタスクを移動します。 */
+export function getMovedTaskDateRange(
+  task: ScheduleTask,
+  deltaDays: number,
+  calendar?: CalendarDefinition,
+  calendarAware = true,
+): TaskDateRange {
+  const start = toDateKey(addDays(parseDate(task.start), deltaDays));
+  if (task.type === "milestone") return { end: start, start };
+  const workDays = getTaskWorkDays(task, calendar, calendarAware);
+  return {
+    end: resolveEndForWorkDays(start, workDays, calendar, calendarAware),
+    start,
+  };
+}
+
+/** ドラッグした端の日付をそのまま採用し、反対側の日付を維持します。 */
+export function getResizedTaskDateRange(
+  task: ScheduleTask,
+  edge: "start" | "end",
+  deltaDays: number,
+): TaskDateRange {
+  if (task.type === "milestone") {
+    const date = toDateKey(addDays(parseDate(task.start), deltaDays));
+    return { end: date, start: date };
+  }
+  if (edge === "start") {
+    const start = toDateKey(addDays(parseDate(task.start), deltaDays));
+    return { end: task.end, start: start > task.end ? task.end : start };
+  }
+  const end = toDateKey(addDays(parseDate(task.end), deltaDays));
+  return { end: end < task.start ? task.start : end, start: task.start };
 }
 
 function getDescendantIds(tasks: ScheduleTask[], taskId: string): Set<string> {
@@ -168,35 +195,12 @@ export function resizeTaskByDays(
   taskId: string,
   edge: "start" | "end",
   deltaDays: number,
-  calendar?: CalendarDefinition,
-  calendarAware = true,
 ): ScheduleTask[] {
   if (deltaDays === 0) return tasks;
   return normalizeSummaryTasks(
     tasks.map((task) => {
       if (task.id !== taskId) return task;
-      if (task.type === "milestone") {
-        const nextDate = toDateKey(addDays(parseDate(task.start), deltaDays));
-        return { ...task, start: nextDate, end: nextDate };
-      }
-      const currentWorkDays = getTaskWorkDays(task, calendar, calendarAware);
-      if (edge === "start") {
-        const start = toDateKey(addDays(parseDate(task.start), deltaDays));
-        return {
-          ...task,
-          start,
-          end: resolveEndForWorkDays(start, currentWorkDays - deltaDays, calendar, calendarAware),
-        };
-      }
-      return {
-        ...task,
-        end: resolveEndForWorkDays(
-          task.start,
-          currentWorkDays + deltaDays,
-          calendar,
-          calendarAware,
-        ),
-      };
+      return { ...task, ...getResizedTaskDateRange(task, edge, deltaDays) };
     }),
   );
 }

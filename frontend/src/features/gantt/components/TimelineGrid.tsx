@@ -1,5 +1,6 @@
 import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
 import type {
+  CalendarDefinition,
   GanttTimeUnit,
   Member,
   TaskRow,
@@ -8,13 +9,14 @@ import type {
 } from "../../../types/schedule";
 import type { DependencyIssue } from "../../../lib/schedule";
 import {
-  addDays,
+  getMovedTaskDateRange,
+  getResizedTaskDateRange,
+} from "../../../lib/taskOperations";
+import {
   formatShortDate,
   getDateDeltaForTimeUnit,
   getTaskTimelineSpan,
-  parseDate,
   taskMatchesQuery,
-  toDateKey,
 } from "../../../lib/schedule";
 import { rowHeight } from "./constants";
 
@@ -26,6 +28,8 @@ type VisibleSlotWindow = {
 type PointerMode = "move" | "start" | "end";
 
 type TimelineGridProps = {
+  calendar: CalendarDefinition;
+  calendarAware: boolean;
   dayWidth: number;
   headerRef: RefObject<HTMLDivElement | null>;
   members: Member[];
@@ -55,6 +59,8 @@ type TimelineGridProps = {
 
 /** ガント右側のタイムラインとタスクバーを仮想化して描画します。 */
 export function TimelineGrid({
+  calendar,
+  calendarAware,
   dayWidth,
   headerRef,
   members,
@@ -169,6 +175,8 @@ export function TimelineGrid({
           {rows.map((task, index) => (
             <TimelineRow
               index={rowIndexOffset + index}
+              calendar={calendar}
+              calendarAware={calendarAware}
               dayWidth={dayWidth}
               members={members}
               key={task.id}
@@ -250,6 +258,8 @@ function getExactTimelineSlotIndex(dateKey: string, timeline: TimelineDay[]): nu
 }
 
 type TimelineRowProps = {
+  calendar: CalendarDefinition;
+  calendarAware: boolean;
   dayWidth: number;
   index: number;
   members: Member[];
@@ -271,6 +281,8 @@ type TimelineRowProps = {
 };
 
 function TimelineRow({
+  calendar,
+  calendarAware,
   dayWidth,
   index,
   members,
@@ -399,30 +411,45 @@ function TimelineRow({
     const startScrollLeft = body?.scrollLeft ?? 0;
     let latestClientX = startX;
     let latestDelta = 0;
-    const originalWidth = element.getBoundingClientRect().width;
     const minWidth = Math.max(dayWidth - 12, 10);
     const maxStartDelta = Math.max(span.duration - 1, 0);
     const minEndDelta = -Math.max(span.duration - 1, 0);
 
-    const updatePreview = (deltaUnits: number) => {
+    const getPreviewState = (deltaUnits: number) => {
       const deltaDays = getDateDeltaForTimeUnit(
         mode === "end" ? task.end : task.start,
         timeUnit,
         deltaUnits,
       );
-      const nextStart = mode === "end" ? task.start : shiftDateKey(task.start, deltaDays);
-      const nextEnd = mode === "start" ? task.end : shiftDateKey(task.end, deltaDays);
+      const range =
+        mode === "move"
+          ? getMovedTaskDateRange(task, deltaDays, calendar, calendarAware)
+          : getResizedTaskDateRange(task, mode, deltaDays);
+      const previewSpan = getTaskTimelineSpan({ ...task, ...range }, timeline);
+      const startOffsetPx = (previewSpan.offset - span.offset) * dayWidth;
+      const endOffsetPx =
+        (previewSpan.offset + previewSpan.duration - (span.offset + span.duration)) * dayWidth;
       const lineSlot =
-        mode === "end" ? span.offset + span.duration + deltaUnits : span.offset + deltaUnits;
+        mode === "end" ? previewSpan.offset + previewSpan.duration : previewSpan.offset;
+      return {
+        endOffsetPx,
+        lineSlot,
+        range,
+        startOffsetPx,
+        width: Math.max(previewSpan.duration * dayWidth - 12, minWidth),
+      };
+    };
+
+    const updatePreview = (
+      deltaUnits: number,
+      preview: ReturnType<typeof getPreviewState>,
+    ) => {
+      const { endOffsetPx, lineSlot, range, startOffsetPx } = preview;
       const lineLeft = clamp(lineSlot, 0, timeline.length) * dayWidth;
-      const previewLabel = formatDragPreviewLabel(mode, deltaUnits, timeUnit, {
-        end: nextEnd,
-        start: nextStart,
-      });
+      const previewLabel = formatDragPreviewLabel(mode, deltaUnits, timeUnit, range);
       const label = moveSelectionTogether
         ? `${selectedTaskCount}件・${previewLabel}`
         : previewLabel;
-      const previewPx = deltaUnits * dayWidth;
 
       element.dataset.dragPreview = label;
       if (!previewElements) return;
@@ -430,7 +457,7 @@ function TimelineRow({
       previewElements.bubble.style.left = `${lineLeft}px`;
       previewElements.bubble.style.top = `${Math.max(index * rowHeight - 32, 4)}px`;
       previewElements.bubble.textContent = label;
-      updateDependencyPreviewPaths(canvas, task.id, mode, previewPx);
+      updateDependencyPreviewPaths(canvas, task.id, startOffsetPx, endOffsetPx);
     };
 
     const beginDrag = () => {
@@ -438,7 +465,7 @@ function TimelineRow({
       active = true;
       element.classList.add("is-dragging");
       previewElements = canvas ? ensureDragPreviewElements(canvas) : null;
-      updatePreview(0);
+      updatePreview(0, getPreviewState(0));
     };
 
     const cleanup = () => {
@@ -463,25 +490,21 @@ function TimelineRow({
       const rawDelta = clientX - startX + scrollDelta;
       if (!active && Math.abs(rawDelta) < 5) return;
       beginDrag();
-      let deltaDays = Math.round(rawDelta / dayWidth);
+      let deltaUnits = Math.round(rawDelta / dayWidth);
       if (mode === "start") {
-        deltaDays = Math.min(deltaDays, maxStartDelta);
+        deltaUnits = Math.min(deltaUnits, maxStartDelta);
       }
       if (mode === "end") {
-        deltaDays = Math.max(deltaDays, minEndDelta);
+        deltaUnits = Math.max(deltaUnits, minEndDelta);
       }
-      if (deltaDays === latestDelta) return;
-      latestDelta = deltaDays;
-      const previewPx = latestDelta * dayWidth;
-      if (mode === "move") {
-        element.style.transform = `translate3d(${previewPx}px, 0, 0)`;
-      } else if (mode === "start") {
-        element.style.transform = `translate3d(${previewPx}px, 0, 0)`;
-        element.style.width = `${Math.max(originalWidth - previewPx, minWidth)}px`;
-      } else {
-        element.style.width = `${Math.max(originalWidth + previewPx, minWidth)}px`;
+      if (deltaUnits === latestDelta) return;
+      latestDelta = deltaUnits;
+      const preview = getPreviewState(latestDelta);
+      if (mode === "move" || mode === "start") {
+        element.style.transform = `translate3d(${preview.startOffsetPx}px, 0, 0)`;
       }
-      updatePreview(latestDelta);
+      element.style.width = `${preview.width}px`;
+      updatePreview(latestDelta, preview);
     };
 
     const getAutoScrollVelocity = () => {
@@ -830,8 +853,8 @@ function getDependencyAnchorX(
 function updateDependencyPreviewPaths(
   canvas: HTMLElement | null,
   taskId: string,
-  mode: PointerMode,
-  previewPx: number,
+  startOffsetPx: number,
+  endOffsetPx: number,
 ) {
   if (!canvas) return;
   const paths = canvas.querySelectorAll<SVGPathElement>(
@@ -855,10 +878,10 @@ function updateDependencyPreviewPaths(
     let nextSourceX = sourceX;
     let nextTargetX = targetX;
     if (path.dataset.dependencySourceId === taskId) {
-      nextSourceX += mode === "start" ? 0 : previewPx;
+      nextSourceX += endOffsetPx;
     }
     if (path.dataset.dependencyTargetId === taskId) {
-      nextTargetX += mode === "end" ? 0 : previewPx;
+      nextTargetX += startOffsetPx;
     }
 
     path.setAttribute("d", buildDependencyPath(nextSourceX, sourceY, nextTargetX, targetY));
@@ -896,10 +919,6 @@ function getVisibleColumns(
     const columnEnd = column.startIndex + column.span;
     return columnEnd >= visibleSlotWindow.start && column.startIndex <= visibleSlotWindow.end;
   });
-}
-
-function shiftDateKey(dateKey: string, deltaDays: number): string {
-  return toDateKey(addDays(parseDate(dateKey), deltaDays));
 }
 
 function ensureDragPreviewElements(canvas: HTMLElement) {

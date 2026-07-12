@@ -477,9 +477,7 @@ export function useTaskActions({
   /** resizeTaskを実行します。 */
   function resizeTask(taskId: string, edge: "start" | "end", deltaDays: number) {
     const task = tasks.find((item) => item.id === taskId);
-    commitTasks((current) =>
-      resizeTaskByDays(current, taskId, edge, deltaDays, calendar, calendarAware),
-    );
+    commitTasks((current) => resizeTaskByDays(current, taskId, edge, deltaDays));
     if (task && deltaDays !== 0) {
       onActivity({
         category: "task",

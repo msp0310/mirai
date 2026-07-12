@@ -2870,6 +2870,7 @@ export function AppWorkbench({
           {showMainProjectViews && activeTab === "Gantt" ? (
             <GanttWorkbench
               activeFilterCount={activeFilterCount}
+              calendar={schedule.calendar}
               calendarAware={calendarAware}
               canEditPlan={canEditPlan}
               columnVisibility={columnVisibility}
