@@ -1,23 +1,18 @@
 import { Provider } from "jotai";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Sidebar } from "../components/layout/Sidebar";
-import { type ExportFormat, Topbar } from "../components/layout/Topbar";
-import { ToastViewport } from "../components/ui/ToastViewport";
+import { type ExportFormat } from "../components/layout/Topbar";
 import { type AuthUser } from "../data/authRepository";
 import { clearLocalScheduleDraft, saveLocalScheduleDraft } from "../data/localScheduleStorage";
 import { type ScheduleSnapshot } from "../data/scheduleRepository";
 import { useActivityLog } from "../features/activity/hooks/useActivityLog";
-import { todayKey } from "../features/gantt/components/constants";
-import { GanttWorkbench } from "../features/gantt/components/GanttWorkbench";
 import { useGanttKeyboardShortcuts } from "../features/gantt/hooks/useGanttKeyboardShortcuts";
 import { useTaskActions } from "../features/gantt/hooks/useTaskActions";
 import { useTaskActualUpdater } from "../features/gantt/hooks/useTaskActualUpdater";
 import { useTaskHistory } from "../features/gantt/hooks/useTaskHistory";
 import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
 import type { TaskClipboard } from "../features/gantt/types/ganttState";
-import { OnboardingTour } from "../features/onboarding/components/OnboardingTour";
-import { getTourCompletionKey, tourScenarios } from "../features/onboarding/tourScenarios";
+import { getTourCompletionKey } from "../features/onboarding/tourScenarios";
 import { useProjectActivityActions } from "../features/projects/hooks/useProjectActivityActions";
 import { useProjectAttachments } from "../features/projects/hooks/useProjectAttachments";
 import { useProjectConfigurationActions } from "../features/projects/hooks/useProjectConfigurationActions";
@@ -26,11 +21,6 @@ import { useProjectImportCommitActions } from "../features/projects/hooks/usePro
 import { createProjectExportFile } from "../features/projects/lib/projectExportService";
 import { useMasterDataActions } from "../features/settings/hooks/useMasterDataActions";
 import { useToastQueue } from "../hooks/useToastQueue";
-import {
-  buildTaskChangeReview,
-  buildWorkspaceConfigChangeReview,
-  buildWorkspaceTaskChangeReview,
-} from "../lib/changeReview";
 import { isProjectArchived } from "../lib/projects";
 import { getProgressStats } from "../lib/schedule";
 import { type ScheduleHealthIssue, buildScheduleHealthReport } from "../lib/scheduleHealth";
@@ -38,20 +28,17 @@ import { mergeScheduleIntoWorkspace } from "../lib/scheduleWorkspace";
 import { type TaskPasteMode, normalizeSummaryTasks } from "../lib/taskOperations";
 import type { TaskInspectorFocusTarget } from "../types/schedule";
 import {
-  createConfigChangeReviewFromRows,
   createDraftSignature,
-  createLocalDraftChangeSummary,
-  createPersistableDraft,
   getHealthIssueFocusTarget,
-  initialFilters,
   mergeProjectScopedSavedDraft,
 } from "./appState";
 import type { ApiSyncState, AppInitialState } from "./appTypes";
+import { AppWorkbenchView } from "./components/AppWorkbenchView";
 import { useWorkbenchRouting } from "./routing/useWorkbenchRouting";
-import { buildTopbarSyncQueueItems, createTopbarSyncStatus } from "./syncPresentation";
 import { useDailyReportReminders } from "./useDailyReportReminders";
 import { useScheduleSync } from "./useScheduleSync";
 import { useTeamScheduleLoading } from "./useTeamScheduleLoading";
+import { useWorkbenchDraftModel } from "./useWorkbenchDraftModel";
 import { useWorkbenchGanttControls } from "./useWorkbenchGanttControls";
 import { useWorkbenchGanttModel } from "./useWorkbenchGanttModel";
 import { useWorkbenchNotifications } from "./useWorkbenchNotifications";
@@ -60,34 +47,7 @@ import { useWorkbenchProjectContext } from "./useWorkbenchProjectContext";
 import { useWorkbenchProjectNavigation } from "./useWorkbenchProjectNavigation";
 import { useWorkbenchResources } from "./useWorkbenchResources";
 import { useWorkbenchScreenNavigation } from "./useWorkbenchScreenNavigation";
-import { downloadTextFile, focusTaskTitleEditor, ViewLoading } from "./workbenchHelpers";
-import {
-  ActivityPanel,
-  AnalysisPanel,
-  BrabioTaskImportSheet,
-  CalendarPanel,
-  CreateTaskSheet,
-  DailyReportPage,
-  HelpPage,
-  MasterSettingsPage,
-  MilestonePanel,
-  PersonalAnalyticsPage,
-  ProjectCreateSheet,
-  ProjectImportSheet,
-  ProjectIssuePanel,
-  ProjectPortfolioPanel,
-  ProjectSettingsPage,
-  ResetDraftDialog,
-  ResourcePanel,
-  SaveReviewDialog,
-  ShortcutHelpSheet,
-  SummaryStrip,
-  TaskCsvImportSheet,
-  TaskInspector,
-  WeeklyReportPanel,
-  WorkLogPanel,
-  WorkloadOverviewPage,
-} from "./workbenchLazyViews";
+import { downloadTextFile, focusTaskTitleEditor } from "./workbenchHelpers";
 import { createWorkbenchViewStore, useWorkbenchViewState } from "./workbenchViewState";
 
 type AppWorkbenchProps = {
@@ -96,6 +56,8 @@ type AppWorkbenchProps = {
   onLogout: () => Promise<void>;
   onReloadWorkspace: () => void;
 };
+
+export type AppWorkbenchController = ReturnType<typeof useAppWorkbenchController>;
 
 /** 画面状態をワークベンチ単位のJotaiストアへ閉じ込めます。 */
 export function AppWorkbench(props: AppWorkbenchProps) {
@@ -107,8 +69,14 @@ export function AppWorkbench(props: AppWorkbenchProps) {
   );
 }
 
-/** プロジェクト状態・タスク操作・各ビューを束ねる認証後のアプリケーションシェルです。 */
-function AppWorkbenchContent({
+/** Controller Hookが返すView Modelを認証後シェルへ渡します。 */
+function AppWorkbenchContent(props: AppWorkbenchProps) {
+  const controller = useAppWorkbenchController(props);
+  return <AppWorkbenchView controller={controller} />;
+}
+
+/** プロジェクト状態・タスク操作・feature間の調停を担当します。 */
+function useAppWorkbenchController({
   currentUser,
   initialAppState,
   onLogout,
@@ -504,35 +472,6 @@ function AppWorkbenchContent({
   const activeIssues = schedule.issues ?? [];
   const activeWorkLogs = schedule.workLogs ?? [];
   const activeActivityEntries = activityLogs[schedule.project.id] ?? [];
-  const workspaceTaskChangeReview = useMemo(
-    () =>
-      buildWorkspaceTaskChangeReview({
-        currentSchedules: currentReviewSchedules,
-        savedSchedules: savedWorkspace.schedules,
-      }),
-    [currentReviewSchedules, savedWorkspace.schedules],
-  );
-  const savedActiveSchedule = useMemo(
-    () => savedWorkspace.schedules.find((snapshot) => snapshot.project.id === schedule.project.id),
-    [savedWorkspace.schedules, schedule.project.id],
-  );
-  const activeProjectTaskChangeReview = useMemo(
-    () =>
-      buildTaskChangeReview({
-        currentTasks: tasks,
-        members: schedule.members,
-        projectId: schedule.project.id,
-        projectLabel: schedule.project.workspace,
-        savedTasks: savedActiveSchedule?.tasks ?? [],
-      }),
-    [
-      savedActiveSchedule?.tasks,
-      schedule.members,
-      schedule.project.id,
-      schedule.project.workspace,
-      tasks,
-    ],
-  );
   const memberAssignmentCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     currentReviewSchedules.forEach((snapshot) => {
@@ -550,26 +489,25 @@ function AppWorkbenchContent({
     resourceRows,
     tasks,
   });
-  const currentDraft = useMemo(
-    () =>
-      createPersistableDraft({
-        activeProjectId,
-        activeTab,
-        activeTeamId,
-        activityLogs,
-        calendarAware,
-        columnVisibility,
-        collapsedIdsByProject,
-        favoriteProjectIds,
-        filterOpen,
-        filters,
-        resourceDisplaySettings,
-        resourceScope,
-        scale,
-        taskHistories,
-        timeUnit,
-        workspace,
-      }),
+  const draftInput = useMemo(
+    () => ({
+      activeProjectId,
+      activeTab,
+      activeTeamId,
+      activityLogs,
+      calendarAware,
+      columnVisibility,
+      collapsedIdsByProject,
+      favoriteProjectIds,
+      filterOpen,
+      filters,
+      resourceDisplaySettings,
+      resourceScope,
+      scale,
+      taskHistories,
+      timeUnit,
+      workspace,
+    }),
     [
       activeProjectId,
       activeTab,
@@ -589,50 +527,33 @@ function AppWorkbenchContent({
       workspace,
     ],
   );
-  const workspaceConfigChangeReview = useMemo(
-    () =>
-      buildWorkspaceConfigChangeReview({
-        currentWorkspace: currentDraft.workspace,
-        savedWorkspace,
-      }),
-    [currentDraft.workspace, savedWorkspace],
-  );
-  const activeProjectConfigChangeReview = useMemo(
-    () =>
-      createConfigChangeReviewFromRows(
-        workspaceConfigChangeReview.rows.filter(
-          (row) =>
-            row.projectId === schedule.project.id &&
-            (row.category === "project" || row.category === "calendar"),
-        ),
-      ),
-    [schedule.project.id, workspaceConfigChangeReview.rows],
-  );
-  const isProjectSaveScope =
-    !showMasterSettings &&
-    !showHelpPage &&
-    activeTab !== "Projects" &&
-    activeTab !== "Workload" &&
-    activeTab !== "DailyReports" &&
-    activeTab !== "PersonalAnalytics";
-  const projectSaveScopeLabel =
-    activeTab === "Issues" || activeTab === "WorkLogs" ? "この案件" : "このガント";
-  const saveScopeLabel = isProjectSaveScope
-    ? projectSaveScopeLabel
-    : showMasterSettings
-      ? "管理設定"
-      : activeTab === "Workload"
-        ? "要員計画"
-        : "プロジェクト一覧";
-  const taskChangeReview = isProjectSaveScope
-    ? activeProjectTaskChangeReview
-    : workspaceTaskChangeReview;
-  const configChangeReview = isProjectSaveScope
-    ? activeProjectConfigChangeReview
-    : workspaceConfigChangeReview;
-  const currentSignature = useMemo(() => createDraftSignature(currentDraft), [currentDraft]);
-  const hasUnsavedChanges = currentSignature !== savedSignature;
   const savedDraftRef = useRef(initialAppState.savedDraft);
+  const {
+    configChangeReview,
+    currentDraft,
+    hasUnsavedChanges,
+    isProjectSaveScope,
+    localDraftChangeSummary,
+    saveScopeLabel,
+    syncQueueItems,
+    syncStatus,
+    taskChangeReview,
+    workspaceConfigChangeReview,
+    workspaceTaskChangeReview,
+  } = useWorkbenchDraftModel({
+    activeTab,
+    apiSyncState,
+    currentReviewSchedules,
+    draftInput,
+    lastSavedAt,
+    savedDraft: savedDraftRef.current,
+    savedSignature,
+    savedWorkspace,
+    schedule,
+    showHelpPage,
+    showMasterSettings,
+    tasks,
+  });
   const handleTeamSchedulesLoaded = useCallback((loadedSchedules: ScheduleSnapshot[]) => {
     const nextSavedWorkspace = loadedSchedules.reduce(
       mergeScheduleIntoWorkspace,
@@ -652,50 +573,6 @@ function AppWorkbenchContent({
     setWorkspace,
     workspace,
   });
-  const localDraftChangeSummary = useMemo(
-    () => createLocalDraftChangeSummary(currentDraft, savedDraftRef.current),
-    [currentDraft, savedSignature],
-  );
-  const syncStatus = useMemo(
-    () =>
-      createTopbarSyncStatus({
-        apiSyncState,
-        hasUnsavedChanges,
-        lastSavedAt,
-        pendingConfigChangeCount: configChangeReview.totalCount,
-        pendingLocalDraftChangeCount: localDraftChangeSummary.count,
-        pendingLocalDraftChangeDetail: localDraftChangeSummary.detail,
-        pendingTaskChangeCount: taskChangeReview.totalCount,
-        scopeLabel: saveScopeLabel,
-      }),
-    [
-      apiSyncState,
-      configChangeReview.totalCount,
-      hasUnsavedChanges,
-      lastSavedAt,
-      localDraftChangeSummary.count,
-      localDraftChangeSummary.detail,
-      saveScopeLabel,
-      taskChangeReview.totalCount,
-    ],
-  );
-  const syncQueueItems = useMemo(
-    () =>
-      buildTopbarSyncQueueItems({
-        apiSyncState,
-        configChangeReview,
-        hasUnsavedChanges,
-        localDraftChangeSummary,
-        taskChangeReview,
-      }),
-    [
-      apiSyncState,
-      configChangeReview,
-      hasUnsavedChanges,
-      localDraftChangeSummary,
-      taskChangeReview,
-    ],
-  );
   const currentDraftRef = useRef(currentDraft);
   const hasUnsavedChangesRef = useRef(hasUnsavedChanges);
   const taskChangeReviewRef = useRef(taskChangeReview);
@@ -1144,500 +1021,161 @@ function AppWorkbenchContent({
     : null;
   const showMainProjectViews = !showMasterSettings && !showProjectSettings && !showHelpPage;
 
-  return (
-    <div className="app-shell">
-      <Sidebar
-        activeTab={activeTab}
-        helpOpen={showHelpPage}
-        onHelp={openHelpPage}
-        onMasterSettingsOpen={openMasterSettings}
-        onNavigate={changeTab}
-        onProjectSettingsOpen={openProjectSettings}
-        projectName={schedule.project.workspace}
-        projectNavigationVisible={
-          !showMasterSettings &&
-          !showHelpPage &&
-          (showProjectSettings ||
-            (activeTab !== "Projects" &&
-              activeTab !== "Workload" &&
-              activeTab !== "DailyReports" &&
-              activeTab !== "PersonalAnalytics"))
-        }
-        projectSettingsOpen={showProjectSettings}
-        settingsOpen={showMasterSettings}
-        showAdminSettings={
-          currentUser.role === "admin" || (schedule.access?.canManageStaffing ?? false)
-        }
-        showProjectSettings={schedule.access?.canManageProject ?? true}
-      />
-      <main className="workspace">
-        {loadingProjectId || teamResourcesLoading ? (
-          <div className="project-loading-indicator" role="status">
-            <span className="loading-spinner" />
-            {teamResourcesLoading ? "チーム案件を読み込み中..." : "案件詳細を読み込み中..."}
-          </div>
-        ) : null}
-        <Topbar
-          activeTeamId={activeTeamId}
-          allProjects={workspaceProjects}
-          contextMode={
-            showHelpPage
-              ? "help"
-              : showMasterSettings
-                ? "admin"
-                : activeTab === "Projects"
-                  ? "portfolio"
-                  : activeTab === "DailyReports"
-                    ? "dailyReports"
-                    : activeTab === "PersonalAnalytics"
-                      ? "personalAnalytics"
-                      : activeTab === "Workload"
-                        ? "workload"
-                        : "project"
-          }
-          currentUser={currentUser}
-          favorite={favoriteProjectIds.has(schedule.project.id)}
-          favoriteProjectIds={favoriteProjectIds}
-          hasUnsavedChanges={hasUnsavedChanges}
-          notifications={topbarNotifications}
-          onExportProject={exportProject}
-          onImportBrabioXlsx={importBrabioXlsx}
-          onFavoriteToggle={toggleFavoriteProject}
-          onImportProject={importProject}
-          onImportTaskCsv={importTaskCsv}
-          onRetryApiSync={retryApiSync}
-          onProjectLinkCopy={(copied) =>
-            addToast({
-              detail: copied ? schedule.project.workspace : "リンク欄を選択してコピーしてください",
-              title: copied ? "共有リンクをコピーしました" : "自動コピーできませんでした",
-              tone: copied ? "success" : "warning",
-            })
-          }
-          onProjectChange={changeProject}
-          onProjectRestore={restoreProject}
-          onProjectSettingsOpen={openProjectSettings}
-          projectSettingsOpen={showProjectSettings}
-          onResetDraft={() => setShowResetConfirm(true)}
-          onSaveDraft={requestSaveDraft}
-          onLogout={onLogout}
-          onTeamChange={changeTeam}
-          project={schedule.project}
-          projects={activeTeamProjects}
-          syncQueueItems={syncQueueItems}
-          syncStatus={syncStatus}
-          teams={workspace.teams}
-        />
-        <Suspense fallback={<ViewLoading label="ビューを読み込み中" />}>
-          {showMasterSettings && managementTeam ? (
-            <MasterSettingsPage
-              activeTeamProjectCount={activeTeamReviewSchedules.length}
-              baseDate={schedule.project.rangeStart}
-              calendar={schedule.calendar}
-              canManageMembers={currentUser.role === "admin"}
-              memberAssignmentCounts={memberAssignmentCounts}
-              members={schedule.members}
-              onCreateMember={createMember}
-              onCreateTeam={createTeam}
-              onSaveCalendar={updateTeamCalendarMaster}
-              onSaveMember={updateMember}
-              onSaveTeam={updateTeam}
-              onToggleTeamMember={toggleTeamMember}
-              onUpdateMemberLifecycle={updateMemberLifecycle}
-              team={managementTeam}
-              teams={workspace.teams}
-            />
-          ) : null}
-          {showProjectSettings ? (
-            <ProjectSettingsPage
-              activeProjectCount={activeProjectCount}
-              members={schedule.members}
-              onArchiveProject={archiveProject}
-              onSaveProject={updateProjectSettings}
-              project={schedule.project}
-              team={activeTeam}
-              teams={workspace.teams}
-            />
-          ) : null}
-          {showHelpPage ? (
-            <HelpPage
-              availableTours={availableTourIds.map((tourId) => tourScenarios[tourId])}
-              initialDocumentId={helpDocumentId}
-              onStartTour={startTour}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Gantt" ? (
-            <GanttWorkbench
-              activeFilterCount={activeFilterCount}
-              calendar={schedule.calendar}
-              calendarAware={calendarAware}
-              projectRangeEnd={schedule.project.rangeEnd}
-              projectRangeStart={schedule.project.rangeStart}
-              canEditPlan={canEditPlan}
-              columnVisibility={columnVisibility}
-              collapsedIds={collapsedIds}
-              filterOpen={filterOpen}
-              filters={filters}
-              members={projectMembers}
-              months={ganttColumns.primary}
-              canPasteTask={taskClipboard !== null}
-              onAssigneeChange={(assigneeId) =>
-                setFilters((current) => ({ ...current, assigneeId }))
-              }
-              onBulkAssigneeChange={taskActions.bulkUpdateSelectedAssignee}
-              onBulkDateShift={taskActions.shiftSelectedTasksByDays}
-              onBulkStatusChange={taskActions.bulkUpdateSelectedStatus}
-              onCalendarAwareChange={setCalendarAware}
-              onColumnVisibilityChange={setColumnVisibility}
-              onClearSelection={clearTaskSelection}
-              onCopyTask={taskActions.copySelectedTask}
-              onCreateTask={() => setShowCreateSheet(true)}
-              onDeleteTask={taskActions.deleteSelectedTasks}
-              onDuplicateTask={taskActions.duplicateSelectedTask}
-              onFilterOpenChange={setFilterOpen}
-              onFilterReset={() => setFilters(initialFilters)}
-              onIndentTasks={taskActions.indentSelectedTasks}
-              onMoveTask={taskActions.moveTask}
-              onReorderTasks={taskActions.moveSelectedTaskWithinSiblings}
-              onReorderTasksToTarget={taskActions.moveSelectedTasksToSiblingPosition}
-              onReparentTasksByDrag={taskActions.moveSelectedTasksToParentPosition}
-              onOpenTaskInspector={openTaskInspector}
-              onOutdentTasks={taskActions.outdentSelectedTasks}
-              onPasteTask={taskActions.pasteCopiedTask}
-              onResizeTask={taskActions.resizeTask}
-              onSelectTask={selectTask}
-              onSelectTaskRange={selectTaskRange}
-              onScaleChange={setScale}
-              onShortcutHelp={() => setShowShortcutHelp(true)}
-              onStatusToggle={updateStatusFilter}
-              onTimeUnitChange={setTimeUnit}
-              onToday={() => setTodaySignal((value) => value + 1)}
-              onToggleCollapsed={toggleCollapsed}
-              onUpdateTask={taskActions.updateTask}
-              rows={visibleRows}
-              scale={scale}
-              selectedTaskCount={selectedTaskIds.size}
-              selectedTaskId={selectedTaskId}
-              selectedTaskIds={selectedTaskIds}
-              tasks={tasks}
-              taskStartFocusSignal={taskStartFocusSignal}
-              taskTitleEditRequest={taskTitleEditRequest}
-              timeUnit={timeUnit}
-              displayMode={ganttDisplayMode}
-              onDisplayModeChange={setGanttDisplayMode}
-              timeline={timeline}
-              todaySignal={todaySignal}
-              weeks={ganttColumns.secondary}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Status" ? (
-            <SummaryStrip
-              calendar={schedule.calendar}
-              calendarAware={calendarAware}
-              members={projectMembers}
-              healthReport={healthReport}
-              onCaptureBaseline={captureBaseline}
-              onOpenHealthIssue={openHealthIssue}
-              onSelectTask={selectTaskFromSecondaryView}
-              project={schedule.project}
-              resourceRows={resourceRows}
-              stats={stats}
-              tasks={tasks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Analysis" ? (
-            <AnalysisPanel
-              calendar={schedule.calendar}
-              calendarAware={calendarAware}
-              changeLogs={schedule.changeLogs ?? []}
-              onCaptureBaseline={captureBaseline}
-              onSelectTask={selectTaskFromSecondaryView}
-              project={schedule.project}
-              tasks={tasks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "WeeklyReport" ? (
-            <WeeklyReportPanel
-              issues={activeIssues}
-              members={projectMembers}
-              onOpenIssues={() => changeTab("Issues")}
-              onSelectTask={selectTaskFromSecondaryView}
-              project={schedule.project}
-              tasks={tasks}
-              todayKey={todayKey}
-              workLogs={schedule.workLogs ?? []}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Issues" ? (
-            <ProjectIssuePanel
-              attachments={schedule.attachments ?? []}
-              currentUser={currentUser}
-              issues={activeIssues}
-              members={projectMembers}
-              onCreateIssue={createProjectIssue}
-              onSelectTask={(taskId) => selectTaskFromSecondaryView(taskId)}
-              onUpdateIssue={updateProjectIssue}
-              onAttachmentAdded={addProjectAttachment}
-              onAttachmentDeleted={deleteProjectAttachment}
-              project={schedule.project}
-              tasks={tasks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "WorkLogs" ? (
-            <WorkLogPanel
-              attachments={schedule.attachments ?? []}
-              currentUser={currentUser}
-              issues={activeIssues}
-              members={projectMembers}
-              onCreateWorkLog={createProjectWorkLog}
-              onDeleteWorkLog={deleteProjectWorkLog}
-              onSelectTask={(taskId) => selectTaskFromSecondaryView(taskId)}
-              onUpdateWorkLog={updateProjectWorkLog}
-              onAttachmentAdded={addProjectAttachment}
-              onAttachmentDeleted={deleteProjectAttachment}
-              project={schedule.project}
-              tasks={tasks}
-              workLogs={activeWorkLogs}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Projects" ? (
-            <ProjectPortfolioPanel
-              activeProjectId={schedule.project.id}
-              activeTeamId={activeTeamId}
-              calendarAware={calendarAware}
-              favoriteProjectIds={favoriteProjectIds}
-              onCreateProject={openProjectCreateSheet}
-              onOpenProjectIssues={(projectId) => {
-                if (changeProject(projectId)) {
-                  void navigateToProjectView(projectId, "Issues");
-                }
-              }}
-              onOpenProject={(projectId) => {
-                if (changeProject(projectId)) {
-                  void navigateToProjectView(projectId, "Gantt");
-                }
-              }}
-              onSelectProject={(projectId) => {
-                changeProject(projectId);
-              }}
-              onTeamChange={(teamId) => changeTeam(teamId, { stayOnPortfolio: true })}
-              onToggleFavoriteProject={toggleFavoriteProject}
-              onUpdateProjectLifecycleStatus={updateProjectLifecycleStatus}
-              projectSummaries={projectSummaries}
-              schedules={currentReviewSchedules}
-              teams={workspace.teams}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Workload" ? (
-            <WorkloadOverviewPage
-              calendar={schedule.calendar}
-              calendarAware={calendarAware}
-              onOpenProject={(projectId) => {
-                if (changeProject(projectId)) {
-                  void navigateToProjectView(projectId, "Gantt");
-                }
-              }}
-              onOpenTeam={(teamId) => changeTeam(teamId, { stayOnPortfolio: true })}
-              onUpdateProjectStaffing={updateProjectStaffing}
-              schedules={currentReviewSchedules}
-              teams={workspace.teams}
-              todayKey={todayKey}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "DailyReports" && managementTeam ? (
-            <DailyReportPage
-              currentUser={currentUser}
-              schedules={currentReviewSchedules}
-              team={managementTeam}
-              todayKey={todayKey}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "PersonalAnalytics" ? (
-            <PersonalAnalyticsPage
-              canViewOthers={
-                currentUser.role === "admin" ||
-                workspace.teams.some((team) =>
-                  (team.memberships ?? []).some(
-                    (membership) =>
-                      membership.memberId === currentUser.memberId && membership.role === "manager",
-                  ),
-                )
-              }
-              currentUser={currentUser}
-              schedules={currentReviewSchedules}
-              todayKey={todayKey}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Resource" ? (
-            <ResourcePanel
-              displaySettings={resourceDisplaySettings}
-              onDisplaySettingsChange={setResourceDisplaySettings}
-              onMoveTask={taskActions.moveTask}
-              onScopeChange={setResourceScope}
-              onSelectTask={selectTaskFromSecondaryView}
-              onShareTask={taskActions.shareTaskWithMember}
-              resourceRows={displayedResourceRows}
-              scope={resourceScope}
-              scopeDescription={
-                resourceScope === "team"
-                  ? `${activeTeam?.name ?? "選択チーム"} / ${
-                      activeTeamReviewSchedules.length
-                    }案件を横断`
-                  : `${schedule.project.workspace} / メンバー別週キャパシティ基準`
-              }
-              scopeLabel={resourceScope === "team" ? "チーム横断" : "このプロジェクト"}
-              weeks={displayedResourceWeeks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Calendar" ? (
-            <CalendarPanel
-              calendar={schedule.calendar}
-              onCalendarChange={updateCalendar}
-              onSelectTask={selectTaskFromSecondaryView}
-              project={schedule.project}
-              tasks={tasks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Milestones" ? (
-            <MilestonePanel
-              members={projectMembers}
-              onCreateMilestone={taskActions.createMilestone}
-              onSelectTask={selectTaskFromSecondaryView}
-              onUpdateTask={taskActions.updateTask}
-              project={schedule.project}
-              tasks={tasks}
-            />
-          ) : null}
-          {showMainProjectViews && activeTab === "Activity" ? (
-            <ActivityPanel
-              changeReview={taskChangeReview}
-              configReview={configChangeReview}
-              entries={activeActivityEntries}
-              hasUnsavedChanges={hasUnsavedChanges}
-              onSaveDraft={requestSaveDraft}
-              onSelectTask={selectTaskFromSecondaryView}
-              project={schedule.project}
-            />
-          ) : null}
-        </Suspense>
-      </main>
-
-      <Suspense fallback={null}>
-        {showMainProjectViews && activeTab === "Gantt" ? (
-          <TaskInspector
-            attachments={schedule.attachments ?? []}
-            calendar={schedule.calendar}
-            calendarAware={calendarAware}
-            canComment={schedule.access?.canComment ?? false}
-            focusRequest={taskFocusRequest}
-            members={projectMembers}
-            onClose={closeTaskInspector}
-            onMoveTask={taskActions.moveTask}
-            onTaskActivity={(taskId, title, detail, tone = "info") =>
-              recordActivity({
-                category: "task",
-                detail,
-                taskId,
-                title,
-                tone,
-              })
-            }
-            onResizeTask={taskActions.resizeTask}
-            onSetTaskDates={taskActions.setTaskDates}
-            onUpdateTask={taskActions.updateTask}
-            onAttachmentAdded={addProjectAttachment}
-            onAttachmentDeleted={deleteProjectAttachment}
-            projectId={schedule.project.id}
-            tasks={tasks}
-            task={taskInspectorTask}
-          />
-        ) : null}
-        {showProjectCreateSheet ? (
-          <ProjectCreateSheet
-            defaultStartDate={schedule.project.rangeStart}
-            nextProjectIndex={nextProjectIndex}
-            onClose={() => setShowProjectCreateSheet(false)}
-            onCreateProject={createProject}
-            team={activeTeam}
-          />
-        ) : null}
-        {pendingProjectImport ? (
-          <ProjectImportSheet
-            existingProject={importExistingProject}
-            fileName={pendingProjectImport.fileName}
-            imported={pendingProjectImport.data}
-            onClose={() => setPendingProjectImport(null)}
-            onImport={applyPendingProjectImport}
-            validation={pendingProjectImport.validation}
-          />
-        ) : null}
-        {pendingTaskCsvImport?.sourceKind === "brabio" ? (
-          <BrabioTaskImportSheet
-            fileName={pendingTaskCsvImport.fileName}
-            imported={pendingTaskCsvImport.data}
-            members={[...schedule.members, ...pendingTaskCsvImport.membersToCreate]}
-            membersToCreate={pendingTaskCsvImport.membersToCreate}
-            onClose={() => setPendingTaskCsvImport(null)}
-            onImport={applyPendingTaskCsvImport}
-            project={schedule.project}
-            sourceRows={pendingTaskCsvImport.draft.sourceRows}
-            validation={pendingTaskCsvImport.validation}
-          />
-        ) : pendingTaskCsvImport ? (
-          <TaskCsvImportSheet
-            fileName={pendingTaskCsvImport.fileName}
-            draft={pendingTaskCsvImport.draft}
-            imported={pendingTaskCsvImport.data}
-            members={[...schedule.members, ...pendingTaskCsvImport.membersToCreate]}
-            membersToCreate={pendingTaskCsvImport.membersToCreate}
-            onClose={() => setPendingTaskCsvImport(null)}
-            onImport={applyPendingTaskCsvImport}
-            onMappingChange={updatePendingTaskCsvMapping}
-            project={schedule.project}
-            validation={pendingTaskCsvImport.validation}
-          />
-        ) : null}
-        {showMainProjectViews && activeTab === "Gantt" && showCreateSheet ? (
-          <CreateTaskSheet
-            members={projectMembers}
-            onClose={() => setShowCreateSheet(false)}
-            onCreateTask={taskActions.createTask}
-            tasks={tasks}
-          />
-        ) : null}
-        {showShortcutHelp ? <ShortcutHelpSheet onClose={() => setShowShortcutHelp(false)} /> : null}
-        {showSaveReview ? (
-          <SaveReviewDialog
-            configReview={configChangeReview}
-            onClose={() => setShowSaveReview(false)}
-            onConfirm={(changeReason) => saveDraft(currentDraftRef.current, changeReason)}
-            onSelectTask={selectTaskFromSecondaryView}
-            project={schedule.project}
-            review={taskChangeReview}
-            scopeLabel={saveScopeLabel}
-          />
-        ) : null}
-        {showResetConfirm ? (
-          <ResetDraftDialog
-            apiDetail={syncStatus.detail}
-            apiTitle={syncStatus.title}
-            configReview={workspaceConfigChangeReview}
-            hasUnsavedChanges={hasUnsavedChanges}
-            lastSavedAt={lastSavedAt}
-            localDraftChangeSummary={localDraftChangeSummary}
-            onClose={() => setShowResetConfirm(false)}
-            onConfirm={resetDraft}
-            project={schedule.project}
-            review={workspaceTaskChangeReview}
-          />
-        ) : null}
-      </Suspense>
-      <ToastViewport onDismiss={dismissToast} toasts={toasts} />
-      {activeTourId ? (
-        <OnboardingTour
-          onClose={() => closeTour(activeTourId)}
-          scenario={tourScenarios[activeTourId]}
-        />
-      ) : null}
-    </div>
-  );
+  return {
+    activeActivityEntries,
+    activeFilterCount,
+    activeIssues,
+    activeProjectCount,
+    activeTab,
+    activeTeam,
+    activeTeamId,
+    activeTeamProjects,
+    activeTeamReviewSchedules,
+    activeTourId,
+    activeWorkLogs,
+    addProjectAttachment,
+    addToast,
+    applyPendingProjectImport,
+    applyPendingTaskCsvImport,
+    archiveProject,
+    availableTourIds,
+    calendarAware,
+    canEditPlan,
+    captureBaseline,
+    changeProject,
+    changeTab,
+    changeTeam,
+    clearTaskSelection,
+    closeTaskInspector,
+    closeTour,
+    collapsedIds,
+    columnVisibility,
+    configChangeReview,
+    createMember,
+    createProject,
+    createProjectIssue,
+    createProjectWorkLog,
+    createTeam,
+    currentDraftRef,
+    currentReviewSchedules,
+    currentUser,
+    deleteProjectAttachment,
+    deleteProjectWorkLog,
+    dismissToast,
+    displayedResourceRows,
+    displayedResourceWeeks,
+    exportProject,
+    favoriteProjectIds,
+    filterOpen,
+    filters,
+    ganttColumns,
+    ganttDisplayMode,
+    hasUnsavedChanges,
+    healthReport,
+    helpDocumentId,
+    importBrabioXlsx,
+    importExistingProject,
+    importProject,
+    importTaskCsv,
+    lastSavedAt,
+    loadingProjectId,
+    localDraftChangeSummary,
+    managementTeam,
+    memberAssignmentCounts,
+    navigateToProjectView,
+    nextProjectIndex,
+    onLogout,
+    openHelpPage,
+    openHealthIssue,
+    openMasterSettings,
+    openProjectCreateSheet,
+    openProjectSettings,
+    openTaskInspector,
+    pendingProjectImport,
+    pendingTaskCsvImport,
+    projectMembers,
+    projectSummaries,
+    recordActivity,
+    requestSaveDraft,
+    resetDraft,
+    resourceDisplaySettings,
+    resourceRows,
+    resourceScope,
+    restoreProject,
+    retryApiSync,
+    saveDraft,
+    saveScopeLabel,
+    scale,
+    schedule,
+    selectTask,
+    selectTaskFromSecondaryView,
+    selectTaskRange,
+    selectedTaskId,
+    selectedTaskIds,
+    setActiveTourId,
+    setCalendarAware,
+    setColumnVisibility,
+    setFilterOpen,
+    setFilters,
+    setGanttDisplayMode,
+    setPendingProjectImport,
+    setPendingTaskCsvImport,
+    setResourceDisplaySettings,
+    setResourceScope,
+    setScale,
+    setShowCreateSheet,
+    setShowProjectCreateSheet,
+    setShowResetConfirm,
+    setShowSaveReview,
+    setShowShortcutHelp,
+    setTimeUnit,
+    setTodaySignal,
+    showCreateSheet,
+    showHelpPage,
+    showMainProjectViews,
+    showMasterSettings,
+    showProjectCreateSheet,
+    showProjectSettings,
+    showResetConfirm,
+    showSaveReview,
+    showShortcutHelp,
+    startTour,
+    stats,
+    syncQueueItems,
+    syncStatus,
+    taskActions,
+    taskChangeReview,
+    taskClipboard,
+    taskFocusRequest,
+    taskInspectorTask,
+    tasks,
+    taskStartFocusSignal,
+    taskTitleEditRequest,
+    teamResourcesLoading,
+    timeUnit,
+    timeline,
+    todaySignal,
+    toasts,
+    toggleCollapsed,
+    toggleFavoriteProject,
+    toggleTeamMember,
+    topbarNotifications,
+    updateCalendar,
+    updateMember,
+    updateMemberLifecycle,
+    updatePendingTaskCsvMapping,
+    updateProjectIssue,
+    updateProjectLifecycleStatus,
+    updateProjectSettings,
+    updateProjectStaffing,
+    updateProjectWorkLog,
+    updateStatusFilter,
+    updateTeam,
+    updateTeamCalendarMaster,
+    visibleRows,
+    workspace,
+    workspaceConfigChangeReview,
+    workspaceProjects,
+    workspaceTaskChangeReview,
+  };
 }
