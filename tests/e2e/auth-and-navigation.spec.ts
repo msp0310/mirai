@@ -39,7 +39,12 @@ async function showSeedPlanningPeriod(workload: Locator) {
 }
 
 /** API認証を通じてMiraiへログインします。 */
-async function login(page: Page) {
+async function login(page: Page, options: { showInitialTour?: boolean } = {}) {
+  if (!options.showInitialTour) {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("mirai:onboarding:pm@example.com:basic:v1", "completed");
+    });
+  }
   await page.goto("/");
   await expect(page).toHaveTitle("Mirai");
   await expect(page.getByRole("heading", { name: "ログイン" })).toBeVisible();
@@ -78,6 +83,51 @@ test.describe("Miraiの認証とプロジェクト導線", () => {
       .getByPlaceholder("プロジェクトNo.・案件名・マイルストーンで検索")
       .fill("PJ-2025-001");
     await expect(projectCard).toBeVisible();
+  });
+
+  test("初回ログインの基本ツアーとヘルプからの再実行を利用できる", async ({ page }) => {
+    await login(page, { showInitialTour: true });
+
+    let tour = page.getByRole("dialog", { name: "基本操作: チームを選ぶ" });
+    await expect(tour).toBeVisible();
+    await expect(tour).toContainText("1 / 5");
+    await tour.getByRole("button", { name: "次へ" }).click();
+    tour = page.getByRole("dialog", { name: "基本操作: 案件を探す" });
+    await expect(tour).toBeVisible();
+    await tour.getByRole("button", { name: "ツアーを終了" }).click();
+    await expect(tour).toHaveCount(0);
+
+    await page.getByRole("button", { name: "ヘルプ", exact: true }).click();
+    const tourLauncher = page.getByRole("region", { name: "操作ツアー" });
+    await expect(tourLauncher.getByRole("button", { name: "基本操作" })).toBeVisible();
+    await expect(tourLauncher.getByRole("button", { name: "管理者向け" })).toBeVisible();
+    await tourLauncher.getByRole("button", { name: "基本操作" }).click();
+    await expect(page.getByRole("dialog", { name: "基本操作: チームを選ぶ" })).toBeVisible();
+  });
+
+  test("権限に応じた全操作ツアーを最後まで進められる", async ({ page }) => {
+    await login(page);
+    const scenarios = ["基本操作", "ガント操作", "メンバー向け", "PM・PL向け", "管理者向け"];
+    const mainNavigation = page.getByRole("complementary", { name: "メインナビゲーション" });
+
+    for (const scenarioTitle of scenarios) {
+      await mainNavigation.getByRole("button", { name: "ヘルプ", exact: true }).click();
+      await page
+        .getByRole("region", { name: "操作ツアー" })
+        .getByRole("button", { name: scenarioTitle })
+        .click();
+
+      for (let step = 0; step < 5; step += 1) {
+        const tour = page.getByRole("dialog", { name: new RegExp(`^${scenarioTitle}:`) });
+        await expect(tour).toBeVisible();
+        await expect(tour.getByText("この画面では対象を表示できないため")).toHaveCount(0);
+        await tour.getByRole("button", { name: step === 4 ? "完了" : "次へ" }).click();
+      }
+
+      await expect(
+        page.getByRole("dialog", { name: new RegExp(`^${scenarioTitle}:`) }),
+      ).toHaveCount(0);
+    }
   });
 
   test("分析メニューからチーム分析を開き、人別とチーム別で切り替えられる", async ({ page }) => {

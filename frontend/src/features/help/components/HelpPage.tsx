@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
 import { helpDocuments, type HelpDocument } from "../../../help/helpDocuments";
+import { tourScenarios, type TourId } from "../../onboarding/tourScenarios";
+import * as styles from "./HelpPage.css";
 
 type HelpBlock =
   | { level: 1 | 2 | 3; text: string; type: "heading" }
@@ -8,8 +10,13 @@ type HelpBlock =
   | { items: string[]; type: "list" }
   | { text: string; type: "paragraph" };
 
+type HelpPageProps = {
+  availableTourIds: TourId[];
+  onStartTour: (tourId: TourId) => void;
+};
+
 /** 操作方法と製品の補足情報を表示するヘルプページです。 */
-export function HelpPage() {
+export function HelpPage({ availableTourIds, onStartTour }: HelpPageProps) {
   const [activeId, setActiveId] = useState(helpDocuments[0]?.id ?? "overview");
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
@@ -45,6 +52,30 @@ export function HelpPage() {
           />
         </label>
       </header>
+
+      <section className={styles.tourPanel} aria-label="操作ツアー">
+        <div className={styles.tourHeading}>
+          <span>画面を見ながら確認</span>
+          <strong>操作ツアー</strong>
+        </div>
+        <div className={styles.tourList}>
+          {availableTourIds.map((tourId) => {
+            const scenario = tourScenarios[tourId];
+            return (
+              <button
+                className={styles.tourButton}
+                key={tourId}
+                onClick={() => onStartTour(tourId)}
+                title={scenario.description}
+                type="button"
+              >
+                <PlayCircleIcon />
+                <span>{scenario.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="help-layout">
         <aside className="help-index" aria-label="ヘルプ目次">

@@ -314,7 +314,11 @@ export function MasterSettingsPage({
   }
 
   return (
-    <section className="master-settings-page" aria-label="マスタ管理">
+    <section
+      className="master-settings-page"
+      aria-label="マスタ管理"
+      data-tour="master-settings"
+    >
       <div className="master-settings-page-header">
         <div>
           <span>{selectedTeam.name}</span>
@@ -324,9 +328,14 @@ export function MasterSettingsPage({
       </div>
 
       <div className="master-settings-layout">
-        <nav className="settings-section-tabs" aria-label="管理設定カテゴリ">
+        <nav
+          className="settings-section-tabs"
+          aria-label="管理設定カテゴリ"
+          data-tour="settings-tabs"
+        >
           <button
             className={activeSection === "teams" ? "active" : ""}
+            data-tour="settings-teams"
             onClick={() => setActiveSection("teams")}
             type="button"
           >
@@ -335,6 +344,7 @@ export function MasterSettingsPage({
           {canManageMembers ? (
             <button
               className={activeSection === "members" ? "active" : ""}
+              data-tour="settings-members"
               onClick={() => setActiveSection("members")}
               type="button"
             >
@@ -343,6 +353,7 @@ export function MasterSettingsPage({
           ) : null}
           <button
             className={activeSection === "calendar" ? "active" : ""}
+            data-tour="settings-calendar"
             onClick={() => setActiveSection("calendar")}
             type="button"
           >
@@ -351,6 +362,7 @@ export function MasterSettingsPage({
           {canManageMembers ? (
             <button
               className={activeSection === "audit" ? "active" : ""}
+              data-tour="settings-audit"
               onClick={() => setActiveSection("audit")}
               type="button"
             >

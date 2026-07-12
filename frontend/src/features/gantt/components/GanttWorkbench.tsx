@@ -1023,6 +1023,7 @@ export function GanttWorkbench({
 
       <div
         className={displayMode === "table" ? "gantt-shell table-view" : "gantt-shell"}
+        data-tour="gantt-grid"
         style={
           {
             "--task-table-columns": taskTableColumns,
@@ -1078,6 +1079,7 @@ export function GanttWorkbench({
                 ? "task-table selecting"
                 : "task-table"
           }
+          data-tour="gantt-task-table"
           onClickCapture={handleTableClickCapture}
           onPointerDown={handleTablePointerDown}
           onScroll={handleTableScroll}

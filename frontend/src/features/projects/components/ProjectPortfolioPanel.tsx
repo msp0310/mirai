@@ -292,7 +292,11 @@ export function ProjectPortfolioPanel({
         />
       </div>
 
-      <div className="portfolio-controls" aria-label="プロジェクト絞り込み">
+      <div
+        className="portfolio-controls"
+        aria-label="プロジェクト絞り込み"
+        data-tour="portfolio-search"
+      >
         <label className="portfolio-search">
           <MagnifyingGlassIcon />
           <input
@@ -331,7 +335,7 @@ export function ProjectPortfolioPanel({
       </div>
 
       <div className="portfolio-layout">
-        <div className="portfolio-project-list">
+        <div className="portfolio-project-list" data-tour="portfolio-projects">
           {filteredItems.map((item) => (
             <ProjectPortfolioCard
               active={item.project.id === activeProjectId}

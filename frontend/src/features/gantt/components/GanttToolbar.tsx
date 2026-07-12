@@ -121,7 +121,7 @@ export function GanttToolbar({
   }
 
   return (
-    <div className="workbench-toolbar">
+    <div className="workbench-toolbar" data-tour="gantt-toolbar">
       <button className="add-task" onClick={onCreateTask} title="タスク追加 (N)" type="button">
         <PlusIcon />
         タスク追加

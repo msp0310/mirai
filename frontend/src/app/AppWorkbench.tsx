@@ -96,6 +96,12 @@ import { useScheduleSync } from "./useScheduleSync";
 import { useTaskSelection } from "../features/gantt/hooks/useTaskSelection";
 import { useWorkbenchOverlays, type PendingTaskCsvImport } from "./useWorkbenchOverlays";
 import { todayKey } from "../features/gantt/components/constants";
+import { OnboardingTour } from "../features/onboarding/components/OnboardingTour";
+import {
+  getTourCompletionKey,
+  tourScenarios,
+  type TourId,
+} from "../features/onboarding/tourScenarios";
 
 type AppWorkbenchProps = {
   currentUser: AuthUser;
@@ -353,6 +359,7 @@ export function AppWorkbench({
   const [activeTeamId, setActiveTeamId] = useState(initialAppState.activeTeamId);
   const [activeProjectId, setActiveProjectId] = useState(initialAppState.activeProjectId);
   const [activeTab, setActiveTab] = useState<ViewTab>(initialAppState.activeTab);
+  const [activeTourId, setActiveTourId] = useState<TourId | null>(null);
   const [dailyReportReminders, setDailyReportReminders] = useState<DailyReportReminder[]>([]);
   const [filters, setFilters] = useState<ScheduleFilters>(initialAppState.filters);
   const [collapsedIdsByProject, setCollapsedIdsByProject] = useState<Record<string, string[]>>(
@@ -431,6 +438,7 @@ export function AppWorkbench({
   const activityIdRef = useRef(0);
   const apiConnectionModeRef = useRef<ApiConnectionMode>(apiConnectionMode);
   const initialRouteNoticeShownRef = useRef(false);
+  const initialTourCheckedRef = useRef(false);
   const projectLoadRequestIdRef = useRef(0);
   const saveOperationIdRef = useRef(0);
   const { addToast, dismissToast, toasts } = useToastQueue();
@@ -459,6 +467,12 @@ export function AppWorkbench({
     workspace.schedules[0];
   const canEditPlan = schedule.access?.canEditPlan ?? true;
   const canEnterActual = schedule.access?.canEnterActual ?? true;
+  const availableTourIds = useMemo<TourId[]>(() => {
+    const ids: TourId[] = ["basic", "gantt", "member"];
+    if (canEditPlan) ids.push("planner");
+    if (currentUser.role === "admin") ids.push("admin");
+    return ids;
+  }, [canEditPlan, currentUser.role]);
   const { commitTasks, initializeProject, replaceProject, redo, taskHistories, tasks, undo } =
     useTaskHistory({
       initialHistories: initialAppState.taskHistories,
@@ -1316,6 +1330,29 @@ export function AppWorkbench({
     setShowShortcutHelp(false);
     closeTaskInspector();
     setShowHelpPage(true);
+  }
+
+  /** 指定した操作ツアーに必要な画面へ移動してから案内を開始します。 */
+  function startTour(tourId: TourId) {
+    closeTaskInspector();
+    if (tourId === "admin") {
+      openMasterSettings();
+    } else if (tourId === "basic") {
+      changeTab("Projects");
+    } else {
+      changeTab("Gantt");
+    }
+    setActiveTourId(tourId);
+  }
+
+  /** ツアー終了状態をユーザー単位で保存し、初回自動表示を繰り返さないようにします。 */
+  function closeTour(tourId: TourId) {
+    try {
+      window.localStorage.setItem(getTourCompletionKey(currentUser.email, tourId), "completed");
+    } catch {
+      // ストレージが利用できない環境でも、現在のツアーは終了できます。
+    }
+    setActiveTourId(null);
   }
 
   /** タスク詳細の指定項目へフォーカスします。 */
@@ -2658,6 +2695,31 @@ export function AppWorkbench({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  useEffect(() => {
+    if (
+      initialTourCheckedRef.current ||
+      activeTab !== "Projects" ||
+      showHelpPage ||
+      showMasterSettings ||
+      showProjectSettings
+    ) {
+      return;
+    }
+    try {
+      if (window.localStorage.getItem(getTourCompletionKey(currentUser.email, "basic"))) {
+        initialTourCheckedRef.current = true;
+        return;
+      }
+    } catch {
+      // ストレージが利用できない場合は、このセッション内だけ初回ツアーを表示します。
+    }
+    const timeoutId = window.setTimeout(() => {
+      initialTourCheckedRef.current = true;
+      setActiveTourId("basic");
+    }, 350);
+    return () => window.clearTimeout(timeoutId);
+  }, [activeTab, currentUser.email, showHelpPage, showMasterSettings, showProjectSettings]);
+
   const activeFilterCount =
     Object.values(filters.statuses).filter((enabled) => !enabled).length +
     (filters.assigneeId !== "all" ? 1 : 0);
@@ -2786,7 +2848,9 @@ export function AppWorkbench({
               teams={workspace.teams}
             />
           ) : null}
-          {showHelpPage ? <HelpPage /> : null}
+          {showHelpPage ? (
+            <HelpPage availableTourIds={availableTourIds} onStartTour={startTour} />
+          ) : null}
           {showMainProjectViews && activeTab === "Gantt" ? (
             <GanttWorkbench
               activeFilterCount={activeFilterCount}
@@ -3145,6 +3209,12 @@ export function AppWorkbench({
         ) : null}
       </Suspense>
       <ToastViewport onDismiss={dismissToast} toasts={toasts} />
+      {activeTourId ? (
+        <OnboardingTour
+          onClose={() => closeTour(activeTourId)}
+          scenario={tourScenarios[activeTourId]}
+        />
+      ) : null}
     </div>
   );
 }

@@ -94,7 +94,7 @@ export function Sidebar({
   showProjectSettings,
 }: SidebarProps) {
   return (
-    <aside className={styles.sidebar} aria-label="メインナビゲーション">
+    <aside className={styles.sidebar} aria-label="メインナビゲーション" data-tour="sidebar">
       <div className={styles.navStack}>
         <NavGroup
           activeTab={activeTab}
@@ -134,6 +134,7 @@ export function Sidebar({
       <button
         aria-current={helpOpen ? "page" : undefined}
         className={helpOpen ? `${styles.helpButton} ${styles.helpButtonActive}` : styles.helpButton}
+        data-tour="help"
         onClick={onHelp}
         title="ヘルプ"
         type="button"
@@ -217,6 +218,13 @@ function NavGroup({
             aria-current={active ? "page" : undefined}
             aria-expanded={item.children ? expanded : undefined}
             className={active ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem}
+            data-tour={
+              item.label === "分析"
+                ? "nav-analysis"
+                : item.tab
+                  ? `nav-${item.tab}`
+                  : `nav-${item.action}`
+            }
             key={!item.children ? item.label : undefined}
             onClick={() => {
               if (item.children) {
