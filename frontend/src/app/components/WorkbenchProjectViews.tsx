@@ -102,66 +102,71 @@ export function WorkbenchProjectViews({ controller }: WorkbenchProjectViewsProps
   return (
     <>
       {activeTab === "Gantt" ? (
-        <GanttWorkbench
-          activeFilterCount={activeFilterCount}
-          calendar={schedule.calendar}
-          calendarAware={calendarAware}
-          canEditPlan={canEditPlan}
-          canPasteTask={taskClipboard !== null}
-          collapsedIds={collapsedIds}
-          columnVisibility={columnVisibility}
-          displayMode={ganttDisplayMode}
-          filterOpen={filterOpen}
-          filters={filters}
-          members={projectMembers}
-          months={ganttColumns.primary}
-          onAssigneeChange={(assigneeId) => setFilters((current) => ({ ...current, assigneeId }))}
-          onBulkAssigneeChange={taskActions.bulkUpdateSelectedAssignee}
-          onBulkDateShift={taskActions.shiftSelectedTasksByDays}
-          onBulkStatusChange={taskActions.bulkUpdateSelectedStatus}
-          onCalendarAwareChange={setCalendarAware}
-          onClearSelection={clearTaskSelection}
-          onColumnVisibilityChange={setColumnVisibility}
-          onCopyTask={taskActions.copySelectedTask}
-          onCreateTask={() => setShowCreateSheet(true)}
-          onDeleteTask={taskActions.deleteSelectedTasks}
-          onDisplayModeChange={setGanttDisplayMode}
-          onDuplicateTask={taskActions.duplicateSelectedTask}
-          onFilterOpenChange={setFilterOpen}
-          onFilterReset={() => setFilters(initialFilters)}
-          onIndentTasks={taskActions.indentSelectedTasks}
-          onMoveTask={taskActions.moveTask}
-          onOpenTaskInspector={openTaskInspector}
-          onOutdentTasks={taskActions.outdentSelectedTasks}
-          onPasteTask={taskActions.pasteCopiedTask}
-          onReorderTasks={taskActions.moveSelectedTaskWithinSiblings}
-          onReorderTasksToTarget={taskActions.moveSelectedTasksToSiblingPosition}
-          onReparentTasksByDrag={taskActions.moveSelectedTasksToParentPosition}
-          onResizeTask={taskActions.resizeTask}
-          onScaleChange={setScale}
-          onSelectTask={selectTask}
-          onSelectTaskRange={selectTaskRange}
-          onShortcutHelp={() => setShowShortcutHelp(true)}
-          onStatusToggle={updateStatusFilter}
-          onTimeUnitChange={setTimeUnit}
-          onToday={() => setTodaySignal((value) => value + 1)}
-          onToggleCollapsed={toggleCollapsed}
-          onUpdateTask={taskActions.updateTask}
-          projectRangeEnd={schedule.project.rangeEnd}
-          projectRangeStart={schedule.project.rangeStart}
-          rows={visibleRows}
-          scale={scale}
-          selectedTaskCount={selectedTaskIds.size}
-          selectedTaskId={selectedTaskId}
-          selectedTaskIds={selectedTaskIds}
-          tasks={tasks}
-          taskStartFocusSignal={taskStartFocusSignal}
-          taskTitleEditRequest={taskTitleEditRequest}
-          timeline={timeline}
-          timeUnit={timeUnit}
-          todaySignal={todaySignal}
-          weeks={ganttColumns.secondary}
-        />
+        <div className="project-gantt-page">
+          <header className="project-view-heading">
+            <h1>ガント</h1>
+          </header>
+          <GanttWorkbench
+            activeFilterCount={activeFilterCount}
+            calendar={schedule.calendar}
+            calendarAware={calendarAware}
+            canEditPlan={canEditPlan}
+            canPasteTask={taskClipboard !== null}
+            collapsedIds={collapsedIds}
+            columnVisibility={columnVisibility}
+            displayMode={ganttDisplayMode}
+            filterOpen={filterOpen}
+            filters={filters}
+            members={projectMembers}
+            months={ganttColumns.primary}
+            onAssigneeChange={(assigneeId) => setFilters((current) => ({ ...current, assigneeId }))}
+            onBulkAssigneeChange={taskActions.bulkUpdateSelectedAssignee}
+            onBulkDateShift={taskActions.shiftSelectedTasksByDays}
+            onBulkStatusChange={taskActions.bulkUpdateSelectedStatus}
+            onCalendarAwareChange={setCalendarAware}
+            onClearSelection={clearTaskSelection}
+            onColumnVisibilityChange={setColumnVisibility}
+            onCopyTask={taskActions.copySelectedTask}
+            onCreateTask={() => setShowCreateSheet(true)}
+            onDeleteTask={taskActions.deleteSelectedTasks}
+            onDisplayModeChange={setGanttDisplayMode}
+            onDuplicateTask={taskActions.duplicateSelectedTask}
+            onFilterOpenChange={setFilterOpen}
+            onFilterReset={() => setFilters(initialFilters)}
+            onIndentTasks={taskActions.indentSelectedTasks}
+            onMoveTask={taskActions.moveTask}
+            onOpenTaskInspector={openTaskInspector}
+            onOutdentTasks={taskActions.outdentSelectedTasks}
+            onPasteTask={taskActions.pasteCopiedTask}
+            onReorderTasks={taskActions.moveSelectedTaskWithinSiblings}
+            onReorderTasksToTarget={taskActions.moveSelectedTasksToSiblingPosition}
+            onReparentTasksByDrag={taskActions.moveSelectedTasksToParentPosition}
+            onResizeTask={taskActions.resizeTask}
+            onScaleChange={setScale}
+            onSelectTask={selectTask}
+            onSelectTaskRange={selectTaskRange}
+            onShortcutHelp={() => setShowShortcutHelp(true)}
+            onStatusToggle={updateStatusFilter}
+            onTimeUnitChange={setTimeUnit}
+            onToday={() => setTodaySignal((value) => value + 1)}
+            onToggleCollapsed={toggleCollapsed}
+            onUpdateTask={taskActions.updateTask}
+            projectRangeEnd={schedule.project.rangeEnd}
+            projectRangeStart={schedule.project.rangeStart}
+            rows={visibleRows}
+            scale={scale}
+            selectedTaskCount={selectedTaskIds.size}
+            selectedTaskId={selectedTaskId}
+            selectedTaskIds={selectedTaskIds}
+            tasks={tasks}
+            taskStartFocusSignal={taskStartFocusSignal}
+            taskTitleEditRequest={taskTitleEditRequest}
+            timeline={timeline}
+            timeUnit={timeUnit}
+            todaySignal={todaySignal}
+            weeks={ganttColumns.secondary}
+          />
+        </div>
       ) : null}
       {activeTab === "Status" ? (
         <SummaryStrip

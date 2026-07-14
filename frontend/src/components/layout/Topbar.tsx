@@ -62,7 +62,7 @@ export function Topbar({
   }, [closeMenu, openMenu, presentation.projectContext, presentation.projectSearchAvailable]);
 
   return (
-    <header className="topbar" ref={topbarRef}>
+    <header className="topbar" data-context-mode={contextMode} ref={topbarRef}>
       <TopbarContextPicker
         activeTeamId={activeTeamId}
         allProjects={allProjects}

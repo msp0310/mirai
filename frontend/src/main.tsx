@@ -5,6 +5,8 @@ import { createRoot } from "react-dom/client";
 import { router } from "./app/routing/router";
 import { AppErrorBoundary } from "./components/feedback/AppErrorBoundary";
 
+import "@fontsource-variable/inter/index.css";
+import "@fontsource-variable/noto-sans-jp/index.css";
 import "./styles.css";
 
 document.title = "COMPASS";

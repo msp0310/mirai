@@ -20,14 +20,14 @@
 .portfolio-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .portfolio-header h2 {
   margin: 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .portfolio-header-actions {
@@ -76,7 +76,7 @@
   color: #fff;
   background: #2864ea;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .portfolio-team-card div {
@@ -88,7 +88,7 @@
 .portfolio-team-card strong {
   overflow: hidden;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -96,7 +96,7 @@
 .portfolio-team-card small {
   color: #66758b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .portfolio-summary {
@@ -119,13 +119,13 @@
 .portfolio-summary-card small {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .portfolio-summary-card strong {
   color: #172033;
   font-size: 26px;
-  font-weight: 950;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -175,7 +175,7 @@
   background: #f8fafc;
   padding: 0 10px 0 34px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .portfolio-search input:focus,
@@ -202,7 +202,7 @@
   background: #fff;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
   white-space: nowrap;
 }
 
@@ -239,8 +239,8 @@
 
 .portfolio-card {
   display: grid;
-  gap: 12px;
-  min-height: 314px;
+  gap: 10px;
+  min-height: 286px;
   padding: 14px;
   cursor: pointer;
 }
@@ -273,7 +273,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -282,16 +282,16 @@
   overflow: hidden;
   color: #172033;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .portfolio-card-header .portfolio-project-no {
   overflow: hidden;
-  color: #8290a3;
-  font-size: 10px;
-  font-weight: 800;
+  color: #5f6e84;
+  font-size: 11px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -312,7 +312,7 @@
   background: #fff;
   padding-inline: 8px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .portfolio-lifecycle-select.planning {
@@ -373,14 +373,14 @@
   border-radius: 999px;
   padding: 4px 9px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .portfolio-lifecycle-banner strong {
   overflow: hidden;
   color: #4a596f;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -417,7 +417,7 @@
   color: #1649bf;
   background: #f8fbff;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .portfolio-progress-ring.good {
@@ -457,8 +457,8 @@
 
 .portfolio-card-metrics dt {
   color: #758196;
-  font-size: 10px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 650;
 }
 
 .portfolio-card-metrics dd {
@@ -466,7 +466,7 @@
   margin: 0;
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -497,7 +497,7 @@
   gap: 7px;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .portfolio-card-detail svg {
@@ -520,7 +520,7 @@
   min-height: 34px;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .portfolio-card-members > svg {
@@ -546,7 +546,7 @@
   background: color-mix(in srgb, var(--avatar-color, #2864ea) 17%, #fff);
   box-shadow: 0 0 0 1px rgba(114, 128, 147, 0.12);
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .portfolio-member-stack span + span {
@@ -562,7 +562,7 @@
 .portfolio-card-footer > span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .portfolio-card-footer button {
@@ -576,7 +576,7 @@
   background: #f3f7ff;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .portfolio-card-footer button:hover {
@@ -614,13 +614,13 @@
 .portfolio-panel-title strong {
   color: #172033;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .portfolio-panel-title span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .portfolio-attention-list,
@@ -676,8 +676,8 @@
   color: #174ab6;
   background: #fff;
   padding: 0 8px;
-  font-size: 10px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -703,7 +703,7 @@
   color: #9a4a12;
   background: #fff3df;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .portfolio-milestone-row > span {
@@ -722,7 +722,7 @@
   overflow: hidden;
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -732,7 +732,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -781,20 +781,20 @@
 .portfolio-workload-row strong {
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .portfolio-workload-row small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .portfolio-workload-row em {
-  color: #8793a6;
-  font-size: 10px;
+  color: #66758b;
+  font-size: 11px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .portfolio-workload-meter {
@@ -823,7 +823,7 @@
 .portfolio-side-empty {
   margin: 0;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -840,7 +840,7 @@
 .portfolio-empty strong {
   color: #25334a;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .summary-strip {
@@ -862,7 +862,7 @@
   display: block;
   color: #647086;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .summary-card strong {
@@ -870,7 +870,7 @@
   margin-top: 6px;
   color: #172033;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .summary-card.attention strong,

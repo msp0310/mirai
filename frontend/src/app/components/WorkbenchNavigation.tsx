@@ -30,6 +30,7 @@ export function WorkbenchSidebar({ controller }: WorkbenchNavigationProps) {
       onNavigate={changeTab}
       onProjectSettingsOpen={openProjectSettings}
       projectName={schedule.project.workspace}
+      projectNo={schedule.project.projectNo ?? schedule.project.name}
       projectNavigationVisible={
         !showMasterSettings &&
         !showHelpPage &&
@@ -40,6 +41,13 @@ export function WorkbenchSidebar({ controller }: WorkbenchNavigationProps) {
             activeTab !== "PersonalAnalytics"))
       }
       projectSettingsOpen={showProjectSettings}
+      projectStatusLabel={
+        schedule.project.lifecycleStatus === "planning"
+          ? "計画"
+          : schedule.project.lifecycleStatus === "completed"
+            ? "完了"
+            : "進行中"
+      }
       settingsOpen={showMasterSettings}
       showAdminSettings={
         currentUser.role === "admin" || (schedule.access?.canManageStaffing ?? false)

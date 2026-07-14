@@ -14,7 +14,7 @@ export const picker = style({
   gap: 8,
   color: "#68778e",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const metrics = style({
   display: "grid",
@@ -69,9 +69,9 @@ export const historyPanel = style({
 export const tableWrap = style({ overflow: "auto" });
 
 globalStyle(`${header} > div`, { display: "grid", gap: 3 });
-globalStyle(`${header} > div > span`, { color: "#60718a", fontSize: 10, fontWeight: 800 });
+globalStyle(`${header} > div > span`, { color: "#60718a", fontSize: 10, fontWeight: 700 });
 globalStyle(`${header} h2`, { margin: 0, color: "#172238", fontSize: 22, letterSpacing: 0 });
-globalStyle(`${header} p`, { margin: 0, color: "#738198", fontSize: 11, fontWeight: 700 });
+globalStyle(`${header} p`, { margin: 0, color: "#738198", fontSize: 11, fontWeight: 600 });
 globalStyle(`${picker} select`, {
   height: 34,
   minWidth: 130,
@@ -81,7 +81,7 @@ globalStyle(`${picker} select`, {
   background: "#fff",
   padding: "0 9px",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 globalStyle(`${metric} > span`, {
   display: "grid",
@@ -94,7 +94,7 @@ globalStyle(`${metric} > span`, {
 });
 globalStyle(`${metric} svg`, { width: 18, height: 18 });
 globalStyle(`${metric} > div`, { display: "grid", gap: 2 });
-globalStyle(`${metric} small`, { color: "#718096", fontSize: 9, fontWeight: 800 });
+globalStyle(`${metric} small`, { color: "#718096", fontSize: 9, fontWeight: 700 });
 globalStyle(`${metric} strong`, { color: "#1e304a", fontSize: 21, letterSpacing: 0 });
 globalStyle(`${panel} > header, ${activityPanel} > header, ${historyPanel} > header`, {
   display: "flex",
@@ -108,7 +108,7 @@ globalStyle(
 );
 globalStyle(
   `${panel} > header span, ${activityPanel} > header span, ${historyPanel} > header span`,
-  { color: "#7a8799", fontSize: 9, fontWeight: 800 },
+  { color: "#7a8799", fontSize: 9, fontWeight: 700 },
 );
 globalStyle(`${monthlyChart} > div`, {
   display: "grid",
@@ -118,7 +118,7 @@ globalStyle(`${monthlyChart} > div`, {
   alignItems: "end",
   textAlign: "center",
 });
-globalStyle(`${monthlyChart} > div > span`, { color: "#566780", fontSize: 8, fontWeight: 800 });
+globalStyle(`${monthlyChart} > div > span`, { color: "#566780", fontSize: 8, fontWeight: 700 });
 globalStyle(`${monthlyChart} > div > div`, {
   position: "relative",
   height: "100%",
@@ -134,14 +134,14 @@ globalStyle(`${monthlyChart} i`, {
   borderRadius: "4px 4px 0 0",
   background: "#4d7fe9",
 });
-globalStyle(`${monthlyChart} small`, { color: "#758399", fontSize: 8, fontWeight: 800 });
+globalStyle(`${monthlyChart} small`, { color: "#758399", fontSize: 8, fontWeight: 700 });
 globalStyle(`${categoryList} > div`, {
   display: "grid",
   gridTemplateColumns: "80px minmax(0, 1fr) 48px",
   alignItems: "center",
   gap: 8,
 });
-globalStyle(`${categoryList} > div > span`, { color: "#52637c", fontSize: 9, fontWeight: 800 });
+globalStyle(`${categoryList} > div > span`, { color: "#52637c", fontSize: 9, fontWeight: 700 });
 globalStyle(`${categoryList} > div > div`, {
   height: 7,
   overflow: "hidden",
@@ -164,7 +164,7 @@ globalStyle(`${activityList} article`, {
   borderTop: "1px solid #e7ebf1",
   padding: "9px 2px",
 });
-globalStyle(`${activityList} time`, { color: "#728097", fontSize: 9, fontWeight: 800 });
+globalStyle(`${activityList} time`, { color: "#728097", fontSize: 9, fontWeight: 700 });
 globalStyle(`${activityList} article > div`, { display: "grid", gap: 2, minWidth: 0 });
 globalStyle(`${activityList} article > div strong`, {
   overflow: "hidden",
@@ -174,7 +174,7 @@ globalStyle(`${activityList} article > div strong`, {
   whiteSpace: "nowrap",
 });
 globalStyle(`${activityList} article > div span`, { color: "#7b899c", fontSize: 8 });
-globalStyle(`${activityList} article > small`, { color: "#53657e", fontSize: 8, fontWeight: 800 });
+globalStyle(`${activityList} article > small`, { color: "#53657e", fontSize: 8, fontWeight: 700 });
 globalStyle(`${activityList} article > b`, { color: "#2057c6", fontSize: 10, textAlign: "right" });
 globalStyle(`${tableWrap} table`, {
   width: "100%",

@@ -134,16 +134,18 @@ export function ProjectPortfolioCard({
         </div>
       </div>
 
-      <div className="portfolio-card-members">
-        <UserGroupIcon />
-        <div className="portfolio-member-stack" aria-hidden="true">
-          {item.assignedMembers.slice(0, 4).map((member) => (
-            <span key={member.id} style={{ "--avatar-color": member.color } as CSSProperties}>
-              {member.initials}
-            </span>
-          ))}
+      {item.assignedMembers.length > 0 ? (
+        <div className="portfolio-card-members">
+          <UserGroupIcon />
+          <div className="portfolio-member-stack" aria-hidden="true">
+            {item.assignedMembers.slice(0, 4).map((member) => (
+              <span key={member.id} style={{ "--avatar-color": member.color } as CSSProperties}>
+                {member.initials}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <footer className="portfolio-card-footer">
         <span>

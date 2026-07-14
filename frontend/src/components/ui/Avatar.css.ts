@@ -8,7 +8,7 @@ export const avatar = style({
   color: "var(--avatar-color)",
   display: "grid",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 750,
   height: 28,
   placeItems: "center",
   selectors: {

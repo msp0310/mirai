@@ -23,14 +23,14 @@
   margin: 0;
   color: #172033;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .calendar-header span,
 .milestone-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .month-switcher {
@@ -67,7 +67,7 @@
   min-width: 104px;
   color: #25334a;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: center;
 }
 
@@ -97,7 +97,7 @@
   border-top: 1px solid #edf1f6;
   border-right: 1px solid #edf1f6;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .month-grid {
@@ -143,14 +143,14 @@
 .calendar-day-head strong {
   color: #22314a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .calendar-day-head span {
   overflow: hidden;
   color: #b64b17;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -175,7 +175,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left;
@@ -192,7 +192,7 @@
   padding: 1px 4px;
   color: #31506f;
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .calendar-event.milestone {
@@ -239,13 +239,13 @@
 .next-milestone span {
   color: #6a7689;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .calendar-metric strong {
   color: #172033;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .calendar-card {
@@ -256,7 +256,7 @@
   margin: 0 0 10px;
   color: #25334a;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .selected-day-card {
@@ -276,7 +276,7 @@
 .selected-day-heading strong {
   color: #172033;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .selected-day-heading span {
@@ -286,7 +286,7 @@
   padding: 2px 8px;
   color: #2864ea;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .selected-day-events {
@@ -321,7 +321,7 @@
   padding: 3px 7px;
   color: #2864ea;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .selected-day-event.milestone > span {
@@ -332,7 +332,7 @@
 .selected-day-event strong {
   overflow: hidden;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -342,7 +342,7 @@
   margin: 0;
   color: #637188;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .weekday-toggle-grid {
@@ -360,7 +360,7 @@
   color: #3d4c64;
   padding: 6px 0;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .weekday-toggle-grid input,
@@ -394,13 +394,13 @@
   background: #fff;
   padding-inline: 10px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .holiday-form button {
   color: #fff;
   background: #2864ea;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .holiday-list {
@@ -423,13 +423,13 @@
   gap: 2px;
   color: #45546b;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .holiday-row strong {
   color: #172033;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .holiday-row button {
@@ -465,13 +465,13 @@
 .next-milestone strong {
   color: #172033;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .next-milestone small {
   color: #66758b;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .milestone-list {
@@ -540,7 +540,7 @@
   border-color: transparent;
   padding-inline: 0;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .milestone-meta {
@@ -549,7 +549,7 @@
   gap: 10px;
   color: #66758b;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .milestone-meta span {
@@ -572,14 +572,14 @@
 .milestone-readiness strong {
   color: #25334a;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .milestone-readiness span {
   overflow: hidden;
   color: #637188;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -628,7 +628,7 @@
 .milestone-gate-item strong {
   overflow: hidden;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -636,7 +636,7 @@
 .milestone-gate-item small {
   color: #637188;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -670,7 +670,7 @@
   gap: 4px;
   color: #6a7689;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .milestone-assignee {
@@ -682,7 +682,7 @@
 .milestone-assignee strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .milestone-assignee button {
@@ -693,7 +693,7 @@
   background: #f3f7ff;
   padding-inline: 9px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .milestone-create {

@@ -14,7 +14,7 @@ export const heading = style({
   gap: 8,
   color: "#172033",
   fontSize: 13,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 
 export const headingLabel = style({
@@ -32,7 +32,7 @@ export const headingIcon = style({
 export const count = style({
   color: "#718096",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 
 export const dropzone = style({
@@ -46,7 +46,7 @@ export const dropzone = style({
   padding: "12px 16px",
   cursor: "pointer",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
   textAlign: "center",
   transition: "border-color 120ms ease, background 120ms ease",
 });
@@ -77,7 +77,7 @@ export const error = style({
   background: "#fff4f1",
   padding: "7px 9px",
   fontSize: 11,
-  fontWeight: 750,
+  fontWeight: 650,
 });
 
 export const list = style({
@@ -125,7 +125,7 @@ export const fileName = style({
   overflow: "hidden",
   color: "#263750",
   fontSize: 11,
-  fontWeight: 850,
+  fontWeight: 750,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -134,7 +134,7 @@ export const fileMeta = style({
   overflow: "hidden",
   color: "#7b8798",
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -173,5 +173,5 @@ export const empty = style({
   margin: 0,
   color: "#7b8798",
   fontSize: 11,
-  fontWeight: 700,
+  fontWeight: 600,
 });

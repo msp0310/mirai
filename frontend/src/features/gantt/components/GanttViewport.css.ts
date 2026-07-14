@@ -3,12 +3,12 @@ import { globalStyle } from "@vanilla-extract/css";
 globalStyle(".workbench", {
   display: "flex",
   flexDirection: "column",
-  height: "calc(100dvh - 100px)",
+  height: "calc(100dvh - 128px)",
   minHeight: 480,
   overflow: "hidden",
   "@media": {
     "screen and (max-width: 1120px)": {
-      height: "calc(100dvh - 152px)",
+      height: "calc(100dvh - 180px)",
     },
     "screen and (max-width: 760px)": {
       height: "auto",

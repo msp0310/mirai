@@ -9,7 +9,8 @@
   color: #172033;
   background: #f6f8fb;
   font-family:
-    Inter,
+    "Inter Variable",
+    "Noto Sans JP Variable",
     "Noto Sans JP",
     ui-sans-serif,
     system-ui,
@@ -68,7 +69,7 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 66px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: 100vh;
   background: #f6f8fb;
 }
@@ -144,7 +145,7 @@ button {
 
 .workspace {
   min-width: 0;
-  padding: 0 18px 22px;
+  padding: 0 16px 18px;
 }
 
 .topbar,
@@ -157,12 +158,28 @@ button {
 }
 
 .topbar {
-  min-height: 76px;
+  min-height: 60px;
   justify-content: space-between;
   border-bottom: 1px solid #e3e8f0;
   background: #fff;
-  margin-inline: -18px;
-  padding: 0 24px;
+  margin-inline: -16px;
+  padding: 0 18px;
+}
+
+.topbar[data-context-mode="project"] .title-stack {
+  display: flex;
+  align-items: center;
+}
+
+.topbar[data-context-mode="project"] .project-title-row {
+  display: none;
+}
+
+.topbar[data-context-mode="project"] .context-picker::before {
+  content: "案件";
+  color: #66758b;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .title-block,
@@ -181,7 +198,7 @@ button {
   margin: 0;
   overflow: hidden;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -227,7 +244,7 @@ button {
   background: #f7f9fc;
   padding: 0 24px 0 8px;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .context-chip {
@@ -241,7 +258,7 @@ button {
   background: #f7f9fc;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   white-space: nowrap;
 }
@@ -312,13 +329,13 @@ button {
 .project-switcher-heading strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .project-switcher-heading span {
   color: #6a7689;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .project-switcher-search {
@@ -330,7 +347,7 @@ button {
   background: #f8fafc;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .project-switcher-search:focus {
@@ -389,7 +406,7 @@ button {
 .project-switcher-row strong {
   overflow: hidden;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -398,7 +415,7 @@ button {
   overflow: hidden;
   color: #6a7689;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -416,7 +433,7 @@ button {
   background: #fff2df;
   padding: 3px 8px;
   font-size: 10px !important;
-  font-weight: 950 !important;
+  font-weight: 800 !important;
 }
 
 .project-switcher-empty {
@@ -426,7 +443,7 @@ button {
   background: #fbfcfe;
   padding: 14px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -475,7 +492,7 @@ button {
   max-width: 146px;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .account-button.active {
@@ -515,7 +532,7 @@ button {
   color: #fff;
   background: #ff4b67;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .ghost-icon.favorite svg {
@@ -586,7 +603,7 @@ button {
 
 .save-state strong {
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   white-space: nowrap;
 }
@@ -594,7 +611,7 @@ button {
 .save-state small {
   color: #6a7689;
   font-size: 9px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1;
   white-space: nowrap;
 }
@@ -608,7 +625,7 @@ button {
 .toolbar-button {
   padding: 0 11px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -620,7 +637,7 @@ button {
   color: #fff;
   background: #2864ea;
   box-shadow: 0 8px 18px rgba(40, 100, 234, 0.22);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .primary-button {
@@ -631,7 +648,7 @@ button {
   min-height: 34px;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -666,8 +683,26 @@ button {
   height: 52px;
   border-bottom: 1px solid #dfe5ef;
   background: #fff;
-  margin-inline: -18px;
-  padding-inline: 24px;
+  margin-inline: -16px;
+  padding-inline: 18px;
+}
+
+.project-gantt-page {
+  min-width: 0;
+}
+
+.project-view-heading {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+}
+
+.project-view-heading h1 {
+  margin: 0;
+  color: #172033;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .topbar-action-wrap {
@@ -732,26 +767,26 @@ button {
 .account-summary strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .account-summary span {
   color: #5d6b80;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .account-summary small {
   color: #2864ea;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .topbar-popover > strong,
 .resource-settings-popover > strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .topbar-popover p {
@@ -771,7 +806,7 @@ button {
   background: #f8fafc;
   padding: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -787,7 +822,7 @@ button {
   background: #fff2eb;
   border-radius: 7px;
   padding: 8px 10px;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .export-popover button {
@@ -801,7 +836,7 @@ button {
   background: #fff;
   padding-inline: 10px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .export-popover button:hover {
@@ -863,7 +898,7 @@ button {
 .sync-status-card strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .sync-status-card p {
@@ -886,7 +921,7 @@ button {
 .sync-meta dt {
   color: #758196;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .sync-meta dd {
@@ -894,7 +929,7 @@ button {
   margin: 0;
   color: #25334a;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -912,7 +947,7 @@ button {
   color: #4d5c72;
   background: #fff;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .sync-mode-toggle button.active {
@@ -938,13 +973,13 @@ button {
 .sync-queue-heading strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .sync-queue-heading span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .sync-queue-list {
@@ -987,7 +1022,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -996,7 +1031,7 @@ button {
   margin: 3px 0 0;
   color: #66758b;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 660;
   line-height: 1.45;
 }
 
@@ -1004,7 +1039,7 @@ button {
 .sync-queue-empty {
   color: #7a8798;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .notification-list {
@@ -1041,7 +1076,7 @@ button {
   display: block;
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .notification-item p {
@@ -1054,7 +1089,7 @@ button {
   border-bottom: 2px solid transparent;
   color: #4f5c70;
   background: transparent;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .tab.active {
@@ -1072,7 +1107,7 @@ button {
   background: #fbfcfe;
   margin: 16px 0;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .status-dashboard {
@@ -1109,7 +1144,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-report-header p,
@@ -1117,7 +1152,7 @@ button {
   margin: 0;
   color: #66758b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .weekly-report-header-meta {
@@ -1130,7 +1165,7 @@ button {
 .weekly-report-header-meta strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-daily-report-summary {
@@ -1160,7 +1195,7 @@ button {
 .weekly-daily-report-empty {
   color: #7b899c;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .weekly-daily-report-summary header > strong {
@@ -1192,7 +1227,7 @@ button {
   color: #2055c4;
   background: #eaf1ff;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-daily-report-members article > div {
@@ -1229,7 +1264,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .analysis-header p,
@@ -1237,7 +1272,7 @@ button {
   margin: 0;
   color: #66758b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .analysis-header-meta {
@@ -1250,7 +1285,7 @@ button {
 .analysis-header-meta strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .analysis-data-status {
@@ -1275,13 +1310,13 @@ button {
   gap: 2px;
   color: #63738a;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .analysis-data-status b {
   color: #243651;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .analysis-data-status button {
@@ -1292,7 +1327,7 @@ button {
   background: #fff;
   padding: 0 10px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -1323,12 +1358,12 @@ button {
 .analysis-kpi > small {
   color: #728096;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .analysis-kpi > strong {
   font-size: 24px;
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -1377,7 +1412,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 15px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-heading p,
@@ -1386,7 +1421,7 @@ button {
   margin: 0;
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .weekly-progress-meta {
@@ -1399,7 +1434,7 @@ button {
 .weekly-progress-meta strong {
   color: #1649bf;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-overview {
@@ -1422,13 +1457,13 @@ button {
 .weekly-progress-overview span {
   color: #728096;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .weekly-progress-overview strong {
   color: #25334a;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-overview .behind strong {
@@ -1477,7 +1512,7 @@ button {
   color: #66758b;
   background: #f8fafc;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-table thead th:first-child,
@@ -1500,7 +1535,7 @@ button {
 
 .weekly-progress-table tbody th {
   width: 190px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .weekly-progress-table tbody th strong,
@@ -1517,17 +1552,17 @@ button {
   margin-top: 2px;
   color: #8a96a7;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .weekly-progress-completed {
   color: #008d8b;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-delayed {
   color: #c4521d;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-cell {
@@ -1541,14 +1576,14 @@ button {
 
 .weekly-progress-cell > span:first-child {
   color: #1649bf;
-  font-weight: 900;
+  font-weight: 750;
   text-align: right;
 }
 
 .weekly-progress-cell small {
   color: #8a96a7;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .weekly-progress-table th:last-child,
@@ -1564,7 +1599,7 @@ button {
   background: #fff;
   padding: 4px 7px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-detail-button:hover,
@@ -1602,7 +1637,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-detail-heading p,
@@ -1611,13 +1646,13 @@ button {
   margin: 0;
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .weekly-progress-detail-heading > strong {
   color: #1649bf;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -1651,7 +1686,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1659,7 +1694,7 @@ button {
 .weekly-progress-group-heading span {
   color: #8a96a7;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 650;
   white-space: nowrap;
 }
 
@@ -1694,7 +1729,7 @@ button {
   color: #66758b;
   background: #f0f3f7;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -1723,7 +1758,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1731,7 +1766,7 @@ button {
 .weekly-progress-task-copy small {
   color: #8a96a7;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .weekly-progress-detail-empty {
@@ -1740,7 +1775,7 @@ button {
   color: #7a8798;
   padding: 12px;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -1772,14 +1807,14 @@ button {
   margin: 0;
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-issues-heading p {
   margin: 0;
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .weekly-progress-issues-summary {
@@ -1788,14 +1823,14 @@ button {
   gap: 10px;
   color: #728096;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .weekly-progress-issues-summary strong {
   color: #c4521d;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .weekly-progress-issues-summary button {
@@ -1805,7 +1840,7 @@ button {
   background: #fff;
   padding: 5px 8px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-issues-summary button:hover,
@@ -1854,7 +1889,7 @@ button {
   color: #66758b;
   background: #f0f3f7;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -1891,7 +1926,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1900,7 +1935,7 @@ button {
 .weekly-progress-issue-due {
   color: #8a96a7;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .weekly-progress-issue-due {
@@ -1943,7 +1978,7 @@ button {
 .weekly-progress-navigation span {
   color: #718096;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .weekly-progress-navigation strong {
@@ -1993,7 +2028,7 @@ button {
   padding-inline: 9px;
   color: #1649bf;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekly-progress-note {
@@ -2033,7 +2068,7 @@ button {
 .analysis-baseline-panel .dashboard-panel-header > strong {
   color: #1649bf;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .analysis-risk-list {
@@ -2065,7 +2100,7 @@ button {
   border-radius: 999px;
   padding: 4px 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .analysis-risk-row > span.delayed {
@@ -2083,7 +2118,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2091,7 +2126,7 @@ button {
 .analysis-risk-row > small {
   color: #728096;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .analysis-empty,
@@ -2101,7 +2136,7 @@ button {
   color: #7a8798;
   padding: 16px 12px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -2119,13 +2154,13 @@ button {
 .analysis-baseline-content p {
   color: #25334a;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .analysis-baseline-content small {
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.5;
 }
 
@@ -2146,13 +2181,13 @@ button {
   margin: 3px 0 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .activity-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .activity-search {
@@ -2179,7 +2214,7 @@ button {
   background: #fff;
   padding: 0 12px 0 36px;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .activity-search input:focus {
@@ -2207,13 +2242,13 @@ button {
 .activity-summary span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .activity-summary strong {
   color: #172033;
   font-size: 24px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .change-review-panel {
@@ -2249,19 +2284,19 @@ button {
 .schedule-change-analysis-heading strong {
   color: #172033;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .schedule-change-analysis-heading span {
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .schedule-change-analysis-heading > span {
   color: #b73b18;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .schedule-change-analysis-list {
@@ -2292,7 +2327,7 @@ button {
 .schedule-change-count {
   color: #b73b18;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .schedule-change-copy {
@@ -2305,7 +2340,7 @@ button {
   overflow: hidden;
   color: #25334a;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2314,7 +2349,7 @@ button {
   overflow: hidden;
   color: #728096;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2325,14 +2360,14 @@ button {
   gap: 2px;
   color: #728096;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   white-space: nowrap;
 }
 
 .schedule-change-detail em {
   font-size: 10px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .schedule-change-detail em.delayed {
@@ -2349,7 +2384,7 @@ button {
   color: #7a8798;
   padding: 12px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -2368,13 +2403,13 @@ button {
 .change-review-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .change-review-heading strong {
   color: #172033;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .change-review-heading button {
@@ -2385,7 +2420,7 @@ button {
   background: #2864ea;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .change-review-heading button:disabled {
@@ -2413,13 +2448,13 @@ button {
 .change-review-stats span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .change-review-stats strong {
   color: #172033;
   font-size: 20px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .change-review-list {
@@ -2458,7 +2493,7 @@ button {
   place-items: center;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .change-review-row.added > span {
@@ -2512,7 +2547,7 @@ button {
   overflow: hidden;
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2521,7 +2556,7 @@ button {
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2556,17 +2591,17 @@ button {
 .change-review-row li em {
   color: #8793a6;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .change-review-row li span {
   color: #66758b;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .change-review-row li strong {
   color: #172033;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .change-review-empty {
@@ -2585,12 +2620,12 @@ button {
 .change-review-empty strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .change-review-empty span {
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .activity-filter {
@@ -2607,7 +2642,7 @@ button {
   background: #fff;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .activity-filter button.active {
@@ -2687,7 +2722,7 @@ button {
   overflow: hidden;
   color: #1f2d43;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2699,7 +2734,7 @@ button {
   background: #f1f5fb;
   padding: 3px 8px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .activity-main p {
@@ -2707,7 +2742,7 @@ button {
   margin: 0;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2721,13 +2756,13 @@ button {
 .activity-meta strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .activity-meta span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .activity-empty {
@@ -2745,12 +2780,12 @@ button {
 .activity-empty strong {
   color: #25334a;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .activity-empty span {
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .issue-panel {
@@ -2770,14 +2805,14 @@ button {
   margin: 3px 0 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
 .issue-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-add-button,
@@ -2792,7 +2827,7 @@ button {
   background: #2864ea;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-add-button svg {
@@ -2819,13 +2854,13 @@ button {
 .issue-stat span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-stat strong {
   color: #172033;
   font-size: 24px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-stat.danger strong {
@@ -2893,7 +2928,7 @@ button {
   background: #fff;
   font: inherit;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .issue-search input,
@@ -2943,7 +2978,7 @@ button {
   color: #25334a;
   background: #fff;
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 660;
 }
 
 .issue-table th {
@@ -2955,7 +2990,7 @@ button {
   background: #f7f9fc;
   padding: 10px 10px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   text-align: left;
   white-space: nowrap;
 }
@@ -2997,14 +3032,14 @@ button {
 .issue-title-cell strong {
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-title-cell small {
   margin-top: 3px;
   color: #7a8798;
   font-size: 11px;
-  font-weight: 720;
+  font-weight: 620;
 }
 
 .issue-priority-badge {
@@ -3017,7 +3052,7 @@ button {
   background: #eaf1ff;
   padding: 0 8px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-priority-badge.critical,
@@ -3045,7 +3080,7 @@ button {
   background: transparent;
   padding: 0;
   font: inherit;
-  font-weight: 900;
+  font-weight: 750;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3066,7 +3101,7 @@ button {
   background: #fff;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-edit-button:hover {
@@ -3145,7 +3180,7 @@ button {
   overflow: hidden;
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3154,7 +3189,7 @@ button {
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 780;
+  font-weight: 680;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3169,7 +3204,7 @@ button {
   background: #eaf1ff;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-status-badge.blocked {
@@ -3204,12 +3239,12 @@ button {
 .issue-empty strong {
   color: #25334a;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-empty span {
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .issue-dialog-overlay {
@@ -3250,13 +3285,13 @@ button {
 .issue-detail-heading span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-detail-heading strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-dialog-close {
@@ -3291,7 +3326,7 @@ button {
   gap: 6px;
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-field.full {
@@ -3328,7 +3363,7 @@ button {
   background: #fff;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-back-button:hover {
@@ -3357,7 +3392,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1.45;
 }
 
@@ -3377,7 +3412,7 @@ button {
   background: #f8fbff;
   padding: 0 10px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-markdown-field {
@@ -3392,7 +3427,7 @@ button {
   gap: 10px;
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-markdown-tabs {
@@ -3411,7 +3446,7 @@ button {
   background: transparent;
   padding: 0 10px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-markdown-tabs button.active {
@@ -3429,7 +3464,7 @@ button {
   background: #fff;
   font: inherit;
   font-size: 13px;
-  font-weight: 720;
+  font-weight: 620;
   line-height: 1.7;
 }
 
@@ -3466,7 +3501,7 @@ button {
 .issue-markdown-preview h3 {
   margin: 12px 0 8px;
   color: #172033;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-markdown-preview h1 {
@@ -3532,12 +3567,12 @@ button {
   background: #eef3fa;
   padding: 2px 5px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-markdown-preview a {
   color: #1649bf;
-  font-weight: 900;
+  font-weight: 750;
   text-decoration: none;
 }
 
@@ -3573,13 +3608,13 @@ button {
 
 .issue-reply-heading strong {
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-reply-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-reply-list {
@@ -3602,7 +3637,7 @@ button {
   color: #1649bf;
   background: #eaf1ff;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-reply header {
@@ -3615,13 +3650,13 @@ button {
 .issue-reply header strong {
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .issue-reply header span {
   color: #7a8798;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 660;
 }
 
 .issue-reply-body,
@@ -3640,7 +3675,7 @@ button {
   background: #fbfcfe;
   padding: 14px;
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 680;
   text-align: center;
 }
 
@@ -3664,7 +3699,7 @@ button {
   padding: 11px;
   font: inherit;
   font-size: 12px;
-  font-weight: 730;
+  font-weight: 630;
   line-height: 1.7;
   resize: vertical;
 }
@@ -3683,7 +3718,7 @@ button {
   background: #2864ea;
   padding: 0 12px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -3709,14 +3744,14 @@ button {
 .worklog-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-header h2 {
   margin: 4px 0 0;
   color: #172033;
   font-size: 23px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-add-button {
@@ -3730,7 +3765,7 @@ button {
   background: #2864ea;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-add-button svg {
@@ -3757,13 +3792,13 @@ button {
 .worklog-stat span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-stat strong {
   color: #172033;
   font-size: 24px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-table-card {
@@ -3809,7 +3844,7 @@ button {
   background: #fff;
   font: inherit;
   font-size: 12px;
-  font-weight: 760;
+  font-weight: 660;
 }
 
 .worklog-search input,
@@ -3846,7 +3881,7 @@ button {
   background: #f8fafc;
   padding: 9px 10px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: left;
 }
 
@@ -3855,7 +3890,7 @@ button {
   color: #25334a;
   padding: 9px 10px;
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 680;
   vertical-align: top;
 }
 
@@ -3881,7 +3916,7 @@ button {
   color: #4d5c72;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-category-badge.maintenance {
@@ -3912,7 +3947,7 @@ button {
 
 .worklog-hours-cell {
   color: #1649bf;
-  font-weight: 950;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -3940,13 +3975,13 @@ button {
 
 .worklog-summary-cell strong {
   color: #172033;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-summary-cell small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 660;
   line-height: 1.5;
 }
 
@@ -3957,7 +3992,7 @@ button {
   padding: 0;
   font: inherit;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: left;
 }
 
@@ -4013,7 +4048,7 @@ button {
 .worklog-empty strong {
   color: #25334a;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-dialog-overlay {
@@ -4054,13 +4089,13 @@ button {
 .worklog-dialog-heading span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-dialog-heading strong {
   color: #172033;
   font-size: 15px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-dialog-heading button {
@@ -4090,7 +4125,7 @@ button {
   gap: 6px;
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-field input,
@@ -4120,7 +4155,7 @@ button {
   background: #fff;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-detail-page,
@@ -4154,7 +4189,7 @@ button {
   background: #fff;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .worklog-delete-button svg {
@@ -4187,14 +4222,14 @@ button {
 .worklog-read-title span:first-child {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-read-title h3 {
   margin: 0;
   color: #172033;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1.35;
 }
 
@@ -4214,7 +4249,7 @@ button {
   background: #f8fafc;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-link-summary {
@@ -4253,14 +4288,14 @@ button {
   gap: 2px;
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-link-summary strong {
   overflow: hidden;
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4274,7 +4309,7 @@ button {
   margin: 0;
   color: #172033;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-note-preview {
@@ -4289,14 +4324,14 @@ button {
 .worklog-editor-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .worklog-editor-heading h2 {
   margin: 0;
   color: #172033;
   font-size: 23px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .worklog-editor-layout {
@@ -4350,14 +4385,14 @@ button {
   min-width: 0;
   gap: 4px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .issue-linked-task strong {
   overflow: hidden;
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4379,7 +4414,7 @@ button {
   background: #fff;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .issue-dialog-actions .secondary-button:hover {
@@ -4412,13 +4447,13 @@ button {
   margin: 0;
   color: #172033;
   font-size: 15px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .dashboard-panel-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .burndown-panel {
@@ -4449,14 +4484,14 @@ button {
 .burndown-summary strong {
   color: #1649bf;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .burndown-summary span,
 .burndown-note {
   color: #728096;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .burndown-legend {
@@ -4465,7 +4500,7 @@ button {
   margin: 0 0 2px 44px;
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .burndown-legend span {
@@ -4480,7 +4515,7 @@ button {
   background: #edf1f6;
   padding: 2px 5px;
   font-size: 8px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .burndown-legend-line {
@@ -4516,7 +4551,7 @@ button {
 .burndown-date-label {
   fill: #7a8799;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .burndown-path {
@@ -4592,7 +4627,7 @@ button {
 .load-row strong {
   overflow: hidden;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4606,7 +4641,7 @@ button {
 .load-meter > span {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: right;
 }
 
@@ -4644,7 +4679,7 @@ button {
   color: #1649bf;
   background: #edf4ff;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .risk-row.delayed > span {
@@ -4665,7 +4700,7 @@ button {
 .load-row small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .health-score-row {
@@ -4687,7 +4722,7 @@ button {
   place-items: center;
   border-radius: 999px;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .health-score-ring.good {
@@ -4709,13 +4744,13 @@ button {
   display: block;
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .health-score-row small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .health-row {
@@ -4752,7 +4787,7 @@ button.health-row:hover {
   color: #1649bf;
   background: #edf4ff;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .health-row.danger .health-row-badge {
@@ -4774,7 +4809,7 @@ button.health-row:hover {
 .health-row strong {
   overflow: hidden;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4783,7 +4818,7 @@ button.health-row:hover {
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4795,7 +4830,7 @@ button.health-row:hover {
   color: #2452c7;
   background: #eef4ff;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: center;
   white-space: nowrap;
 }
@@ -4807,7 +4842,7 @@ button.health-row:hover {
   color: #315078;
   background: #f8fbff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: center;
 }
 
@@ -4838,7 +4873,7 @@ button.health-row:hover {
   color: #174e93;
   background: #eaf7ff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .timeline-item.done > span {
@@ -4890,7 +4925,7 @@ button.health-row:hover {
   color: #66758b;
   background: #fbfcfe;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .workbench {
@@ -4905,7 +4940,7 @@ button.health-row:hover {
   background: #f4f7fb;
   color: #53647d;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 7px 12px;
 }
 
@@ -4934,7 +4969,7 @@ button.health-row:hover {
   overflow: hidden;
   color: #213048;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4942,7 +4977,7 @@ button.health-row:hover {
 .task-context-menu-heading span {
   color: #6b798f;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .task-context-menu button {
@@ -4956,7 +4991,7 @@ button.health-row:hover {
   background: transparent;
   padding: 0 8px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-align: left;
 }
 
@@ -5001,7 +5036,7 @@ button.health-row:hover {
 .task-context-select span {
   color: #6b798f;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .task-context-select select {
@@ -5013,7 +5048,7 @@ button.health-row:hover {
   background: #fbfcfe;
   padding: 0 6px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .task-context-select select:focus {
@@ -5051,11 +5086,11 @@ button.health-row:hover {
 .workbench-toolbar .filter-button,
 .workbench-toolbar .view-switch {
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .workbench-toolbar .add-task {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .workbench-toolbar .icon-button {
@@ -5107,7 +5142,7 @@ button.health-row:hover {
   background: #edf4ff;
   padding: 6px 10px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   white-space: nowrap;
 }
@@ -5132,7 +5167,7 @@ button.health-row:hover {
   background: transparent;
   padding: 0 6px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .bulk-edit-control select:hover,
@@ -5168,7 +5203,7 @@ button.health-row:hover {
   color: #59677b;
   background: transparent;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .date-shift-control {
@@ -5206,7 +5241,7 @@ button.health-row:hover {
   color: #5d6b80;
   padding: 0 3px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .date-shift-control button {
@@ -5268,7 +5303,7 @@ button.health-row:hover {
   gap: 7px;
   color: #526076;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -5302,7 +5337,7 @@ button.health-row:hover {
 .column-settings-popover strong {
   color: #25344c;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .column-settings-popover label {
@@ -5311,7 +5346,7 @@ button.health-row:hover {
   gap: 8px;
   color: #526076;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .column-settings-popover input {
@@ -5343,7 +5378,7 @@ button.health-row:hover {
 .baseline-popover-heading strong {
   color: #25344c;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .baseline-popover-heading span {
@@ -5352,14 +5387,14 @@ button.health-row:hover {
   background: #edf4ff;
   padding: 3px 8px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .baseline-popover p {
   margin: 0;
   color: #66758b;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.55;
 }
 
@@ -5374,7 +5409,7 @@ button.health-row:hover {
   color: #25344c;
   background: #fbfcfe;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .baseline-popover button:hover,
@@ -5424,13 +5459,13 @@ button.health-row:hover {
 .move-target-heading strong {
   color: #25344c;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .move-target-heading span {
   color: #718098;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .move-target-search {
@@ -5458,7 +5493,7 @@ button.health-row:hover {
   color: #172033;
   background: transparent;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .move-target-list {
@@ -5481,7 +5516,7 @@ button.health-row:hover {
   background: #fff;
   padding: 0 8px 0 calc(8px + var(--target-depth, 0) * 14px);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: left;
 }
 
@@ -5502,7 +5537,7 @@ button.health-row:hover {
   overflow: hidden;
   color: #34435b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -5510,7 +5545,7 @@ button.health-row:hover {
 .move-target-list button small {
   color: #7b879a;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .move-target-empty {
@@ -5521,7 +5556,7 @@ button.health-row:hover {
   background: #fbfcfe;
   padding: 12px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -5577,7 +5612,7 @@ button.health-row:hover {
   color: #172033;
   background: transparent;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .filter-button {
@@ -5602,7 +5637,7 @@ button.health-row:hover {
   color: #fff;
   background: #163660;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 @media (max-width: 1280px) {
@@ -5650,6 +5685,15 @@ button.health-row:hover {
 }
 
 @media (max-width: 1120px) {
+  .workbench-toolbar {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .workbench-toolbar > * {
+    flex: 0 0 auto;
+  }
+
   .summary-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

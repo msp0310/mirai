@@ -25,7 +25,7 @@
   border-radius: 999px;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
 }
 
@@ -70,13 +70,13 @@
 .gantt-selection-title strong {
   color: #1b2940;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .gantt-selection-title span {
   color: #69778d;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .selection-status-pill {
@@ -119,7 +119,7 @@
   color: #33445d;
   background: #fff;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .gantt-selection-actions button {
@@ -164,7 +164,7 @@
 .gantt-shell {
   position: relative;
   display: grid;
-  grid-template-columns: 432px minmax(0, 1fr);
+  grid-template-columns: 390px minmax(0, 1fr);
   overflow: visible;
 }
 
@@ -212,7 +212,7 @@
   align-items: end;
   color: #647086;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .table-header div {
@@ -266,7 +266,7 @@
   background: transparent;
   padding: 0 10px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -316,7 +316,7 @@
   border-right: 1px solid #dfe6ef;
   color: #566276;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .month-cell {
@@ -356,7 +356,7 @@
   background: #2864ea;
   padding: 2px 7px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: 0 4px 10px rgba(40, 100, 234, 0.18);
 }
 
@@ -481,7 +481,7 @@
   background: #fff;
   padding: 2px 8px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   box-shadow: 0 8px 18px rgba(31, 48, 84, 0.14);
 }
 
@@ -555,7 +555,7 @@
   background: #f2f6ff;
   padding: 0 10px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -692,7 +692,7 @@
 
 .task-table-row.row-summary,
 .task-table-row.row-phase {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .task-title {
@@ -714,7 +714,7 @@
   min-width: 0;
   color: #5d6d83;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 660;
   white-space: nowrap;
 }
 
@@ -723,7 +723,7 @@
   overflow: hidden;
   color: #3f5068;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -810,7 +810,7 @@
   background: #f3f7ff;
   padding: 0 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .task-comment-badge:hover,
@@ -829,7 +829,7 @@
 .task-table-row.row-summary .inline-title-display,
 .task-table-row.row-phase .inline-title-input,
 .task-table-row.row-phase .inline-title-display {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .collapse-button,
@@ -902,7 +902,7 @@
   color: #33445d;
   background: transparent;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .inline-select:hover,
@@ -949,7 +949,7 @@
   gap: 6px;
   color: #5d6879;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .status-pill > span {
@@ -978,7 +978,7 @@
   gap: 5px;
   color: #5d6879;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .progress-track {
@@ -1128,7 +1128,7 @@
   box-shadow: 0 10px 24px rgba(23, 32, 51, 0.18);
   padding: 6px 9px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.25;
   white-space: nowrap;
@@ -1240,7 +1240,7 @@
   overflow: hidden;
   padding-inline: 12px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 19px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1271,7 +1271,7 @@
   background: rgba(10, 24, 44, 0.22);
   padding: 2px 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1294,7 +1294,7 @@
   box-shadow: 0 1px 3px rgba(23, 32, 51, 0.12);
   padding: 2px 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1378,7 +1378,7 @@
   color: #425066;
   font-size: 11px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1428,7 +1428,7 @@
 .panel-heading strong {
   color: #172033;
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .panel-heading button {
@@ -1436,7 +1436,7 @@
   color: #7c8798;
   background: transparent;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .close-button {
@@ -1461,7 +1461,7 @@
 .filter-section > span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .check-row,
@@ -1471,7 +1471,7 @@
   gap: 8px;
   color: #39465a;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .filter-section select,
@@ -1493,7 +1493,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .date-range svg {

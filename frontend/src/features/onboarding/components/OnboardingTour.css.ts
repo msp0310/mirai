@@ -54,7 +54,7 @@ export const eyebrow = style({
   color: "#2f6fed",
   display: "block",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
   marginBottom: 5,
 });
 
@@ -129,7 +129,7 @@ export const footer = style({
 export const stepCount = style({
   color: "#708096",
   fontSize: 11,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 
 export const actions = style({
@@ -144,7 +144,7 @@ export const secondaryButton = style({
   color: "#40526b",
   cursor: "pointer",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
   minHeight: 34,
   padding: "7px 12px",
   selectors: {
@@ -160,7 +160,7 @@ export const primaryButton = style({
   color: "#ffffff",
   cursor: "pointer",
   fontSize: 12,
-  fontWeight: 800,
+  fontWeight: 700,
   minHeight: 34,
   padding: "7px 14px",
   selectors: {

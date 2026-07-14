@@ -13,7 +13,7 @@ export const description = style({
   marginTop: 4,
   color: "#69778d",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 export const pageActions = style({ display: "flex", alignItems: "center", gap: 10 });
 export const viewSwitch = style({
@@ -63,14 +63,14 @@ export const reportListItem = style({
   selectors: { "&:hover": { background: "#f4f7fb" } },
 });
 export const reportListItemActive = style({ borderColor: "#a9c1f5", background: "#eef4ff" });
-export const reportDate = style({ color: "#65758c", fontSize: 10, fontWeight: 800 });
+export const reportDate = style({ color: "#65758c", fontSize: 10, fontWeight: 700 });
 export const reportMeta = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   color: "#74839a",
 });
-export const empty = style({ color: "#8591a3", fontSize: 10, fontWeight: 700, padding: 8 });
+export const empty = style({ color: "#8591a3", fontSize: 10, fontWeight: 600, padding: 8 });
 export const welcome = style({
   display: "grid",
   placeContent: "center",
@@ -90,7 +90,7 @@ export const primaryButton = style({
   background: "#2864ea",
   padding: "0 13px",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
   selectors: { "&:disabled": { cursor: "default", opacity: 0.45 } },
 });
@@ -106,7 +106,7 @@ export const secondaryButton = style({
   background: "#fff",
   padding: "0 11px",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
   selectors: { "&:disabled": { cursor: "default", opacity: 0.45 } },
 });
@@ -128,7 +128,7 @@ export const dateInput = style({
   borderRadius: 6,
   padding: "0 9px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const select = style({
   minWidth: 0,
@@ -139,7 +139,7 @@ export const select = style({
   background: "#fff",
   padding: "0 8px",
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 export const submitted = style({
   borderRadius: 999,
@@ -147,7 +147,7 @@ export const submitted = style({
   background: "#e7f7f0",
   padding: "5px 8px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const draft = style({
   borderRadius: 999,
@@ -155,7 +155,7 @@ export const draft = style({
   background: "#fff5d8",
   padding: "5px 8px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const iconButton = style({
   display: "grid",
@@ -188,7 +188,7 @@ export const markdownField = style({
   gap: 8,
   color: "#53627a",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const markdownHeader = style({
   display: "flex",
@@ -248,7 +248,7 @@ export const entryLabels = style({
   padding: "0 1px",
   color: "#74839a",
   fontSize: 9,
-  fontWeight: 800,
+  fontWeight: 700,
   "@media": { "screen and (max-width: 1100px)": { display: "none" } },
 });
 export const hoursInput = style({
@@ -258,7 +258,7 @@ export const hoursInput = style({
   borderRadius: 6,
   padding: "0 8px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const progressInput = style({
   display: "grid",
@@ -271,7 +271,7 @@ export const progressInput = style({
   background: "#fff",
   color: "#617089",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const summaryInput = style({
   gridColumn: "1 / -1",
@@ -296,7 +296,7 @@ export const actualSummary = style({
   color: "#40516a",
   fontSize: 10,
 });
-export const actualWarning = style({ color: "#b75b18", fontSize: 9, fontWeight: 800 });
+export const actualWarning = style({ color: "#b75b18", fontSize: 9, fontWeight: 700 });
 export const actualHint = style({ color: "#65758c", fontSize: 9, lineHeight: 1.5 });
 export const comments = style({ display: "grid", gap: 8 });
 export const comment = style({
@@ -326,7 +326,7 @@ export const message = style({
   padding: "10px 13px",
   color: "#40516a",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const dialogOverlay = style({
   position: "fixed",
@@ -361,7 +361,7 @@ globalStyle(`${viewSwitch} > button`, {
   background: "transparent",
   padding: "0 12px",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 globalStyle(`${viewSwitch} > button:last-child`, { borderRight: 0 });
@@ -386,7 +386,7 @@ globalStyle(`${modeSwitch} > button`, {
   background: "transparent",
   padding: "0 8px",
   fontSize: 9,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 globalStyle(`${modeSwitch} svg`, { width: 12, height: 12 });
@@ -397,7 +397,7 @@ globalStyle(`${sectionHeader} > div`, {
   color: "#34465f",
   fontSize: 11,
 });
-globalStyle(`${sectionHeader} span`, { color: "#728097", fontSize: 10, fontWeight: 800 });
+globalStyle(`${sectionHeader} span`, { color: "#728097", fontSize: 10, fontWeight: 700 });
 globalStyle(`${progressInput} > input`, {
   width: "100%",
   height: "100%",
@@ -405,7 +405,7 @@ globalStyle(`${progressInput} > input`, {
   outline: 0,
   padding: "0 2px 0 8px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 globalStyle(`${entry} > select:nth-child(1)`, {
   "@media": { "screen and (max-width: 1100px)": { gridColumn: "1 / -1", gridRow: 1 } },
@@ -443,7 +443,7 @@ globalStyle(`${deleteDialog} > header`, {
 });
 globalStyle(`${deleteDialog} > header > div`, { display: "grid", gap: 3 });
 globalStyle(`${deleteDialog} > header strong`, { color: "#24334c", fontSize: 13 });
-globalStyle(`${deleteDialog} > header span`, { color: "#7a8799", fontSize: 9, fontWeight: 700 });
+globalStyle(`${deleteDialog} > header span`, { color: "#7a8799", fontSize: 9, fontWeight: 600 });
 globalStyle(`${deleteDialog} > header button`, {
   display: "grid",
   width: 28,
@@ -484,6 +484,6 @@ globalStyle(`${deleteDialog} > footer button`, {
   background: "#fff",
   padding: "0 12px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
 });

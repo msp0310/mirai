@@ -23,7 +23,7 @@ export const tourHeading = style({
 globalStyle(`${tourHeading} span`, {
   color: "#63748b",
   fontSize: 11,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 
 globalStyle(`${tourHeading} strong`, {
@@ -46,7 +46,7 @@ export const tourButton = style({
   cursor: "pointer",
   display: "grid",
   fontSize: 12,
-  fontWeight: 800,
+  fontWeight: 700,
   gap: 8,
   gridTemplateColumns: "18px 1fr",
   minHeight: 40,

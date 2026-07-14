@@ -25,7 +25,7 @@ export const description = style({
   marginTop: 4,
   color: "#69778d",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 
 export const segmented = style({
@@ -44,7 +44,7 @@ export const segment = style({
   color: "#506078",
   background: "transparent",
   fontSize: 12,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 
@@ -72,7 +72,7 @@ export const summaryLabel = style({
   display: "block",
   color: "#69778d",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 
 export const summaryValue = style({
@@ -80,7 +80,7 @@ export const summaryValue = style({
   marginTop: 4,
   color: "#172238",
   fontSize: 24,
-  fontWeight: 900,
+  fontWeight: 750,
   letterSpacing: 0,
 });
 export const summaryDetail = style({
@@ -88,7 +88,7 @@ export const summaryDetail = style({
   marginTop: 2,
   color: "#6f7d92",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 
 export const controls = style({
@@ -110,7 +110,7 @@ export const select = style({
   background: "#fff",
   padding: "0 10px",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 export const filterControls = style({ display: "flex", alignItems: "center", gap: 8 });
 export const capacitySelect = style({
@@ -122,7 +122,7 @@ export const capacitySelect = style({
   background: "#fff",
   padding: "0 9px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 
 export const pager = style({
@@ -156,7 +156,7 @@ export const period = style({
   minWidth: 154,
   color: "#53627a",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
   textAlign: "center",
 });
 
@@ -184,7 +184,7 @@ export const head = style({
   color: "#5f6e84",
   background: "#f7f9fc",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 
 export const timelineEntityHead = style({
@@ -225,7 +225,7 @@ export const entityName = style({
   overflow: "hidden",
   color: "#25334a",
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 750,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -234,7 +234,7 @@ export const entityMeta = style({
   marginTop: 2,
   color: "#7b8799",
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 
 export const weekCell = style({
@@ -245,8 +245,8 @@ export const weekCell = style({
 });
 
 export const loadLine = style({ display: "flex", alignItems: "baseline", gap: 5 });
-export const loadValue = style({ color: "#263750", fontSize: 13, fontWeight: 900 });
-export const loadHours = style({ color: "#778399", fontSize: 10, fontWeight: 700 });
+export const loadValue = style({ color: "#263750", fontSize: 13, fontWeight: 750 });
+export const loadHours = style({ color: "#778399", fontSize: 10, fontWeight: 600 });
 export const loadTrack = style({
   height: 4,
   overflow: "hidden",
@@ -266,7 +266,7 @@ export const projectLink = style({
   background: "transparent",
   padding: 0,
   fontSize: 9,
-  fontWeight: 800,
+  fontWeight: 700,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
   cursor: "pointer",
@@ -278,7 +278,7 @@ export const teamButton = style({
   background: "transparent",
   padding: 0,
   fontSize: 12,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
   textAlign: "left",
 });
@@ -287,7 +287,7 @@ export const empty = style({
   padding: 32,
   color: "#728097",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
   textAlign: "center",
 });
 
@@ -313,8 +313,8 @@ export const decisionHeader = style({
   color: "#40516a",
   fontSize: 11,
 });
-export const decisionHeaderTitle = style({ fontWeight: 900 });
-export const decisionHeaderCount = style({ color: "#6c7a90", fontWeight: 800 });
+export const decisionHeaderTitle = style({ fontWeight: 750 });
+export const decisionHeaderCount = style({ color: "#6c7a90", fontWeight: 700 });
 export const decisionList = style({
   display: "grid",
   gap: 5,
@@ -348,7 +348,7 @@ export const decisionItem = style({
 export const decisionTitle = style({
   overflow: "hidden",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -356,15 +356,15 @@ export const decisionDetail = style({
   overflow: "hidden",
   color: "#77859a",
   fontSize: 9,
-  fontWeight: 700,
+  fontWeight: 600,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
-export const decisionValue = style({ flex: "0 0 auto", fontSize: 10, fontWeight: 900 });
+export const decisionValue = style({ flex: "0 0 auto", fontSize: 10, fontWeight: 750 });
 export const decisionEmpty = style({
   color: "#8a97a9",
   fontSize: 10,
-  fontWeight: 700,
+  fontWeight: 600,
   padding: "8px 2px",
 });
 export const primaryAction = style({
@@ -375,7 +375,7 @@ export const primaryAction = style({
   background: "#2864ea",
   padding: "0 13px",
   fontSize: 12,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 export const secondaryAction = style({
@@ -386,11 +386,11 @@ export const secondaryAction = style({
   background: "#fff",
   padding: "0 12px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 export const demandBand = style({ display: "grid", gap: 7 });
-export const demandHeading = style({ color: "#57667d", fontSize: 11, fontWeight: 900 });
+export const demandHeading = style({ color: "#57667d", fontSize: 11, fontWeight: 750 });
 export const demands = style({ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 });
 export const demand = style({
   flex: "0 0 220px",
@@ -407,7 +407,7 @@ export const demandTitle = style({
   display: "block",
   overflow: "hidden",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 750,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -416,7 +416,7 @@ export const demandMeta = style({
   marginTop: 3,
   color: "#8a6a3f",
   fontSize: 9,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 export const planBoard = style({
   overflow: "auto",
@@ -438,7 +438,7 @@ export const planMemberHead = style({
   padding: "0 12px",
   color: "#5f6e84",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const planWeeks = style({
   display: "grid",
@@ -455,7 +455,7 @@ export const planMonth = style({
   borderBottom: "1px solid #d8e1ec",
   color: "#4e5e76",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const planWeekRow = style({
   display: "grid",
@@ -468,7 +468,7 @@ export const planWeek = style({
   padding: "0 3px",
   color: "#5f6e84",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const planRow = style({
   display: "grid",
@@ -504,7 +504,7 @@ export const monthlyAllocation = style({
   justifyContent: "center",
   borderRight: "1px solid #dfe6ef",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const monthlyAllocationOver = style({ color: "#b7352c", background: "#fff0ee" });
 export const monthlyAllocationFull = style({ color: "#9a5a00", background: "#fff7e8" });
@@ -528,7 +528,7 @@ export const shortageLabel = style({
   padding: "0 12px",
   color: "#6b5638",
   fontSize: 11,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const shortageMonths = style({ display: "grid" });
 export const shortageMonth = style({
@@ -542,11 +542,11 @@ export const shortageMonth = style({
   background: "#fffdf8",
   textAlign: "center",
 });
-export const shortageMonthTitle = style({ fontSize: 9, fontWeight: 900 });
+export const shortageMonthTitle = style({ fontSize: 9, fontWeight: 750 });
 export const shortageMonthDetail = style({
   overflow: "hidden",
   fontSize: 9,
-  fontWeight: 800,
+  fontWeight: 700,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -569,7 +569,7 @@ export const assignmentName = style({
   display: "block",
   overflow: "hidden",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -577,7 +577,7 @@ export const assignmentMeta = style({
   display: "block",
   marginTop: 2,
   fontSize: 8,
-  fontWeight: 800,
+  fontWeight: 700,
   whiteSpace: "nowrap",
 });
 export const overlay = style({
@@ -620,7 +620,7 @@ export const field = style({
   gap: 5,
   color: "#5d6b80",
   fontSize: 10,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const input = style({
   width: "100%",
@@ -631,7 +631,7 @@ export const input = style({
   background: "#fff",
   padding: "0 9px",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
 });
 export const dateFields = style({ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 });
 export const editorActions = style({
@@ -649,6 +649,6 @@ export const deleteAction = style({
   background: "#fff",
   padding: "0 11px",
   fontSize: 11,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });

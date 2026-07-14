@@ -43,14 +43,14 @@ export const title = style({
   color: "#172033",
   display: "block",
   fontSize: 13,
-  fontWeight: 900,
+  fontWeight: 750,
   lineHeight: 1.3,
 });
 
 export const detail = style({
   color: "#647086",
   fontSize: 12,
-  fontWeight: 700,
+  fontWeight: 600,
   lineHeight: 1.45,
   margin: "3px 0 0",
 });

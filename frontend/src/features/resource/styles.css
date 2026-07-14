@@ -17,13 +17,13 @@
 .resource-header h2 {
   margin: 0;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .resource-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .resource-header-actions {
@@ -49,7 +49,7 @@
   background: transparent;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .resource-scope-toggle button.active {
@@ -79,14 +79,14 @@
   background: #eaf1ff;
   padding: 3px 9px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-scope-note span {
   overflow: hidden;
   color: #66758b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -104,7 +104,7 @@
   gap: 8px;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .threshold-control input {
@@ -115,7 +115,7 @@
 .threshold-control span {
   color: #172033;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .resource-grid {
@@ -140,7 +140,7 @@
   color: #637188;
   background: #fbfcfe;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .resource-head.week-col {
@@ -152,7 +152,7 @@
 
 .resource-head.week-col span {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .resource-cell.member-col {
@@ -168,13 +168,13 @@
 .resource-cell.role-col {
   color: #4f5c70;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .resource-cell.load-col {
   display: grid;
   place-items: center;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .load-good {
@@ -280,7 +280,7 @@ button.resource-cell.week-col:focus-visible {
 .resource-cell.week-col small {
   color: #536176;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -288,7 +288,7 @@ button.resource-cell.week-col:focus-visible {
   color: #7b8798;
   font-size: 10px;
   font-style: normal;
-  font-weight: 850;
+  font-weight: 750;
   text-align: center;
 }
 
@@ -299,7 +299,7 @@ button.resource-cell.week-col:focus-visible {
   padding: 1px 7px;
   color: #2864ea;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-drilldown {
@@ -325,13 +325,13 @@ button.resource-cell.week-col:focus-visible {
 .resource-drilldown-heading strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-drilldown-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .resource-drilldown-list {
@@ -358,14 +358,14 @@ button.resource-cell.week-col:focus-visible {
 .resource-adjustment-panel strong {
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-adjustment-panel span {
   overflow: hidden;
   color: #637188;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -399,7 +399,7 @@ button.resource-cell.week-col:focus-visible {
   overflow: hidden;
   color: #223047;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -408,7 +408,7 @@ button.resource-cell.week-col:focus-visible {
   overflow: hidden;
   color: #637188;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -422,13 +422,13 @@ button.resource-cell.week-col:focus-visible {
 .resource-suggestion-impact strong {
   color: #d92d3d;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-suggestion-impact span {
   color: #637188;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -459,7 +459,7 @@ button.resource-cell.week-col:focus-visible {
 .resource-share-candidates > span {
   color: #637188;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .resource-share-actions {
@@ -510,7 +510,7 @@ button.resource-cell.week-col:focus-visible {
 .resource-share-button strong {
   overflow: hidden;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -519,7 +519,7 @@ button.resource-cell.week-col:focus-visible {
   overflow: hidden;
   color: #637188;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -559,7 +559,7 @@ button.resource-cell.week-col:focus-visible {
   overflow: hidden;
   color: #223047;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -568,7 +568,7 @@ button.resource-cell.week-col:focus-visible {
   overflow: hidden;
   color: #637188;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -579,12 +579,12 @@ button.resource-cell.week-col:focus-visible {
   gap: 2px;
   color: #172033;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .resource-contribution-row em {
   color: #2864ea;
   font-size: 11px;
   font-style: normal;
-  font-weight: 950;
+  font-weight: 800;
 }

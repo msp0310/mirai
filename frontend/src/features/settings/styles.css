@@ -54,7 +54,7 @@
   background: transparent;
   padding: 0 7px;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -156,7 +156,7 @@
 .save-review-sheet .panel-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .save-review-message {
@@ -189,14 +189,14 @@
 .save-review-message strong {
   color: #172033;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .save-review-message p {
   margin: 4px 0 0;
   color: #506078;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 620;
   line-height: 1.55;
 }
 
@@ -216,13 +216,13 @@
 .save-review-section-heading strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .save-review-section-heading span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .save-review-reason {
@@ -251,7 +251,7 @@
   color: #b42318;
   background: #fee4e2;
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .save-review-reason textarea {
@@ -307,13 +307,13 @@
 .reset-sync-summary strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .reset-sync-summary span {
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 620;
   line-height: 1.55;
 }
 
@@ -336,13 +336,13 @@
 .brabio-import-lead strong {
   color: #172033;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .brabio-import-lead span {
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 780;
+  font-weight: 680;
 }
 
 .brabio-summary {
@@ -383,7 +383,7 @@
   min-height: 32px;
   padding-inline: 11px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .brabio-import-sheet .settings-actions svg {
@@ -406,14 +406,14 @@
 .import-mode small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .import-summary strong {
   overflow: hidden;
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -422,7 +422,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -470,7 +470,7 @@
 
 .import-diagnostic-block strong {
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .import-diagnostic-block ul {
@@ -483,7 +483,7 @@
 .import-diagnostic-block li,
 .import-diagnostic-block small {
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.45;
 }
 
@@ -531,7 +531,7 @@
 .import-mode strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .csv-mapping-section {
@@ -566,7 +566,7 @@
   gap: 6px;
   color: #506078;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .csv-mapping-row small {
@@ -576,7 +576,7 @@
   background: #edf4ff;
   padding: 2px 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .csv-mapping-row select {
@@ -588,7 +588,7 @@
   background: #fff;
   padding-inline: 8px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .csv-mapping-row select:focus {
@@ -613,14 +613,14 @@
 .csv-preview-heading strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .csv-preview-heading span,
 .csv-preview-note {
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .csv-preview-table-wrap {
@@ -639,7 +639,7 @@
   background: #fbfcfe;
   padding: 12px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -654,7 +654,7 @@
   color: #66758b;
   background: #f8fafc;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   text-align: left;
 }
 
@@ -671,7 +671,7 @@
 .csv-preview-table td {
   color: #354258;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   vertical-align: top;
 }
 
@@ -695,14 +695,14 @@
 .csv-preview-table td:nth-child(2) strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .csv-preview-table td:nth-child(2) small {
   margin-top: 3px;
   color: #7b8798;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .settings-fields,
@@ -739,7 +739,7 @@
 .help-page-header span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .master-settings-page-header h2,
@@ -747,14 +747,14 @@
   margin: 0;
   color: #172033;
   font-size: 24px;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
 .master-settings-page-header > strong {
   color: #506078;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .master-settings-layout {
@@ -806,7 +806,7 @@
   margin: 0;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.6;
 }
 
@@ -818,7 +818,7 @@
 
 .integration-secret-note code {
   color: #1649bf;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .settings-fields .integration-checkbox {
@@ -845,7 +845,7 @@
 
 .integration-checkbox small {
   color: #66758b;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .integration-actions {
@@ -897,13 +897,13 @@
 .integration-summary-grid span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .integration-summary-grid strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .integration-issue {
@@ -957,7 +957,7 @@
   color: #223047;
   font: inherit;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .help-search input::placeholder {
@@ -995,7 +995,7 @@
   padding: 0 6px 3px;
   color: #68778d;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .help-index-group button {
@@ -1007,7 +1007,7 @@
   color: #435269;
   background: transparent;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-align: left;
 }
 
@@ -1022,7 +1022,7 @@
   margin: 0;
   color: #7d8aa0;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .help-article {
@@ -1047,7 +1047,7 @@
   margin: 0 0 18px;
   color: #172033;
   font-size: 26px;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
@@ -1055,7 +1055,7 @@
   margin: 26px 0 10px;
   color: #172033;
   font-size: 17px;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
@@ -1063,7 +1063,7 @@
   margin: 18px 0 8px;
   color: #2f3d55;
   font-size: 14px;
-  font-weight: 930;
+  font-weight: 780;
   letter-spacing: 0;
 }
 
@@ -1094,7 +1094,7 @@
   background: #f4f7fb;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .help-image {
@@ -1115,7 +1115,7 @@
   margin-top: 7px;
   color: #718095;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .settings-fields {
@@ -1125,7 +1125,7 @@
 .settings-fields label {
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .settings-section-tabs {
@@ -1142,7 +1142,7 @@
   color: #526076;
   background: #fff;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .settings-section-tabs button.active {
@@ -1166,7 +1166,7 @@
   background: #fff;
   padding-inline: 10px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .settings-fields input,
@@ -1272,7 +1272,7 @@
   color: #1649bf;
   background: #eaf1ff;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .team-master-row div {
@@ -1290,20 +1290,20 @@
 
 .team-master-row strong {
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .team-master-row small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .team-master-row em {
   color: #66758b;
   font-size: 11px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -1322,7 +1322,7 @@
   background: #fff;
   padding-inline: 10px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .team-create-control button {
@@ -1337,7 +1337,7 @@
   background: #2864ea;
   padding: 0 12px;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .team-create-control svg {
@@ -1360,7 +1360,7 @@
   margin: 0;
   color: #6c5260;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.55;
 }
 
@@ -1375,13 +1375,13 @@
 .settings-card-heading strong {
   color: #25334a;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .settings-card-heading span {
   color: #66758b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .archive-confirm {
@@ -1396,13 +1396,13 @@
 .archive-confirm strong {
   color: #6d2f12;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .archive-confirm span {
   color: #7f5d50;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .archive-confirm div {
@@ -1458,14 +1458,14 @@
   color: var(--avatar-color, #2864ea);
   background: color-mix(in srgb, var(--avatar-color, #2864ea) 16%, #fff);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .team-member-checks strong {
   overflow: hidden;
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1474,7 +1474,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1516,7 +1516,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1525,7 +1525,7 @@
   overflow: hidden;
   color: #172033;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1585,7 +1585,7 @@
   overflow: hidden;
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1593,7 +1593,7 @@
 .user-account-summary strong {
   color: #172033;
   font-size: 17px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .user-account-toolbar {
@@ -1628,7 +1628,7 @@
   color: #25334a;
   background: transparent;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .user-account-toolbar input:focus {
@@ -1654,7 +1654,7 @@
   background: #fff;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .user-account-filter-tabs button.active {
@@ -1673,7 +1673,7 @@
   background: #edf2f8;
   padding-inline: 5px;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .user-account-filter-tabs button.active span {
@@ -1687,7 +1687,7 @@
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .user-account-error {
@@ -1730,7 +1730,7 @@
   background: #f8fafc;
   padding: 9px 10px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   text-align: left;
   white-space: nowrap;
 }
@@ -1813,7 +1813,7 @@
   color: var(--avatar-color, #2864ea);
   background: color-mix(in srgb, var(--avatar-color, #2864ea) 16%, #fff);
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .user-member-cell div,
@@ -1837,7 +1837,7 @@
 .user-email-read strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .user-member-cell small,
@@ -1845,7 +1845,7 @@
 .user-email-read small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .user-team-list {
@@ -1888,7 +1888,7 @@
 .user-account-table select {
   min-width: 0;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .member-status-stack {
@@ -1901,7 +1901,7 @@
 .member-status-stack small {
   color: #66758b;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -1949,7 +1949,7 @@
 .member-detail-basic > strong {
   color: #526076;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .member-detail-grid {
@@ -1963,7 +1963,7 @@
   gap: 5px;
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .member-detail-grid label:first-child,
@@ -1989,7 +1989,7 @@
   padding-inline: 9px;
   color: #25334a;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-detail-actions {
@@ -2008,7 +2008,7 @@
 .member-detail-color > strong {
   color: #526076;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .member-availability-editor.inline {
@@ -2026,7 +2026,7 @@
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -2072,7 +2072,7 @@
   gap: 6px;
   color: #435167;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .user-login-toggle input {
@@ -2090,7 +2090,7 @@
 .user-status-stack small {
   color: #66758b;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .user-status-pill {
@@ -2100,7 +2100,7 @@
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -2128,7 +2128,7 @@
 .user-password-cell small {
   color: #1649bf;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .user-action-cell {
@@ -2168,7 +2168,7 @@
   color: #526076;
   background: #fff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .weekday-toggle-grid button.selected {
@@ -2193,7 +2193,7 @@
   background: #fff;
   padding-inline: 10px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .calendar-holiday-create .subtle-action {
@@ -2222,13 +2222,13 @@
 
 .calendar-holiday-list strong {
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .calendar-holiday-list small {
   color: #66758b;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .calendar-holiday-list button {
@@ -2296,19 +2296,19 @@
 .member-roster-summary strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .member-roster-summary span {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-list-divider {
   color: #66758b;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0;
 }
 
@@ -2329,7 +2329,7 @@
   gap: 5px;
   color: #5f6e84;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .member-lifecycle-cell {
@@ -2342,7 +2342,7 @@
 .member-lifecycle-cell small {
   color: #66758b;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-lifecycle-cell .subtle-action {
@@ -2375,7 +2375,7 @@
   border-radius: 999px;
   padding: 3px 7px;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .member-status.active {
@@ -2396,7 +2396,7 @@
 .member-lifecycle-confirm > span {
   color: #7f5d50;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-lifecycle-confirm div {
@@ -2424,7 +2424,7 @@
 .member-availability-heading strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .member-availability-heading span,
@@ -2432,7 +2432,7 @@
 .member-availability-more {
   color: #66758b;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-availability-create {
@@ -2450,7 +2450,7 @@
   background: #fff;
   padding-inline: 9px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .member-availability-create .subtle-action {
@@ -2475,13 +2475,13 @@
   background: #fbfcfe;
   padding: 4px 5px 4px 8px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .member-availability-chip small {
   color: #66758b;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .member-availability-chip button {
@@ -2522,7 +2522,7 @@
   background: #fff2eb;
   padding: 8px 10px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .settings-warning.muted {
@@ -2573,7 +2573,7 @@
   margin: 0 0 8px;
   color: #506078;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .shortcut-group dl {
@@ -2605,7 +2605,7 @@
   margin: 0;
   color: #25334a;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .shortcut-row kbd {
@@ -2622,7 +2622,7 @@
   padding: 0 7px;
   font-size: 11px;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .project-create-team {
@@ -2645,7 +2645,7 @@
   color: #1649bf;
   background: #edf4ff;
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .project-create-team div {
@@ -2658,7 +2658,7 @@
   overflow: hidden;
   color: #25344c;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2666,7 +2666,7 @@
 .project-create-team small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .date-input-with-icon {
@@ -2706,13 +2706,13 @@
 .project-template-heading span {
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .project-template-heading small {
   color: #7a8798;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .project-template-grid {
@@ -2757,7 +2757,7 @@
 .project-template-grid strong {
   color: #25344c;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1.3;
 }
 
@@ -2765,13 +2765,13 @@
 .project-template-grid small {
   color: #66758b;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.35;
 }
 
 .project-template-grid small {
   color: #314159;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .inspector-grid {
@@ -2786,7 +2786,7 @@
 .inspector-grid span {
   color: #6a7689;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .inspector-grid strong {
@@ -2810,26 +2810,26 @@
 .baseline-summary span {
   color: #6a7689;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .baseline-summary small {
   color: #7a8798;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .baseline-summary strong {
   color: #25344c;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .baseline-summary p {
   margin: 0;
   color: #6b798f;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.5;
 }
 
@@ -2855,7 +2855,7 @@
   padding: 0 8px;
   font-size: 11px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -2888,7 +2888,7 @@
   color: #2864ea;
   background: #edf4ff;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .progress-editor,
@@ -2900,7 +2900,7 @@
   gap: 8px;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .field-stack input,
@@ -2932,7 +2932,7 @@
   resize: vertical;
   padding-block: 9px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.5;
 }
 
@@ -2972,7 +2972,7 @@
   color: #435167;
   background: #fff;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .date-nudge button:hover {
@@ -3012,7 +3012,7 @@
 .non-working-date-warning span {
   overflow: hidden;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3025,7 +3025,7 @@
   background: #fff;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -3047,7 +3047,7 @@
 .check-list > span {
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .check-list label {
@@ -3056,7 +3056,7 @@
   gap: 8px;
   color: #344258;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .check-list label.inactive {
@@ -3069,7 +3069,7 @@
   background: #fff3df;
   padding: 2px 6px;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .check-list input {
@@ -3125,7 +3125,7 @@
   overflow: hidden;
   color: #344258;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3140,7 +3140,7 @@
   color: var(--avatar-color, #2864ea);
   background: color-mix(in srgb, var(--avatar-color, #2864ea) 16%, #fff);
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .assignee-allocation-editor input[type="range"] {
@@ -3162,14 +3162,14 @@
   padding: 5px 3px 5px 6px;
   color: #25344c;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-align: right;
 }
 
 .allocation-percent-input small {
   color: #637188;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .dependency-list {
@@ -3187,13 +3187,13 @@
 .dependency-list-heading > span {
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .dependency-list-heading small {
   color: #718098;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .dependency-search {
@@ -3221,7 +3221,7 @@
   color: #172033;
   background: transparent;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .dependency-warning-stack {
@@ -3250,7 +3250,7 @@
   overflow: hidden;
   color: #203d73;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3259,7 +3259,7 @@
   overflow: hidden;
   color: #637188;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3273,7 +3273,7 @@
   background: #fff;
   padding: 0 9px;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 750;
   white-space: nowrap;
 }
 
@@ -3301,7 +3301,7 @@
   background: #fff2eb;
   padding: 8px 9px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.45;
 }
 
@@ -3378,13 +3378,13 @@
 .dependency-candidates strong {
   color: #344258;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 .dependency-candidates small {
   color: #718098;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .dependency-empty {
@@ -3395,7 +3395,7 @@
   background: #fbfcfe;
   padding: 12px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -3438,7 +3438,7 @@
   gap: 6px;
   color: #5f6e84;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .task-detail-heading svg {
@@ -3449,7 +3449,7 @@
 .task-detail-heading small {
   color: #718098;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .task-detail-create input,
@@ -3463,7 +3463,7 @@
   background: #fff;
   padding-inline: 10px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .task-detail-create button:disabled,
@@ -3507,7 +3507,7 @@
   overflow: hidden;
   color: #344258;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3545,7 +3545,7 @@
   padding: 9px 10px;
   resize: vertical;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.5;
 }
 
@@ -3557,7 +3557,7 @@
   color: #fff;
   background: #2864ea;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .task-comment-list article {
@@ -3578,13 +3578,13 @@
 .task-comment-list strong {
   color: #25334a;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 750;
 }
 
 .task-comment-list span {
   color: #718098;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .task-comment-list p {
@@ -3617,7 +3617,7 @@
   overflow: hidden;
   color: #1649bf;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 750;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3635,7 +3635,7 @@
   background: #fbfcfe;
   padding: 10px;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -3673,7 +3673,7 @@
   margin: 8px 0 0;
   color: #607089;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.5;
 }
 

@@ -19,7 +19,7 @@ export const datePicker = style({
   gap: 8,
   color: "#68778e",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 export const toolbarActions = style({
   display: "flex",
@@ -39,7 +39,7 @@ export const ownReportButton = style({
   background: "#2864ea",
   padding: "0 11px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
   selectors: { "&:disabled": { cursor: "default", opacity: 0.45 } },
 });
@@ -63,7 +63,7 @@ export const remindButton = style({
   background: "#f2f6ff",
   padding: "0 10px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
   selectors: { "&:disabled": { cursor: "default", opacity: 0.5 } },
 });
@@ -115,11 +115,11 @@ export const unread = style({
   marginTop: 3,
   color: "#245ed6",
   fontSize: 8,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const projectList = style({ display: "flex", minWidth: 0, flexWrap: "wrap", gap: 4 });
-export const progressCell = style({ color: "#174dbd", fontWeight: 900 });
-export const hoursCell = style({ color: "#20334f", fontWeight: 900 });
+export const progressCell = style({ color: "#174dbd", fontWeight: 750 });
+export const hoursCell = style({ color: "#20334f", fontWeight: 750 });
 export const submitted = style({
   display: "inline-flex",
   borderRadius: 999,
@@ -127,7 +127,7 @@ export const submitted = style({
   background: "#e7f7f0",
   padding: "4px 7px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const draft = style({
   display: "inline-flex",
@@ -136,7 +136,7 @@ export const draft = style({
   background: "#fff5d8",
   padding: "4px 7px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const notSubmitted = style({
   display: "inline-flex",
@@ -145,7 +145,7 @@ export const notSubmitted = style({
   background: "#edf1f6",
   padding: "4px 7px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const notRequired = style({
   display: "inline-flex",
@@ -154,15 +154,15 @@ export const notRequired = style({
   background: "#f1f3f6",
   padding: "4px 7px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 export const nonWorkingNotice = style({
   color: "#7b5a1c",
   fontSize: 9,
   fontStyle: "normal",
-  fontWeight: 850,
+  fontWeight: 750,
 });
-export const blocker = style({ color: "#bd5f19", fontWeight: 900 });
+export const blocker = style({ color: "#bd5f19", fontWeight: 750 });
 export const none = style({ color: "#8a96a8" });
 export const openButton = style({
   display: "grid",
@@ -207,7 +207,7 @@ export const quickComment = style({
 globalStyle(`${toolbar} > div`, { display: "grid", gap: 3 });
 globalStyle(`${toolbar} > ${toolbarActions}`, { display: "flex" });
 globalStyle(`${toolbar} > div > strong`, { color: "#263750", fontSize: 14 });
-globalStyle(`${toolbar} > div > span`, { color: "#7b899c", fontSize: 10, fontWeight: 700 });
+globalStyle(`${toolbar} > div > span`, { color: "#7b899c", fontSize: 10, fontWeight: 600 });
 globalStyle(`${datePicker} select`, {
   height: 34,
   minWidth: 170,
@@ -217,7 +217,7 @@ globalStyle(`${datePicker} select`, {
   background: "#fff",
   padding: "0 9px",
   fontSize: 10,
-  fontWeight: 800,
+  fontWeight: 700,
 });
 globalStyle(`${dateNavigation} > button`, {
   display: "grid",
@@ -230,7 +230,7 @@ globalStyle(`${dateNavigation} > button`, {
   background: "transparent",
   padding: "0 8px",
   fontSize: 9,
-  fontWeight: 800,
+  fontWeight: 700,
   cursor: "pointer",
 });
 globalStyle(`${dateNavigation} > button:last-child`, { borderRight: 0 });
@@ -248,7 +248,7 @@ globalStyle(`${summaryCard} > span`, {
 });
 globalStyle(`${summaryCard} svg`, { width: 18, height: 18 });
 globalStyle(`${summaryCard} > div`, { display: "grid", gap: 2 });
-globalStyle(`${summaryCard} small`, { color: "#738198", fontSize: 9, fontWeight: 800 });
+globalStyle(`${summaryCard} small`, { color: "#738198", fontSize: 9, fontWeight: 700 });
 globalStyle(`${summaryCard} strong`, { color: "#1f304a", fontSize: 20, letterSpacing: 0 });
 globalStyle(`${table} th`, {
   height: 36,
@@ -257,7 +257,7 @@ globalStyle(`${table} th`, {
   background: "#f7f9fc",
   padding: "0 10px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
   textAlign: "left",
 });
 globalStyle(`${table} td`, { height: 58, borderBottom: "1px solid #e5eaf1", padding: "8px 10px" });
@@ -280,7 +280,7 @@ globalStyle(`${memberCell} > span`, {
   color: "#2055c4",
   background: "#eaf1ff",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
 });
 globalStyle(`${memberCell} > div`, { display: "grid", gap: 2, minWidth: 0 });
 globalStyle(`${memberCell} strong`, {
@@ -297,7 +297,7 @@ globalStyle(`${projectList} > span`, {
   background: "#edf2f8",
   padding: "3px 5px",
   fontSize: 8,
-  fontWeight: 800,
+  fontWeight: 700,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
@@ -324,7 +324,7 @@ globalStyle(`${quickComment} > button`, {
   background: "#2864ea",
   padding: "0 11px",
   fontSize: 9,
-  fontWeight: 900,
+  fontWeight: 750,
   cursor: "pointer",
 });
 globalStyle(`${quickComment} > button:disabled`, { cursor: "default", opacity: 0.45 });
@@ -357,7 +357,7 @@ globalStyle(`${reviewEntries} > div`, {
   background: "#fff",
   padding: "7px 9px",
 });
-globalStyle(`${reviewEntries} span`, { color: "#53657e", fontSize: 9, fontWeight: 800 });
+globalStyle(`${reviewEntries} span`, { color: "#53657e", fontSize: 9, fontWeight: 700 });
 globalStyle(`${reviewEntries} p`, { margin: 0, color: "#33435b", fontSize: 10 });
 globalStyle(`${reviewEntries} b`, { color: "#2057c6", fontSize: 10, textAlign: "right" });
 globalStyle(`${reviewComments} article`, {
