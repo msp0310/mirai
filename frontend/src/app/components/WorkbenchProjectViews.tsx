@@ -185,6 +185,7 @@ export function WorkbenchProjectViews({ controller }: WorkbenchProjectViewsProps
       ) : null}
       {activeTab === "Analysis" ? (
         <AnalysisPanel
+          asOfDate={todayKey}
           calendar={schedule.calendar}
           calendarAware={calendarAware}
           changeLogs={schedule.changeLogs ?? []}
@@ -192,6 +193,7 @@ export function WorkbenchProjectViews({ controller }: WorkbenchProjectViewsProps
           onSelectTask={selectTaskFromSecondaryView}
           project={schedule.project}
           tasks={tasks}
+          workLogs={activeWorkLogs}
         />
       ) : null}
       {activeTab === "WeeklyReport" ? (

@@ -12,6 +12,10 @@ export function WorkbenchSidebar({ controller }: WorkbenchNavigationProps) {
     activeTab,
     changeTab,
     currentUser,
+    exportProject,
+    importBrabioXlsx,
+    importProject,
+    importTaskCsv,
     openHelpPage,
     openMasterSettings,
     openProjectSettings,
@@ -26,6 +30,10 @@ export function WorkbenchSidebar({ controller }: WorkbenchNavigationProps) {
       activeTab={activeTab}
       helpOpen={showHelpPage}
       onHelp={openHelpPage}
+      onExportProject={exportProject}
+      onImportBrabioXlsx={importBrabioXlsx}
+      onImportProject={importProject}
+      onImportTaskCsv={importTaskCsv}
       onMasterSettingsOpen={openMasterSettings}
       onNavigate={changeTab}
       onProjectSettingsOpen={openProjectSettings}
@@ -57,24 +65,18 @@ export function WorkbenchSidebar({ controller }: WorkbenchNavigationProps) {
   );
 }
 
-/** 案件コンテキスト、保存状態、入出力をTopbarへ接続します。 */
+/** 案件コンテキストと保存状態をTopbarへ接続します。 */
 export function WorkbenchTopbar({ controller }: WorkbenchNavigationProps) {
   const {
     activeTab,
     activeTeamId,
     activeTeamProjects,
-    addToast,
     changeProject,
     changeTeam,
     currentUser,
-    exportProject,
     favoriteProjectIds,
     hasUnsavedChanges,
-    importBrabioXlsx,
-    importProject,
-    importTaskCsv,
     onLogout,
-    openProjectSettings,
     requestSaveDraft,
     restoreProject,
     retryApiSync,
@@ -82,7 +84,6 @@ export function WorkbenchTopbar({ controller }: WorkbenchNavigationProps) {
     setShowResetConfirm,
     showHelpPage,
     showMasterSettings,
-    showProjectSettings,
     syncQueueItems,
     syncStatus,
     toggleFavoriteProject,
@@ -115,28 +116,15 @@ export function WorkbenchTopbar({ controller }: WorkbenchNavigationProps) {
       favoriteProjectIds={favoriteProjectIds}
       hasUnsavedChanges={hasUnsavedChanges}
       notifications={topbarNotifications}
-      onExportProject={exportProject}
       onFavoriteToggle={toggleFavoriteProject}
-      onImportBrabioXlsx={importBrabioXlsx}
-      onImportProject={importProject}
-      onImportTaskCsv={importTaskCsv}
       onLogout={onLogout}
       onProjectChange={changeProject}
-      onProjectLinkCopy={(copied) =>
-        addToast({
-          detail: copied ? schedule.project.workspace : "リンク欄を選択してコピーしてください",
-          title: copied ? "共有リンクをコピーしました" : "自動コピーできませんでした",
-          tone: copied ? "success" : "warning",
-        })
-      }
       onProjectRestore={restoreProject}
-      onProjectSettingsOpen={openProjectSettings}
       onResetDraft={() => setShowResetConfirm(true)}
       onRetryApiSync={retryApiSync}
       onSaveDraft={requestSaveDraft}
       onTeamChange={changeTeam}
       project={schedule.project}
-      projectSettingsOpen={showProjectSettings}
       projects={activeTeamProjects}
       syncQueueItems={syncQueueItems}
       syncStatus={syncStatus}

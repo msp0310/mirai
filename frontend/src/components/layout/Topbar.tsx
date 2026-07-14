@@ -4,7 +4,6 @@ import { TopbarAccount } from "./topbar/TopbarAccount";
 import { TopbarContextPicker } from "./topbar/TopbarContextPicker";
 import { TopbarNotifications } from "./topbar/TopbarNotifications";
 import { getTopbarContextPresentation } from "./topbar/topbarPresentation";
-import { TopbarProjectActions } from "./topbar/TopbarProjectActions";
 import { TopbarSyncControls } from "./topbar/TopbarSyncControls";
 import type { TopbarProps } from "./topbar/types";
 import { useTopbarMenu } from "./topbar/useTopbarMenu";
@@ -28,22 +27,15 @@ export function Topbar({
   favoriteProjectIds,
   hasUnsavedChanges,
   notifications,
-  onExportProject,
   onFavoriteToggle,
-  onImportBrabioXlsx,
-  onImportProject,
-  onImportTaskCsv,
   onLogout,
   onProjectChange,
-  onProjectLinkCopy,
   onProjectRestore,
-  onProjectSettingsOpen,
   onResetDraft,
   onRetryApiSync,
   onSaveDraft,
   onTeamChange,
   project,
-  projectSettingsOpen,
   projects,
   syncQueueItems,
   syncStatus,
@@ -56,10 +48,8 @@ export function Topbar({
   useEffect(() => {
     if (!presentation.projectSearchAvailable && openMenu === "projects") {
       closeMenu();
-    } else if (!presentation.projectContext && (openMenu === "share" || openMenu === "export")) {
-      closeMenu();
     }
-  }, [closeMenu, openMenu, presentation.projectContext, presentation.projectSearchAvailable]);
+  }, [closeMenu, openMenu, presentation.projectSearchAvailable]);
 
   return (
     <header className="topbar" data-context-mode={contextMode} ref={topbarRef}>
@@ -93,23 +83,6 @@ export function Topbar({
             open={openMenu === "sync"}
             queueItems={syncQueueItems}
             status={syncStatus}
-          />
-        ) : null}
-        {presentation.projectContext ? (
-          <TopbarProjectActions
-            exportOpen={openMenu === "export"}
-            onClose={closeMenu}
-            onExportProject={onExportProject}
-            onImportBrabioXlsx={onImportBrabioXlsx}
-            onImportProject={onImportProject}
-            onImportTaskCsv={onImportTaskCsv}
-            onProjectLinkCopy={onProjectLinkCopy}
-            onProjectSettingsOpen={onProjectSettingsOpen}
-            onToggleExport={() => toggleMenu("export")}
-            onToggleShare={() => toggleMenu("share")}
-            project={project}
-            projectSettingsOpen={projectSettingsOpen}
-            shareOpen={openMenu === "share"}
           />
         ) : null}
         <TopbarNotifications

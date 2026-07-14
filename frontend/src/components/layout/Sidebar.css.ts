@@ -471,6 +471,11 @@ export const projectNavGroup = style({
   },
 });
 
+export const projectNavEntry = style({
+  display: "grid",
+  minWidth: 0,
+});
+
 globalStyle(`${projectNavGroup} > span`, {
   display: "block",
   color: "#8995a7",
@@ -536,4 +541,151 @@ globalStyle(`${projectNavItem} span`, {
   lineHeight: 1.25,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
+});
+
+export const importExportOverlay = style({
+  position: "fixed",
+  zIndex: 80,
+  inset: 0,
+  display: "grid",
+  placeItems: "center",
+  background: "rgba(15, 28, 46, 0.22)",
+  padding: 16,
+});
+
+export const importExportDialog = style({
+  display: "grid",
+  width: "min(520px, calc(100vw - 32px))",
+  maxHeight: "calc(100vh - 32px)",
+  boxSizing: "border-box",
+  gap: 16,
+  overflowY: "auto",
+  border: "1px solid #dbe4f0",
+  borderRadius: 10,
+  color: "#25334a",
+  background: "#fff",
+  boxShadow: "0 24px 56px rgba(23, 32, 51, 0.22)",
+  padding: 18,
+});
+
+export const importExportHeader = style({
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: 16,
+});
+
+globalStyle(`${importExportHeader} > div`, {
+  display: "grid",
+  gap: 4,
+});
+
+globalStyle(`${importExportHeader} strong`, {
+  color: "#17233a",
+  fontSize: 16,
+  fontWeight: 700,
+});
+
+globalStyle(`${importExportHeader} span`, {
+  color: "#6b7890",
+  fontSize: 11,
+  fontWeight: 500,
+});
+
+export const importExportClose = style({
+  display: "grid",
+  width: 30,
+  height: 30,
+  flex: "0 0 auto",
+  placeItems: "center",
+  border: 0,
+  borderRadius: 6,
+  color: "#66758b",
+  background: "transparent",
+  ":hover": {
+    color: "#174bbf",
+    background: "#f2f6ff",
+  },
+  ":focus-visible": {
+    outline: "2px solid #8fb5ff",
+    outlineOffset: 1,
+  },
+});
+
+globalStyle(`${importExportClose} svg`, {
+  width: 18,
+  height: 18,
+});
+
+export const importExportSection = style({
+  display: "grid",
+  gap: 8,
+});
+
+globalStyle(`${importExportSection} > strong`, {
+  color: "#536178",
+  fontSize: 10,
+  fontWeight: 650,
+});
+
+export const importExportActions = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: 8,
+  "@media": {
+    "(max-width: 560px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const importExportAction = style({
+  display: "grid",
+  minHeight: 70,
+  gridTemplateColumns: "28px minmax(0, 1fr)",
+  alignItems: "center",
+  gap: 10,
+  border: "1px solid #dfe6ef",
+  borderRadius: 8,
+  color: "#26364e",
+  background: "#fff",
+  padding: "10px 11px",
+  textAlign: "left",
+  ":hover": {
+    borderColor: "#a9c1ef",
+    background: "#f7f9fd",
+  },
+  ":focus-visible": {
+    outline: "2px solid #8fb5ff",
+    outlineOffset: 1,
+  },
+});
+
+globalStyle(`${importExportAction} > svg`, {
+  width: 20,
+  height: 20,
+  color: "#3568d4",
+  strokeWidth: 1.65,
+});
+
+globalStyle(`${importExportAction} > span`, {
+  display: "grid",
+  minWidth: 0,
+  gap: 3,
+});
+
+globalStyle(`${importExportAction} strong`, {
+  overflow: "hidden",
+  fontSize: 12,
+  fontWeight: 650,
+  lineHeight: 1.25,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+globalStyle(`${importExportAction} small`, {
+  color: "#77859a",
+  fontSize: 10,
+  fontWeight: 500,
+  lineHeight: 1.3,
 });

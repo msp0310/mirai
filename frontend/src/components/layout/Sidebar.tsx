@@ -1,5 +1,6 @@
 import {
   AdjustmentsHorizontalIcon,
+  ArrowsUpDownIcon,
   CalendarDaysIcon,
   ChartBarIcon,
   ChevronDoubleLeftIcon,
@@ -16,17 +17,25 @@ import {
   UserGroupIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
-import { type ComponentType, type SVGProps, useEffect, useRef, useState } from "react";
+import {
+  type ComponentType,
+  type SVGProps,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import compassMark from "../../assets/compass-mark.png";
+import type { ExportFormat } from "./topbar/types";
 import type { ViewTab } from "./ViewTabs";
+import { SidebarImportExportDialog } from "./SidebarImportExportDialog";
 
 import * as styles from "./Sidebar.css";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
 type NavItem = {
-  action?: "settings" | "projectSettings";
+  action?: "importExport" | "settings" | "projectSettings";
   children?: NavSubItem[];
   label: string;
   icon: IconComponent;
@@ -87,6 +96,7 @@ const projectNavGroups: ProjectNavGroup[] = [
     items: [
       { label: "体制", icon: UserGroupIcon, tab: "Resource" },
       { label: "履歴", icon: ClockIcon, tab: "Activity" },
+      { label: "入出力", icon: ArrowsUpDownIcon, action: "importExport" },
       {
         label: "案件設定",
         icon: AdjustmentsHorizontalIcon,
@@ -102,6 +112,10 @@ type SidebarProps = {
   activeTab: ViewTab;
   helpOpen: boolean;
   onHelp: () => void;
+  onExportProject: (format: ExportFormat) => void;
+  onImportBrabioXlsx: (file: File) => void;
+  onImportProject: (file: File) => void;
+  onImportTaskCsv: (file: File) => void;
   onMasterSettingsOpen: () => void;
   onNavigate: (tab: ViewTab) => void;
   onProjectSettingsOpen: () => void;
@@ -120,6 +134,10 @@ export function Sidebar({
   activeTab,
   helpOpen,
   onHelp,
+  onExportProject,
+  onImportBrabioXlsx,
+  onImportProject,
+  onImportTaskCsv,
   onMasterSettingsOpen,
   onNavigate,
   onProjectSettingsOpen,
@@ -135,6 +153,11 @@ export function Sidebar({
   const [projectNavigationCollapsed, setProjectNavigationCollapsed] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 1100px)").matches,
   );
+  const [importExportOpen, setImportExportOpen] = useState(false);
+
+  useEffect(() => {
+    setImportExportOpen(false);
+  }, [activeTab, helpOpen, projectSettingsOpen, settingsOpen]);
 
   return (
     <div className={styles.navigationShell}>
@@ -224,34 +247,41 @@ export function Sidebar({
                         {group.label ? <span>{group.label}</span> : null}
                         {items.map((item) => {
                           const Icon = item.icon;
+                          const isImportExport = item.action === "importExport";
                           const active =
                             !helpOpen &&
                             !settingsOpen &&
                             ((item.tab ? !projectSettingsOpen && activeTab === item.tab : false) ||
-                              (item.action === "projectSettings" && projectSettingsOpen));
+                              (item.action === "projectSettings" && projectSettingsOpen) ||
+                              (isImportExport && importExportOpen));
                           return (
-                            <button
-                              aria-current={active ? "page" : undefined}
-                              className={
-                                active
-                                  ? `${styles.projectNavItem} ${styles.projectNavItemActive}`
-                                  : styles.projectNavItem
-                              }
-                              data-tour={item.tab ? `nav-${item.tab}` : `nav-${item.action}`}
-                              key={item.label}
-                              onClick={() => {
-                                if (item.tab) {
-                                  onNavigate(item.tab);
-                                } else if (item.action === "projectSettings") {
-                                  onProjectSettingsOpen();
+                            <div className={styles.projectNavEntry} key={item.label}>
+                              <button
+                                aria-current={active ? "page" : undefined}
+                                aria-expanded={isImportExport ? importExportOpen : undefined}
+                                aria-haspopup={isImportExport ? "dialog" : undefined}
+                                className={
+                                  active
+                                    ? `${styles.projectNavItem} ${styles.projectNavItemActive}`
+                                    : styles.projectNavItem
                                 }
-                              }}
-                              title={item.label}
-                              type="button"
-                            >
-                              <Icon />
-                              <span>{item.label}</span>
-                            </button>
+                                data-tour={item.tab ? `nav-${item.tab}` : `nav-${item.action}`}
+                                onClick={() => {
+                                  if (item.tab) {
+                                    onNavigate(item.tab);
+                                  } else if (item.action === "projectSettings") {
+                                    onProjectSettingsOpen();
+                                  } else if (isImportExport) {
+                                    setImportExportOpen(true);
+                                  }
+                                }}
+                                title={item.label}
+                                type="button"
+                              >
+                                <Icon />
+                                <span>{item.label}</span>
+                              </button>
+                            </div>
                           );
                         })}
                       </div>
@@ -273,6 +303,15 @@ export function Sidebar({
             </button>
           ) : null}
         </>
+      ) : null}
+      {importExportOpen ? (
+        <SidebarImportExportDialog
+          onClose={() => setImportExportOpen(false)}
+          onExportProject={onExportProject}
+          onImportBrabioXlsx={onImportBrabioXlsx}
+          onImportProject={onImportProject}
+          onImportTaskCsv={onImportTaskCsv}
+        />
       ) : null}
     </div>
   );

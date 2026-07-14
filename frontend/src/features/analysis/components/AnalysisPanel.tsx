@@ -5,13 +5,16 @@ import { getProgressStats } from "../../../lib/schedule";
 import type {
   CalendarDefinition,
   Project,
+  ProjectWorkLog,
   ScheduleChangeLog,
   ScheduleTask,
   TaskInspectorFocusTarget,
 } from "../../../types/schedule";
+import { buildProjectKpis, projectKpiTargets } from "../model/projectKpis";
 import { ScheduleChangeAnalysis } from "./ScheduleChangeAnalysis";
 
 type AnalysisPanelProps = {
+  asOfDate: string;
   calendar: CalendarDefinition;
   calendarAware: boolean;
   changeLogs: ScheduleChangeLog[];
@@ -23,10 +26,12 @@ type AnalysisPanelProps = {
   ) => void;
   project: Project;
   tasks: ScheduleTask[];
+  workLogs: ProjectWorkLog[];
 };
 
 /** 案件の進捗、日程変更、リスクを判断するための分析画面です。 */
 export function AnalysisPanel({
+  asOfDate,
   calendar,
   calendarAware,
   changeLogs,
@@ -34,8 +39,13 @@ export function AnalysisPanel({
   onSelectTask,
   project,
   tasks,
+  workLogs,
 }: AnalysisPanelProps) {
   const stats = useMemo(() => getProgressStats(tasks), [tasks]);
+  const kpis = useMemo(
+    () => buildProjectKpis({ asOfDate, calendar, calendarAware, changeLogs, tasks, workLogs }),
+    [asOfDate, calendar, calendarAware, changeLogs, tasks, workLogs],
+  );
   const scheduleChanges = useMemo(
     () => changeLogs.filter((log) => log.field === "start" || log.field === "end"),
     [changeLogs],
@@ -104,7 +114,7 @@ export function AnalysisPanel({
       <div className={`analysis-data-status ${hasBaseline ? "ready" : "warning"}`}>
         <span>
           <b>実績</b>
-          タスク状態・進捗・日程変更は最新入力値
+          タスク状態・進捗・完了日・作業時間は最新入力値
         </span>
         <span>
           <b>予測</b>
@@ -121,32 +131,89 @@ export function AnalysisPanel({
         ) : null}
       </div>
 
-      <div className="analysis-kpi-grid">
-        <AnalysisKpi
-          label="対象タスク"
-          value={`${stats.total}件`}
-          detail={`${stats.completed}件完了`}
-          tone="blue"
-        />
-        <AnalysisKpi
-          label="平均進捗"
-          value={`${stats.progress}%`}
-          detail={`${stats.completed} / ${stats.total}件完了`}
-          tone="teal"
-        />
-        <AnalysisKpi
-          label="日程変更"
-          value={`${scheduleChanges.length}件`}
-          detail={`${changedTaskCount}タスクに変更`}
-          tone={scheduleChanges.length > 0 ? "orange" : "teal"}
-        />
-        <AnalysisKpi
-          label="要確認タスク"
-          value={`${riskTasks.length}件`}
-          detail={`遅延 ${delayedTasks.length} / 前提未完了 ${blockedTasks.length}`}
-          tone={riskTasks.length > 0 ? "orange" : "teal"}
-        />
-      </div>
+      <section className="analysis-metric-section" aria-label="プロジェクトKPI">
+        <div className="analysis-section-heading">
+          <div>
+            <h2>KPI</h2>
+            <span>目標と計画に対する案件実績</span>
+          </div>
+          <small>{formatDate(asOfDate)} 時点</small>
+        </div>
+        <div className="analysis-project-kpi-grid">
+          <ProjectKpiCard
+            detail={
+              kpis.delivery.completedCount > 0
+                ? kpis.delivery.evaluatedCount > 0
+                  ? `期限内 ${kpis.delivery.onTimeCount}/${kpis.delivery.evaluatedCount}件${
+                      kpis.delivery.missingCompletionCount > 0
+                        ? `・完了日未入力 ${kpis.delivery.missingCompletionCount}件`
+                        : ""
+                    }`
+                  : `完了日未入力 ${kpis.delivery.missingCompletionCount}件`
+                : "完了タスク・マイルストーンなし"
+            }
+            label="納期遵守率"
+            target={`目標 ${projectKpiTargets.onTimeDeliveryRate}%以上`}
+            tone={getDeliveryTone(kpis.delivery.rate)}
+            value={formatPercent(kpis.delivery.rate)}
+          />
+          <ProjectKpiCard
+            detail={
+              kpis.effort.hasActual
+                ? `予定 ${formatHours(kpis.effort.plannedHoursToDate)} / 実績 ${formatHours(
+                    kpis.effort.actualHours,
+                  )}`
+                : `予定 ${formatHours(kpis.effort.plannedHoursToDate)} / 実績工数未入力`
+            }
+            label="工数予実差"
+            target={`目標 ±${projectKpiTargets.effortVarianceRate}%以内`}
+            tone={getEffortTone(kpis.effort.varianceRate)}
+            value={formatSignedPercent(kpis.effort.varianceRate)}
+          />
+          <ProjectKpiCard
+            detail={`計画 ${kpis.progress.plannedRate}% / 実績 ${kpis.progress.actualRate}%`}
+            label="進捗達成率"
+            target={`目標 ${projectKpiTargets.progressAchievementRate}%以上`}
+            tone={getProgressTone(kpis.progress.achievementRate)}
+            value={formatPercent(kpis.progress.achievementRate)}
+          />
+        </div>
+      </section>
+
+      <section className="analysis-metric-section" aria-label="プロジェクトサマリー">
+        <div className="analysis-section-heading">
+          <div>
+            <h2>プロジェクトサマリー</h2>
+            <span>現在のタスク状況</span>
+          </div>
+        </div>
+        <div className="analysis-kpi-grid">
+          <AnalysisKpi
+            label="対象タスク"
+            value={`${stats.total}件`}
+            detail={`${stats.completed}件完了`}
+            tone="blue"
+          />
+          <AnalysisKpi
+            label="平均進捗"
+            value={`${stats.progress}%`}
+            detail={`${stats.completed} / ${stats.total}件完了`}
+            tone="teal"
+          />
+          <AnalysisKpi
+            label="日程変更"
+            value={`${scheduleChanges.length}件`}
+            detail={`${changedTaskCount}タスクに変更`}
+            tone={scheduleChanges.length > 0 ? "orange" : "teal"}
+          />
+          <AnalysisKpi
+            label="要確認タスク"
+            value={`${riskTasks.length}件`}
+            detail={`遅延 ${delayedTasks.length} / 前提未完了 ${blockedTasks.length}`}
+            tone={riskTasks.length > 0 ? "orange" : "teal"}
+          />
+        </div>
+      </section>
 
       <div className="analysis-main-grid">
         <BurndownChart
@@ -219,6 +286,33 @@ export function AnalysisPanel({
   );
 }
 
+type AnalysisTone = "blue" | "orange" | "teal";
+
+function ProjectKpiCard({
+  detail,
+  label,
+  target,
+  tone,
+  value,
+}: {
+  detail: string;
+  label: string;
+  target: string;
+  tone: AnalysisTone;
+  value: string;
+}) {
+  return (
+    <article className={`analysis-project-kpi ${tone}`}>
+      <div>
+        <span>{label}</span>
+        <em>{target}</em>
+      </div>
+      <strong>{value}</strong>
+      <small>{detail}</small>
+    </article>
+  );
+}
+
 function AnalysisKpi({
   detail,
   label,
@@ -227,7 +321,7 @@ function AnalysisKpi({
 }: {
   detail: string;
   label: string;
-  tone: "blue" | "orange" | "teal";
+  tone: AnalysisTone;
   value: string;
 }) {
   return (
@@ -237,6 +331,42 @@ function AnalysisKpi({
       <small>{detail}</small>
     </article>
   );
+}
+
+function getDeliveryTone(rate: number | null): AnalysisTone {
+  if (rate == null) {
+    return "blue";
+  }
+  return rate >= projectKpiTargets.onTimeDeliveryRate ? "teal" : "orange";
+}
+
+function getEffortTone(rate: number | null): AnalysisTone {
+  if (rate == null) {
+    return "blue";
+  }
+  return Math.abs(rate) <= projectKpiTargets.effortVarianceRate ? "teal" : "orange";
+}
+
+function getProgressTone(rate: number | null): AnalysisTone {
+  if (rate == null) {
+    return "blue";
+  }
+  return rate >= projectKpiTargets.progressAchievementRate ? "teal" : "orange";
+}
+
+function formatPercent(value: number | null) {
+  return value == null ? "未評価" : `${value}%`;
+}
+
+function formatSignedPercent(value: number | null) {
+  if (value == null) {
+    return "未評価";
+  }
+  return `${value > 0 ? "+" : ""}${value}%`;
+}
+
+function formatHours(value: number) {
+  return `${Number.isInteger(value) ? value : value.toFixed(1)}h`;
 }
 
 function formatDate(value: string) {

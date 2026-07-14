@@ -44,7 +44,7 @@ export type TopbarSyncQueueItem = {
   updatedAt?: string | null;
 };
 
-export type TopbarMenu = "account" | "projects" | "share" | "export" | "notifications" | "sync";
+export type TopbarMenu = "account" | "notifications" | "projects" | "sync";
 
 export type TopbarProps = {
   activeTeamId: string;
@@ -55,22 +55,15 @@ export type TopbarProps = {
   favoriteProjectIds: Set<string>;
   hasUnsavedChanges: boolean;
   notifications: TopbarNotification[];
-  onExportProject: (format: ExportFormat) => void;
-  onImportBrabioXlsx: (file: File) => void;
   onFavoriteToggle: () => void;
-  onImportProject: (file: File) => void;
-  onImportTaskCsv: (file: File) => void;
   onLogout: () => Promise<void>;
   onRetryApiSync: () => void;
-  onProjectLinkCopy: (copied: boolean) => void;
   onProjectChange: (projectId: string) => void;
   onProjectRestore: (projectId: string) => void;
-  onProjectSettingsOpen: () => void;
   onResetDraft: () => void;
   onSaveDraft: () => void;
   onTeamChange: (teamId: string) => void;
   project: Project;
-  projectSettingsOpen: boolean;
   projects: Project[];
   syncQueueItems: TopbarSyncQueueItem[];
   syncStatus: TopbarSyncStatus;
