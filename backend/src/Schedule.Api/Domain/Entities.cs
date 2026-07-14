@@ -42,6 +42,8 @@ public sealed class TeamEntity
     public string Name { get; set; } = "";
     public string Code { get; set; } = "";
     public string Description { get; set; } = "";
+    public string? ExternalSource { get; set; }
+    public string? ExternalId { get; set; }
     public List<TeamMemberEntity> Members { get; set; } = [];
 }
 
@@ -61,6 +63,7 @@ public sealed class MemberEntity
     [Key]
     public string Id { get; set; } = "";
     public string Name { get; set; } = "";
+    public string? EmployeeNo { get; set; }
     public string Initials { get; set; } = "";
     public string Role { get; set; } = "";
     public string Color { get; set; } = "";
@@ -68,6 +71,8 @@ public sealed class MemberEntity
     public string? Status { get; set; }
     public string? InactiveAt { get; set; }
     public string? AvailabilityOverridesJson { get; set; }
+    public string? ExternalSource { get; set; }
+    public string? ExternalId { get; set; }
 }
 
 /// <summary>チームに所属するプロジェクトの永続化エンティティです。</summary>
@@ -79,6 +84,8 @@ public sealed class ProjectEntity
     public string Name { get; set; } = "";
     public string Workspace { get; set; } = "";
     public string? ProjectNo { get; set; }
+    public string? CustomerName { get; set; }
+    public string? OrderingCompanyName { get; set; }
     public string? LifecycleStatus { get; set; }
     public string RangeStart { get; set; } = "";
     public string RangeEnd { get; set; } = "";
@@ -87,6 +94,8 @@ public sealed class ProjectEntity
     public string? Status { get; set; }
     public string? ArchivedAt { get; set; }
     public int Version { get; set; } = 1;
+    public string? ExternalSource { get; set; }
+    public string? ExternalId { get; set; }
     public TeamEntity? Team { get; set; }
     public CalendarEntity? Calendar { get; set; }
     public List<ProjectIssueEntity> Issues { get; set; } = [];
@@ -110,7 +119,23 @@ public sealed class ProjectAssignmentEntity
     public string EndDate { get; set; } = "";
     public int AllocationPercent { get; set; }
     public string Status { get; set; } = "draft";
+    public string? ExternalSource { get; set; }
+    public string? ExternalId { get; set; }
     public ProjectEntity? Project { get; set; }
+}
+
+/// <summary>PJMGT連携の接続設定と最終実行状態です。</summary>
+public sealed class PjmgtIntegrationSettingEntity
+{
+    [Key]
+    public string Id { get; set; } = "pjmgt";
+    public string BaseUrl { get; set; } = "";
+    public bool ExcludePastProjects { get; set; } = true;
+    public string? LastConnectionCheckedAt { get; set; }
+    public bool? LastConnectionSucceeded { get; set; }
+    public string? LastConnectionMessage { get; set; }
+    public string? LastSyncedAt { get; set; }
+    public string? LastSyncSummaryJson { get; set; }
 }
 
 /// <summary>案件側で未充足となっている要員要求です。</summary>

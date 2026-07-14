@@ -780,6 +780,146 @@
 .master-settings-page .settings-section-tabs {
   width: min(620px, 100%);
   margin-bottom: 0;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.pjmgt-integration {
+  display: grid;
+  max-width: 820px;
+  gap: 12px;
+}
+
+.pjmgt-integration[hidden] {
+  display: none;
+}
+
+.integration-settings-card,
+.integration-sync-card {
+  display: grid;
+  gap: 12px;
+}
+
+.integration-description,
+.integration-secret-note,
+.integration-notice,
+.integration-issue {
+  margin: 0;
+  color: #5f6e84;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.integration-secret-note {
+  border-radius: 7px;
+  padding: 9px 10px;
+  background: #f6f8fb;
+}
+
+.integration-secret-note code {
+  color: #1649bf;
+  font-weight: 900;
+}
+
+.settings-fields .integration-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid #dfe6ef;
+  border-radius: 8px;
+  padding: 11px;
+  color: #25334a;
+  cursor: pointer;
+}
+
+.settings-fields .integration-checkbox input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.integration-checkbox span {
+  display: grid;
+  gap: 3px;
+}
+
+.integration-checkbox small {
+  color: #66758b;
+  font-weight: 750;
+}
+
+.integration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.integration-actions button {
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.integration-notice {
+  border-radius: 7px;
+  padding: 9px 10px;
+}
+
+.integration-notice.success {
+  color: #087451;
+  background: #ecfdf5;
+}
+
+.integration-notice.error,
+.integration-issue.error {
+  color: #b42318;
+  background: #fff1f0;
+}
+
+.integration-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.integration-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.integration-summary-grid > div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e4ebf5;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.integration-summary-grid span {
+  color: #66758b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.integration-summary-grid strong {
+  color: #25334a;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.integration-issue {
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: #fff8e6;
+}
+
+@media (max-width: 720px) {
+  .master-settings-page .settings-section-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .integration-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .master-settings-content {

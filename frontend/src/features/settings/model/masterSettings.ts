@@ -7,7 +7,7 @@ type AuditLogTarget = {
   targetType?: string | null;
 };
 
-export type MasterSettingsSection = "teams" | "members" | "calendar" | "audit";
+export type MasterSettingsSection = "teams" | "members" | "calendar" | "pjmgt" | "audit";
 
 export const weekdays = [
   { label: "日", value: 0 },

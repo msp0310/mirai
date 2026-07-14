@@ -17,4 +17,5 @@ public sealed record MemberDto(
     string? LoginCreatedAt,
     string? LastLoginAt,
     string? PasswordChangedAt,
-    bool PasswordResetRequired);
+    bool PasswordResetRequired,
+    string? EmployeeNo = null);

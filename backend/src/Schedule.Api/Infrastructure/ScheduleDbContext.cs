@@ -29,6 +29,7 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
     public DbSet<ScheduleChangeLogEntity> ScheduleChangeLogs => Set<ScheduleChangeLogEntity>();
     public DbSet<ImportJobEntity> ImportJobs => Set<ImportJobEntity>();
     public DbSet<AuditLogEntity> AuditLogs => Set<AuditLogEntity>();
+    public DbSet<PjmgtIntegrationSettingEntity> PjmgtIntegrationSettings => Set<PjmgtIntegrationSettingEntity>();
 
     /// <summary>一意制約、複合キー、削除規則、検索用インデックスを設定します。</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,6 +41,22 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
             .HasFilter("MemberId IS NOT NULL");
         modelBuilder.Entity<AuthSessionEntity>().HasIndex(entity => entity.TokenHash).IsUnique();
         modelBuilder.Entity<AuthSessionEntity>().HasIndex(entity => new { entity.UserId, entity.ExpiresAt });
+        modelBuilder.Entity<TeamEntity>()
+            .HasIndex(entity => new { entity.ExternalSource, entity.ExternalId })
+            .IsUnique()
+            .HasFilter("ExternalSource IS NOT NULL AND ExternalId IS NOT NULL");
+        modelBuilder.Entity<MemberEntity>()
+            .HasIndex(entity => entity.EmployeeNo)
+            .IsUnique()
+            .HasFilter("EmployeeNo IS NOT NULL");
+        modelBuilder.Entity<MemberEntity>()
+            .HasIndex(entity => new { entity.ExternalSource, entity.ExternalId })
+            .IsUnique()
+            .HasFilter("ExternalSource IS NOT NULL AND ExternalId IS NOT NULL");
+        modelBuilder.Entity<ProjectEntity>()
+            .HasIndex(entity => new { entity.ExternalSource, entity.ExternalId })
+            .IsUnique()
+            .HasFilter("ExternalSource IS NOT NULL AND ExternalId IS NOT NULL");
 
         modelBuilder.Entity<AuthSessionEntity>()
             .HasOne(entity => entity.User)
@@ -123,6 +140,10 @@ public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> option
         modelBuilder.Entity<DailyReportReminderEntity>()
             .HasIndex(entity => new { entity.RecipientMemberId, entity.ReadAt });
         modelBuilder.Entity<ProjectAssignmentEntity>().HasIndex(entity => new { entity.ProjectId, entity.MemberId });
+        modelBuilder.Entity<ProjectAssignmentEntity>()
+            .HasIndex(entity => new { entity.ExternalSource, entity.ExternalId })
+            .IsUnique()
+            .HasFilter("ExternalSource IS NOT NULL AND ExternalId IS NOT NULL");
         modelBuilder.Entity<StaffingDemandEntity>().HasIndex(entity => new { entity.ProjectId, entity.Status });
         modelBuilder.Entity<AttachmentEntity>().HasIndex(entity => new
         {

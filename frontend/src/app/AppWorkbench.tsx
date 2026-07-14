@@ -1101,6 +1101,7 @@ function useAppWorkbenchController({
     navigateToProjectView,
     nextProjectIndex,
     onLogout,
+    onReloadWorkspace,
     openHelpPage,
     openHealthIssue,
     openMasterSettings,

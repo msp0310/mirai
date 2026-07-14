@@ -73,6 +73,9 @@ builder.Services.AddHttpClient<JapaneseHolidayService>(client =>
     // 外部の祝日APIが応答しない場合に、アプリ全体の操作を待たせません。
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+builder.Services.AddOptions<PjmgtOptions>().BindConfiguration(PjmgtOptions.SectionName);
+builder.Services.AddHttpClient<PjmgtClient>(client => client.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddScoped<PjmgtIntegrationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProjectAuthorizationService>();
 builder.Services.AddScoped<AuditLogService>();
@@ -187,6 +190,7 @@ app.MapAuthEndpoints();
 app.MapScheduleEndpoints();
 app.MapDailyReportEndpoints();
 app.MapAdministrationEndpoints();
+app.MapPjmgtIntegrationEndpoints();
 app.MapExternalApiEndpoints();
 // TanStack Routerの直接アクセスでも、Viteで生成したSPAの入口を返します。
 app.MapFallbackToFile("index.html");

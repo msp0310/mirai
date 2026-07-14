@@ -11,12 +11,14 @@ import type {
 } from "../../../types/schedule";
 
 export type ProjectSettingsDraft = {
+  customerName: string;
   lifecycleStatus: Project["lifecycleStatus"];
   memberIds: string[];
   memberships: ProjectMembership[];
   milestoneDate: string;
   milestoneTitle: string;
   name: string;
+  orderingCompanyName: string;
   projectNo: string;
   rangeEnd: string;
   rangeStart: string;
@@ -85,12 +87,14 @@ export function useProjectSettingsEditor({
       onSaveProject({
         ...project,
         lifecycleStatus: draft.lifecycleStatus,
+        customerName: draft.customerName.trim() || null,
         memberIds: draft.memberIds.filter((memberId) => availableMemberIds.has(memberId)),
         memberships: draft.memberships.filter(
           (item) =>
             draft.memberIds.includes(item.memberId) && availableMemberIds.has(item.memberId),
         ),
         name: draft.name.trim() || project.name,
+        orderingCompanyName: draft.orderingCompanyName.trim() || null,
         nextMilestone: {
           date: draft.milestoneDate,
           title: draft.milestoneTitle.trim() || "次のマイルストーン",
@@ -123,12 +127,14 @@ export function useProjectSettingsEditor({
 function createDraft(project: Project, team?: Team): ProjectSettingsDraft {
   const memberIds = project.memberIds ?? team?.memberIds ?? [];
   return {
+    customerName: project.customerName ?? "",
     lifecycleStatus: getProjectLifecycleStatus(project),
     memberIds,
     memberships: project.memberships ?? memberIds.map((memberId) => ({ memberId, role: "member" })),
     milestoneDate: project.nextMilestone.date,
     milestoneTitle: project.nextMilestone.title,
     name: project.name,
+    orderingCompanyName: project.orderingCompanyName ?? "",
     projectNo: project.projectNo ?? "",
     rangeEnd: project.rangeEnd,
     rangeStart: project.rangeStart,

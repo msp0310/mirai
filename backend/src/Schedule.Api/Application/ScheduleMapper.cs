@@ -43,7 +43,8 @@ public static class ScheduleMapper
             account?.CreatedAt,
             account?.LastLoginAt,
             account?.PasswordChangedAt,
-            account?.PasswordResetRequired ?? false);
+            account?.PasswordResetRequired ?? false,
+            entity.EmployeeNo);
     }
 
     /// <summary>カレンダーエンティティを休日を含むAPI DTOへ変換します。</summary>
@@ -101,7 +102,9 @@ public static class ScheduleMapper
             entity.Members
                 .OrderBy(member => member.MemberId)
                 .Select(member => new ProjectMemberDto(member.MemberId, member.ProjectRole))
-                .ToArray());
+                .ToArray(),
+            entity.CustomerName,
+            entity.OrderingCompanyName);
     }
 
     /// <summary>タスクエンティティと関連付けをAPI DTOへ変換します。</summary>
@@ -239,6 +242,7 @@ public static class ScheduleMapper
         {
             Id = dto.Id,
             Name = dto.Name,
+            EmployeeNo = string.IsNullOrWhiteSpace(dto.EmployeeNo) ? null : dto.EmployeeNo.Trim(),
             Initials = dto.Initials,
             Role = dto.Role,
             Color = dto.Color,
@@ -259,6 +263,8 @@ public static class ScheduleMapper
             Name = dto.Name,
             Workspace = dto.Workspace,
             ProjectNo = string.IsNullOrWhiteSpace(dto.ProjectNo) ? null : dto.ProjectNo.Trim(),
+            CustomerName = string.IsNullOrWhiteSpace(dto.CustomerName) ? null : dto.CustomerName.Trim(),
+            OrderingCompanyName = string.IsNullOrWhiteSpace(dto.OrderingCompanyName) ? null : dto.OrderingCompanyName.Trim(),
             LifecycleStatus = dto.LifecycleStatus,
             RangeStart = dto.RangeStart,
             RangeEnd = dto.RangeEnd,

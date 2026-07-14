@@ -212,6 +212,12 @@ public sealed class ScheduleService(
         existingProject.ProjectNo = string.IsNullOrWhiteSpace(request.Project.ProjectNo)
             ? null
             : request.Project.ProjectNo.Trim();
+        existingProject.CustomerName = string.IsNullOrWhiteSpace(request.Project.CustomerName)
+            ? null
+            : request.Project.CustomerName.Trim();
+        existingProject.OrderingCompanyName = string.IsNullOrWhiteSpace(request.Project.OrderingCompanyName)
+            ? null
+            : request.Project.OrderingCompanyName.Trim();
         existingProject.LifecycleStatus = request.Project.LifecycleStatus;
         existingProject.RangeStart = request.Project.RangeStart;
         existingProject.RangeEnd = request.Project.RangeEnd;

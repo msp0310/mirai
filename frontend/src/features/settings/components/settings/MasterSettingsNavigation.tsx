@@ -10,6 +10,7 @@ const sections: { id: MasterSettingsSection; label: string; restricted?: boolean
   { id: "teams", label: "チーム" },
   { id: "members", label: "メンバー", restricted: true },
   { id: "calendar", label: "カレンダー" },
+  { id: "pjmgt", label: "PJMGT連携", restricted: true },
   { id: "audit", label: "監査ログ", restricted: true },
 ];
 

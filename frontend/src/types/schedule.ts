@@ -52,6 +52,7 @@ export type CalendarDefinition = {
 export type Member = {
   id: string;
   name: string;
+  employeeNo?: string | null;
   initials: string;
   role: string;
   color: string;
@@ -108,6 +109,8 @@ export type ProjectAccess = {
 export type Project = {
   id: string;
   projectNo?: string | null;
+  customerName?: string | null;
+  orderingCompanyName?: string | null;
   teamId: string | null;
   name: string;
   workspace: string;

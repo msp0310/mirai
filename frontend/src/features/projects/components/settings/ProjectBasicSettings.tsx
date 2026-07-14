@@ -35,6 +35,22 @@ export function ProjectBasicSettings({
           value={draft.projectNo}
         />
       </label>
+      <div className="two-col">
+        <label>
+          顧客（納品先）
+          <input
+            onChange={(event) => onChange({ customerName: event.target.value })}
+            value={draft.customerName}
+          />
+        </label>
+        <label>
+          発注元
+          <input
+            onChange={(event) => onChange({ orderingCompanyName: event.target.value })}
+            value={draft.orderingCompanyName}
+          />
+        </label>
+      </div>
       <label>
         所属チーム
         <select onChange={(event) => onTeamChange(event.target.value)} value={draft.teamId}>

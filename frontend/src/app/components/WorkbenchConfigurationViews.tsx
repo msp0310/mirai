@@ -32,6 +32,7 @@ export function WorkbenchConfigurationViews({ controller }: WorkbenchConfigurati
     updateTeam,
     updateTeamCalendarMaster,
     workspace,
+    onReloadWorkspace,
   } = controller;
 
   return (
@@ -49,6 +50,7 @@ export function WorkbenchConfigurationViews({ controller }: WorkbenchConfigurati
           onSaveCalendar={updateTeamCalendarMaster}
           onSaveMember={updateMember}
           onSaveTeam={updateTeam}
+          onSyncComplete={onReloadWorkspace}
           onToggleTeamMember={toggleTeamMember}
           onUpdateMemberLifecycle={updateMemberLifecycle}
           team={managementTeam}

@@ -64,6 +64,7 @@ public sealed class AdministrationService(
         else
         {
             entity.Name = dto.Name.Trim();
+            entity.EmployeeNo = string.IsNullOrWhiteSpace(dto.EmployeeNo) ? null : dto.EmployeeNo.Trim();
             entity.Initials = dto.Initials.Trim();
             entity.Role = dto.Role.Trim();
             entity.Color = dto.Color;

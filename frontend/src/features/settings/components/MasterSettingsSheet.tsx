@@ -6,6 +6,7 @@ import { AuditLogSection } from "./settings/AuditLogSection";
 import { CalendarSettingsSection } from "./settings/CalendarSettingsSection";
 import { MasterSettingsNavigation } from "./settings/MasterSettingsNavigation";
 import { MemberSettingsSection } from "./settings/MemberSettingsSection";
+import { PjmgtIntegrationSection } from "./settings/PjmgtIntegrationSection";
 import { TeamSettingsSection } from "./settings/TeamSettingsSection";
 
 type MasterSettingsPageProps = {
@@ -20,6 +21,7 @@ type MasterSettingsPageProps = {
   onSaveCalendar: (calendar: CalendarDefinition) => void;
   onSaveMember: (member: Member) => void;
   onSaveTeam: (team: Team) => void;
+  onSyncComplete: () => void;
   onToggleTeamMember: (teamId: string, memberId: string, enabled: boolean) => void;
   onUpdateMemberLifecycle: (memberId: string, status: "active" | "inactive") => void;
   team: Team;
@@ -39,6 +41,7 @@ export function MasterSettingsPage({
   onSaveCalendar,
   onSaveMember,
   onSaveTeam,
+  onSyncComplete,
   onToggleTeamMember,
   onUpdateMemberLifecycle,
   team,
@@ -53,7 +56,7 @@ export function MasterSettingsPage({
 
   useEffect(() => setEditingTeamId(team.id), [team.id]);
   useEffect(() => {
-    if (!canManageMembers && (activeSection === "members" || activeSection === "audit")) {
+    if (!canManageMembers && (activeSection === "members" || activeSection === "pjmgt" || activeSection === "audit")) {
       setActiveSection("teams");
     }
   }, [activeSection, canManageMembers]);
@@ -66,7 +69,7 @@ export function MasterSettingsPage({
           <h2>管理設定</h2>
         </div>
         <strong>
-          {canManageMembers ? "チーム / メンバー / カレンダー / 監査ログ" : "チーム / カレンダー"}
+          {canManageMembers ? "チーム / メンバー / カレンダー / PJMGT連携 / 監査ログ" : "チーム / カレンダー"}
         </strong>
       </div>
 
@@ -108,6 +111,7 @@ export function MasterSettingsPage({
             onSaveCalendar={onSaveCalendar}
             team={team}
           />
+          {canManageMembers ? <PjmgtIntegrationSection active={activeSection === "pjmgt"} onSyncComplete={onSyncComplete} /> : null}
           {canManageMembers ? <AuditLogSection active={activeSection === "audit"} /> : null}
         </div>
       </div>

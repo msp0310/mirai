@@ -17,4 +17,6 @@ public sealed record ProjectDto(
     IReadOnlyList<ProjectAssignmentDto>? Assignments = null,
     IReadOnlyList<StaffingDemandDto>? StaffingDemands = null,
     string? ProjectNo = null,
-    IReadOnlyList<ProjectMemberDto>? Memberships = null);
+    IReadOnlyList<ProjectMemberDto>? Memberships = null,
+    string? CustomerName = null,
+    string? OrderingCompanyName = null);
