@@ -20,7 +20,7 @@ function AppBootScreen({
   return (
     <div className="app-boot-screen">
       <div className="app-boot-panel">
-        <img alt="Mirai" className="app-boot-wordmark" src="/brand/mirai-wordmark.png" />
+        <img alt="COMPASS" className="app-boot-wordmark" src="/brand/compass-wordmark.png" />
         <h1>{title}</h1>
         {error ? (
           <p>{error}</p>

@@ -1,8 +1,8 @@
-# Mirai アーキテクチャ方針
+# COMPASS アーキテクチャ方針
 
 ## 情報構造
 
-Miraiの主な情報構造は `Team > Project > Task` です。
+COMPASSの主な情報構造は `Team > Project > Task` です。
 
 - チームと案件の一覧は軽量なサマリーで表示する
 - Gantt、課題、作業時間、カレンダーは選択中案件の詳細を使う

@@ -1,6 +1,6 @@
 # Repository Instructions
 
-Mirai is an SI-focused schedule management product. It combines a
+COMPASS is an SI-focused schedule management product. It combines a
 React/Vite frontend with an ASP.NET Core Web API and SQLite backend.
 
 ## Product Direction
@@ -24,7 +24,7 @@ React/Vite frontend with an ASP.NET Core Web API and SQLite backend.
 
 - Frontend dev server: run from `frontend/` with `npm run dev -- --port 5174`.
 - Backend API: run from the repository root with
-  `$HOME/.dotnet/dotnet run --project backend/src/Schedule.Api/Schedule.Api.csproj --urls http://127.0.0.1:5080`.
+  `dotnet run --project backend/src/Schedule.Api/Schedule.Api.csproj --urls http://127.0.0.1:5080`.
 - The frontend Vite proxy sends `/api` to `http://127.0.0.1:5080`.
 - Online/API mode is the default. Do not silently fall back to mock auth or mock
   data unless explicitly enabled for a specific debugging task.
@@ -38,7 +38,7 @@ React/Vite frontend with an ASP.NET Core Web API and SQLite backend.
 - Prefer live in-app browser verification for UI behavior.
 - For frontend changes, run `npm run check` at minimum; run `npm run build` for
   broader UI or routing changes.
-- For backend changes, run `$HOME/.dotnet/dotnet build backend/ScheduleManager.sln`.
+- For backend changes, run `dotnet build backend/ScheduleManager.sln`.
 - If both sides are touched, verify an online login through the Vite URL:
   `http://127.0.0.1:5174/#crm-integration`.
 - Keep dev servers running when the user needs to inspect the app.

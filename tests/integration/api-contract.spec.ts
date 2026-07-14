@@ -58,8 +58,8 @@ async function login(request: APIRequestContext): Promise<AuthSession> {
   expect(body.user.email).toBe("pm@example.com");
   expect(body).not.toHaveProperty("accessToken");
   const state = await request.storageState();
-  const sessionCookie = state.cookies.find((cookie) => cookie.name === "mirai_session");
-  const csrfCookie = state.cookies.find((cookie) => cookie.name === "mirai_csrf");
+  const sessionCookie = state.cookies.find((cookie) => cookie.name === "compass_session");
+  const csrfCookie = state.cookies.find((cookie) => cookie.name === "compass_csrf");
   if (!sessionCookie || !csrfCookie) {
     throw new Error("認証Cookieを取得できませんでした。");
   }
@@ -73,7 +73,7 @@ function csrfHeaders(session: AuthSession) {
   return { "X-CSRF-Token": session.csrfToken };
 }
 
-const externalApiHeaders = { "X-Mirai-Api-Key": "mirai-local-external-api-key" };
+const externalApiHeaders = { "X-Compass-Api-Key": "compass-local-external-api-key" };
 
 test("認証が必要なAPIは未認証リクエストを401で拒否する", async ({ request }) => {
   const response = await request.get("/api/workspace/summary");

@@ -79,7 +79,7 @@ export type ProjectImportValidation = {
   warnings: string[];
 };
 
-/** プロジェクト取込データがMiraiの契約に合わないことを表します。 */
+/** プロジェクト取込データがCOMPASSの契約に合わないことを表します。 */
 export class ProjectImportError extends Error {
   constructor(message: string) {
     super(message);

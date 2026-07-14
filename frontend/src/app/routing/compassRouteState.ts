@@ -1,10 +1,10 @@
 import type { ViewTab } from "../../components/layout/ViewTabs";
 
-export type MiraiRoutePage = "help" | "managementSettings" | "projectSettings" | "view";
+export type CompassRoutePage = "help" | "managementSettings" | "projectSettings" | "view";
 
-export type MiraiRouteState = {
+export type CompassRouteState = {
   activeTab: ViewTab;
-  page: MiraiRoutePage;
+  page: CompassRoutePage;
   projectId: string | null;
 };
 
@@ -25,8 +25,8 @@ const projectTabBySegment = Object.fromEntries(
   Object.entries(projectSegmentByTab).map(([tab, segment]) => [segment, tab]),
 ) as Record<string, ViewTab>;
 
-/** 現在のパスから、Miraiで表示する画面と案件を導出します。 */
-export function getMiraiRouteState(pathname: string): MiraiRouteState {
+/** 現在のパスから、COMPASSで表示する画面と案件を導出します。 */
+export function getCompassRouteState(pathname: string): CompassRouteState {
   const segments = pathname.split("/").filter(Boolean);
   if (segments[0] === "projects" && segments[1]) {
     const projectId = decodePathSegment(segments[1]);
@@ -67,7 +67,7 @@ export function getProjectIdFromCurrentRoute() {
   if (typeof window === "undefined") {
     return null;
   }
-  return getMiraiRouteState(window.location.pathname).projectId;
+  return getCompassRouteState(window.location.pathname).projectId;
 }
 
 function decodePathSegment(value: string) {

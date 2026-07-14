@@ -1,8 +1,8 @@
 {
-  "productName": "Mirai",
+  "productName": "COMPASS",
   "tagPrefix": "v",
   "outputDirectory": "docs/releases",
-  "repositoryUrl": "https://github.com/msp0310/mirai",
+  "repositoryUrl": "https://github.com/msp0310/compass",
   "sections": [
     {
       "title": "新機能",

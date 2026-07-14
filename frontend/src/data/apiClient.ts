@@ -27,8 +27,8 @@ export async function requestJson<T>(
   if (!new Set(["GET", "HEAD", "OPTIONS"]).has(method)) {
     const csrfToken = document.cookie
       .split("; ")
-      .find((item) => item.startsWith("mirai_csrf="))
-      ?.slice("mirai_csrf=".length);
+      .find((item) => item.startsWith("compass_csrf="))
+      ?.slice("compass_csrf=".length);
     if (csrfToken) {
       headers.set("X-CSRF-Token", decodeURIComponent(csrfToken));
     }

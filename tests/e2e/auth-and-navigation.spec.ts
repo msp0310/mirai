@@ -23,7 +23,7 @@ async function loginApi(request: APIRequestContext) {
   });
   expect(response.ok()).toBe(true);
   const state = await request.storageState();
-  const csrf = state.cookies.find((cookie) => cookie.name === "mirai_csrf")?.value;
+  const csrf = state.cookies.find((cookie) => cookie.name === "compass_csrf")?.value;
   if (!csrf) {
     throw new Error("CSRF Cookieを取得できませんでした。");
   }
@@ -45,15 +45,15 @@ async function showSeedPlanningPeriod(workload: Locator) {
   await expect(workload.getByText(label)).toBeVisible();
 }
 
-/** API認証を通じてMiraiへログインします。 */
+/** API認証を通じてCOMPASSへログインします。 */
 async function login(page: Page, options: { showInitialTour?: boolean } = {}) {
   if (!options.showInitialTour) {
     await page.addInitScript(() => {
-      window.localStorage.setItem("mirai:onboarding:pm@example.com:basic:v1", "completed");
+      window.localStorage.setItem("compass:onboarding:pm@example.com:basic:v1", "completed");
     });
   }
   await page.goto("/");
-  await expect(page).toHaveTitle("Mirai");
+  await expect(page).toHaveTitle("COMPASS");
   await expect(page.getByRole("heading", { name: "ログイン" })).toBeVisible();
   await page.getByLabel("メールアドレス").fill("pm@example.com");
   await page.getByLabel("パスワード").fill("Password123!");
@@ -62,7 +62,7 @@ async function login(page: Page, options: { showInitialTour?: boolean } = {}) {
   await expect(page).toHaveURL(/\/projects$/);
 }
 
-test.describe("Miraiの認証とプロジェクト導線", () => {
+test.describe("COMPASSの認証とプロジェクト導線", () => {
   test("初期ロードは全件詳細ではなくサマリーと選択案件だけを取得する", async ({ page }) => {
     const requestUrls: string[] = [];
     page.on("request", (request) => requestUrls.push(request.url()));

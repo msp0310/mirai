@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
 import type { ViewTab } from "../../components/layout/ViewTabs";
-import { getMiraiRouteState } from "./miraiRouteState";
+import { getCompassRouteState } from "./compassRouteState";
 
 type NavigateOptions = { replace?: boolean };
 
@@ -10,7 +10,7 @@ type NavigateOptions = { replace?: boolean };
 export function useWorkbenchRouting(activeProjectId: string) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const navigate = useNavigate();
-  const routeState = useMemo(() => getMiraiRouteState(pathname), [pathname]);
+  const routeState = useMemo(() => getCompassRouteState(pathname), [pathname]);
 
   const navigateToProjectView = useCallback(
     (projectId: string, tab: ViewTab = "Gantt", options: NavigateOptions = {}) => {

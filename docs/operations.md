@@ -24,7 +24,7 @@ Schedule__InitialAdminName='システム管理者'
 `scripts/backup.sh`はSQLiteのオンラインバックアップAPIでDBを複製し、添付ディレクトリと一緒にtar.gzへ保存します。
 
 ```bash
-MIRAI_DATA_DIR=/data MIRAI_BACKUP_DIR=/backups ./scripts/backup.sh
+COMPASS_DATA_DIR=/data COMPASS_BACKUP_DIR=/backups ./scripts/backup.sh
 ```
 
 添付アップロードとDB更新を完全に同一時点へ揃える必要がある場合は、メンテナンス表示中に実行してください。日次バックアップに加えて世代管理と別ストレージへの転送を設定し、四半期ごとに復元試験を行います。
@@ -33,6 +33,6 @@ MIRAI_DATA_DIR=/data MIRAI_BACKUP_DIR=/backups ./scripts/backup.sh
 
 1. APIを停止します。
 2. バックアップを空の一時ディレクトリへ展開します。
-3. `mirai.db`と`attachments/`をデータボリュームへ戻します。
+3. `compass.db`と`attachments/`をデータボリュームへ戻します。
 4. 所有者を実行ユーザーへ揃え、APIを起動します。
 5. `health/ready`と添付ダウンロードを確認します。

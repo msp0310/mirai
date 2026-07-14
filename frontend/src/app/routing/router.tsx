@@ -28,11 +28,11 @@ function NestedRoute() {
   return <Outlet />;
 }
 
-type MiraiRouterContext = {
+type CompassRouterContext = {
   queryClient: QueryClient;
 };
 
-const rootRoute = createRootRouteWithContext<MiraiRouterContext>()({ component: AppRouteRoot });
+const rootRoute = createRootRouteWithContext<CompassRouterContext>()({ component: AppRouteRoot });
 const indexRoute = createRoute({
   beforeLoad: () => {
     throw redirect({ to: "/projects" });

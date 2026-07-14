@@ -166,5 +166,5 @@ export const tourScenarios: Record<TourId, TourScenario> = {
 };
 
 export function getTourCompletionKey(email: string, tourId: TourId) {
-  return `mirai:onboarding:${email.toLowerCase()}:${tourId}:v1`;
+  return `compass:onboarding:${email.toLowerCase()}:${tourId}:v1`;
 }

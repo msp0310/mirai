@@ -1,4 +1,4 @@
-# Mirai vX.Y.Z リリースノート
+# COMPASS vX.Y.Z リリースノート
 
 - リリース日: YYYY-MM-DD
 - 対象範囲: `vPREVIOUS` から `vX.Y.Z`

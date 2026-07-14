@@ -21,7 +21,7 @@ export class AppErrorBoundary extends Component<{ children: ReactNode }, State> 
     return (
       <main className="app-boot-screen">
         <section className="app-boot-panel" role="alert">
-          <img alt="Mirai" className="app-boot-wordmark" src="/brand/mirai-wordmark.png" />
+          <img alt="COMPASS" className="app-boot-wordmark" src="/brand/compass-wordmark.png" />
           <h1>画面を表示できませんでした</h1>
           <p>
             再読み込みしても直らない場合は、エラーID {this.state.errorId} を管理者へ伝えてください。

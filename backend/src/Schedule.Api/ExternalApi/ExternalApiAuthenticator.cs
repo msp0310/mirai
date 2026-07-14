@@ -7,7 +7,7 @@ namespace Schedule.Api.ExternalApi;
 /// <summary>平文キーを保存せず、SHA-256ハッシュを固定時間比較して認証します。</summary>
 public sealed class ExternalApiAuthenticator(IOptions<ExternalApiOptions> options)
 {
-    public const string HeaderName = "X-Mirai-Api-Key";
+    public const string HeaderName = "X-Compass-Api-Key";
 
     public ExternalApiClient? Authenticate(HttpRequest request)
     {

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * MiraiのE2E実行設定です。
+ * COMPASSのE2E実行設定です。
  * フロントとAPIを同時に起動し、既に開発サーバーが動いている場合は再利用します。
  */
 export default defineConfig({
@@ -31,7 +31,7 @@ export default defineConfig({
     },
     {
       command:
-        "$HOME/.dotnet/dotnet run --project backend/src/Schedule.Api/Schedule.Api.csproj --urls http://127.0.0.1:5080",
+        "dotnet run --project backend/src/Schedule.Api/Schedule.Api.csproj --urls http://127.0.0.1:5080",
       env: { ASPNETCORE_ENVIRONMENT: "Development" },
       url: "http://127.0.0.1:5080/api/health",
       reuseExistingServer: !process.env.CI,

@@ -3,7 +3,7 @@ using Schedule.Api.Domain;
 
 namespace Schedule.Api.Infrastructure;
 
-/// <summary>MiraiのSQLite永続化モデルとリレーションを定義するDbContextです。</summary>
+/// <summary>COMPASSのSQLite永続化モデルとリレーションを定義するDbContextです。</summary>
 public sealed class ScheduleDbContext(DbContextOptions<ScheduleDbContext> options) : DbContext(options)
 {
     public DbSet<UserEntity> Users => Set<UserEntity>();

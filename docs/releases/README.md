@@ -1,6 +1,6 @@
 # リリースノート運用
 
-Miraiのリリースノートは、Conventional Commits形式のGit履歴からMarkdownを生成します。
+COMPASSのリリースノートは、Conventional Commits形式のGit履歴からMarkdownを生成します。
 利用者向けの変更を漏れなく集めつつ、概要やアップグレード手順は公開前に人が確認します。
 
 ## 生成方法
@@ -49,7 +49,7 @@ npm run release:notes -- --version 0.2.0 --stdout
 2. リリースノートを生成し、「概要」と「アップグレード時の注意」を編集します。
 3. `npm run test:release-notes`で生成器を確認します。
 4. リリースノートをコミットします。
-5. `git tag -a v0.2.0 -m "Mirai v0.2.0"`でリリースタグを作成します。
+5. `git tag -a v0.2.0 -m "COMPASS v0.2.0"`でリリースタグを作成します。
 6. `git push origin main --follow-tags`でコミットとタグを公開します。
 
 生成結果はあくまで下書きです。機能名の統一、利用者への影響、DB移行、設定変更、

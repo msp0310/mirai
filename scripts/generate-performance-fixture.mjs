@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
-const outputPath = resolve(process.argv[2] ?? "/tmp/mirai-performance-10000.json");
+const outputPath = resolve(process.argv[2] ?? "/tmp/compass-performance-10000.json");
 const taskCount = 10_000;
 const phaseCount = 100;
 const tasksPerPhase = taskCount / phaseCount;

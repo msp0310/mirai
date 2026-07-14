@@ -9,8 +9,8 @@ namespace Schedule.Api.Application;
 /// <summary>ログイン、セッション、メンバーアカウントを扱う認証サービスです。</summary>
 public sealed class AuthService(ScheduleDbContext db)
 {
-    public const string SessionCookieName = "mirai_session";
-    public const string CsrfCookieName = "mirai_csrf";
+    public const string SessionCookieName = "compass_session";
+    public const string CsrfCookieName = "compass_csrf";
     private static readonly TimeSpan SessionLifetime = TimeSpan.FromHours(12);
     private const string DefaultRole = SystemRoles.User;
 
@@ -282,7 +282,7 @@ public sealed class AuthService(ScheduleDbContext db)
     private static string CreateTemporaryPassword()
     {
         // 推測しやすい連番を避け、再設定までの短時間でも十分なエントロピーを確保します。
-        return $"Mirai-{Base64UrlEncode(RandomNumberGenerator.GetBytes(12))}7!";
+        return $"COMPASS-{Base64UrlEncode(RandomNumberGenerator.GetBytes(12))}7!";
     }
 
     /// <summary>ロールを許可された値へ正規化します。</summary>

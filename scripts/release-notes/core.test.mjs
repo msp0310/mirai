@@ -4,8 +4,8 @@ import test from "node:test";
 import { buildReleaseNotes, normalizeVersion, organizeCommits, parseCommit } from "./core.mjs";
 
 const config = {
-  productName: "Mirai",
-  repositoryUrl: "https://example.com/mirai",
+  productName: "COMPASS",
+  repositoryUrl: "https://example.com/compass",
   sections: [
     { title: "新機能", types: ["feat"] },
     { title: "不具合修正", types: ["fix"] },
@@ -54,10 +54,10 @@ test("日本語のリリースノートを生成できる", () => {
     config,
   });
 
-  assert.match(markdown, /^# Mirai v1\.2\.0 リリースノート/mu);
+  assert.match(markdown, /^# COMPASS v1\.2\.0 リリースノート/mu);
   assert.match(markdown, /## 新機能/u);
   assert.match(markdown, /\*\*ガント\*\* バーを追加/u);
-  assert.match(markdown, /https:\/\/example\.com\/mirai\/commit\/1234567890abcdef/u);
+  assert.match(markdown, /https:\/\/example\.com\/compass\/commit\/1234567890abcdef/u);
   assert.match(markdown, /## 破壊的変更\n\nありません。/u);
 });
 

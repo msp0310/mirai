@@ -21,7 +21,7 @@ public sealed class ExternalApiClient(ExternalApiClientOptions options)
     public AuthUserDto ToSystemUser() => new(
         $"external:{Id}",
         null,
-        $"{Id}@external.mirai.invalid",
+        $"{Id}@external.compass.invalid",
         Name,
         SystemRoles.Admin,
         false);

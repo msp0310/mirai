@@ -7,7 +7,7 @@ import { AppErrorBoundary } from "./components/feedback/AppErrorBoundary";
 
 import "./styles.css";
 
-document.title = "Mirai";
+document.title = "COMPASS";
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

@@ -18,7 +18,7 @@ import type {
   TaskInspectorFocusTarget,
 } from "../types/schedule";
 import type { AppInitialState, PersistableDraft } from "./appTypes";
-import { getMiraiRouteState, getProjectIdFromCurrentRoute } from "./routing/miraiRouteState";
+import { getCompassRouteState, getProjectIdFromCurrentRoute } from "./routing/compassRouteState";
 
 /** ローカル表示設定がない場合に使う既定のフィルター状態です。 */
 export const initialFilters: ScheduleFilters = {
@@ -274,7 +274,7 @@ export function createInitialAppState(
   const firstSchedule =
     workspace.schedules.find((snapshot) => !isProjectArchived(snapshot.project)) ??
     workspace.schedules[0];
-  const routeState = getMiraiRouteState(
+  const routeState = getCompassRouteState(
     typeof window === "undefined" ? "/projects" : window.location.pathname,
   );
   const routeProjectId = getProjectIdFromCurrentRoute();

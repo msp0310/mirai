@@ -31,7 +31,7 @@ export function LoginScreen({ error, loading, onLogin }: LoginScreenProps) {
       <section className="login-panel" aria-label="ログイン">
         <div className="login-brand">
           <div>
-            <img alt="Mirai" className="login-wordmark" src="/brand/mirai-wordmark.png" />
+            <img alt="COMPASS" className="login-wordmark" src="/brand/compass-wordmark.png" />
             <h1>ログイン</h1>
           </div>
         </div>

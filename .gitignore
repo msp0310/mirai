@@ -1,5 +1,5 @@
 node_modules/
-frontend/.npm-cache/
+.npm-cache/
 dist/
 outputs/
 .env

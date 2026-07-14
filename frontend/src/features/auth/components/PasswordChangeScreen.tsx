@@ -37,7 +37,7 @@ export function PasswordChangeScreen({
           void form.handleSubmit();
         }}
       >
-        <img alt="Mirai" className="login-wordmark" src="/brand/mirai-wordmark.png" />
+        <img alt="COMPASS" className="login-wordmark" src="/brand/compass-wordmark.png" />
         <h1>パスワードを変更</h1>
         <p>初回ログインのため、新しいパスワードを設定してください。</p>
         <form.Field name="currentPassword">

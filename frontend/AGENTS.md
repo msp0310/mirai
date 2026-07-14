@@ -9,7 +9,7 @@ through the Vite `/api` proxy. Online/API behavior is the product default.
 
 ## Product Context
 
-Mirai is a schedule app for system companies managing SI / commissioned software
+COMPASS is a schedule app for system companies managing SI / commissioned software
 development projects. Use project language, phases, roles, and examples from
 system development delivery rather than web production.
 

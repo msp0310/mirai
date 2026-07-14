@@ -11,7 +11,7 @@ const recordSeparator = "\u001e";
 const fieldSeparator = "\u001f";
 
 function usage() {
-  return `Mirai リリースノート生成
+  return `COMPASS リリースノート生成
 
 使い方:
   npm run release:notes -- --version 0.2.0 [options]

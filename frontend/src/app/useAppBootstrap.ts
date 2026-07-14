@@ -11,7 +11,7 @@ import {
 import { createInitialAppState } from "./appState";
 import type { AppInitialState } from "./appTypes";
 import { createInitialScheduleWorkspace, selectInitialProject } from "./projectLoading";
-import { getProjectIdFromCurrentRoute } from "./routing/miraiRouteState";
+import { getProjectIdFromCurrentRoute } from "./routing/compassRouteState";
 
 type AppBootstrapState =
   | { status: "idle" }

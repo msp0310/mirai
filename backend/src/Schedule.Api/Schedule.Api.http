@@ -1,21 +1,21 @@
 @ScheduleApiHost = http://127.0.0.1:5080
-@ExternalApiKey = mirai-local-external-api-key
+@ExternalApiKey = compass-local-external-api-key
 @ProjectId = site-renewal
 
 ### 接続クライアントと利用可能なスコープ
 GET {{ScheduleApiHost}}/api/external/v1/
 Accept: application/json
-X-Mirai-Api-Key: {{ExternalApiKey}}
+X-Compass-Api-Key: {{ExternalApiKey}}
 
 ### 軽量な案件一覧
 GET {{ScheduleApiHost}}/api/external/v1/projects?limit=20
 Accept: application/json
-X-Mirai-Api-Key: {{ExternalApiKey}}
+X-Compass-Api-Key: {{ExternalApiKey}}
 
 ### 案件のタスク計画。レスポンスのETagを更新系APIのIf-Matchへ渡します
 GET {{ScheduleApiHost}}/api/external/v1/projects/{{ProjectId}}/tasks
 Accept: application/json
-X-Mirai-Api-Key: {{ExternalApiKey}}
+X-Compass-Api-Key: {{ExternalApiKey}}
 
 ### API定義（開発環境のみ）
 GET {{ScheduleApiHost}}/openapi/v1.json

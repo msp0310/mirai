@@ -1,6 +1,6 @@
 # コントリビューションガイド
 
-Miraiへの変更は、レビューや変更履歴を追いやすくするため、
+COMPASSへの変更は、レビューや変更履歴を追いやすくするため、
 [Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/) に従います。
 
 ## コミットメッセージ

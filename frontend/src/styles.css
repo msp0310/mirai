@@ -91,7 +91,7 @@ button {
 }
 
 .loading-spinner {
-  animation: mirai-spin 0.8s linear infinite;
+  animation: compass-spin 0.8s linear infinite;
   border: 2px solid #d9e2ef;
   border-radius: 50%;
   border-top-color: #2563eb;
@@ -99,7 +99,7 @@ button {
   width: 14px;
 }
 
-@keyframes mirai-spin {
+@keyframes compass-spin {
   to {
     transform: rotate(360deg);
   }
