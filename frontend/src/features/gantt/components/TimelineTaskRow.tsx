@@ -1,4 +1,10 @@
-import { type CSSProperties, type FocusEvent, type MouseEvent, useState } from "react";
+import {
+  type CSSProperties,
+  type FocusEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  useState,
+} from "react";
 
 import { type DependencyIssue, formatShortDate, getTaskTimelineSpan } from "../../../lib/schedule";
 import { normalizeProgressStatus } from "../../../lib/taskOperations";
@@ -112,6 +118,25 @@ export function TimelineTaskRow({
       progress,
       status: normalizeProgressStatus(progress),
     });
+  };
+
+  const handleProgressSliderChange = (progress: number) => {
+    handleProgressChange(Math.min(100, Math.max(0, Math.round(progress / 5) * 5)));
+  };
+
+  const handleProgressSliderKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    const delta =
+      event.key === "ArrowRight" || event.key === "ArrowUp"
+        ? 5
+        : event.key === "ArrowLeft" || event.key === "ArrowDown"
+          ? -5
+          : 0;
+    if (delta === 0) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    handleProgressChange(Math.min(100, Math.max(0, task.progress + delta)));
   };
 
   const handleProgressEditorBlur = (event: FocusEvent<HTMLDivElement>) => {
@@ -243,7 +268,7 @@ export function TimelineTaskRow({
         ) : null}
       </button>
       <div
-        className={`bar-side-meta ${task.type}`}
+        className={`bar-side-meta ${task.type} ${progressEditorOpen ? "progress-editor-open" : ""}`}
         onBlur={handleProgressEditorBlur}
         onClick={(event) => event.stopPropagation()}
         onMouseDown={(event) => event.stopPropagation()}
@@ -285,7 +310,8 @@ export function TimelineTaskRow({
               aria-label={`${task.title}の進捗率`}
               max="100"
               min="0"
-              onChange={(event) => handleProgressChange(Number(event.target.value))}
+              onChange={(event) => handleProgressSliderChange(Number(event.target.value))}
+              onKeyDown={handleProgressSliderKeyDown}
               step="1"
               type="range"
               value={task.progress}
