@@ -344,16 +344,32 @@ export function flattenTasks(tasks: ScheduleTask[], collapsedIds = new Set<strin
   return rows;
 }
 export function filterTaskRows(rows: TaskRow[], filters: ScheduleFilters): TaskRow[] {
-  return rows.filter((task) => {
-    const statusMatch = filters.statuses[task.status] || task.type !== "task";
-    const assigneeMatch =
-      filters.assigneeId === "all" ||
-      (filters.assigneeId === "unassigned"
-        ? task.assigneeIds.length === 0
-        : task.assigneeIds.includes(filters.assigneeId)) ||
-      task.type !== "task";
-    return statusMatch && assigneeMatch;
+  const statusMatchedRows = rows.filter(
+    (task) => filters.statuses[task.status] || task.type !== "task",
+  );
+  if (filters.assigneeId === "all") {
+    return statusMatchedRows;
+  }
+
+  const rowById = new Map(rows.map((row) => [row.id, row]));
+  const visibleIds = new Set<string>();
+  statusMatchedRows.forEach((task) => {
+    const directlyMatches =
+      filters.assigneeId === "unassigned"
+        ? (task.type === "task" || task.type === "milestone") && task.assigneeIds.length === 0
+        : task.assigneeIds.includes(filters.assigneeId);
+    if (!directlyMatches) {
+      return;
+    }
+
+    let current: TaskRow | undefined = task;
+    while (current) {
+      visibleIds.add(current.id);
+      current = current.parentId ? rowById.get(current.parentId) : undefined;
+    }
   });
+
+  return rows.filter((task) => visibleIds.has(task.id));
 }
 export function taskMatchesQuery(
   task: Pick<ScheduleTask, "assigneeIds" | "title">,
