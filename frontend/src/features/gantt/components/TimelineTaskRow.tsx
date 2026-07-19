@@ -275,7 +275,7 @@ export function TimelineTaskRow({
               max="100"
               min="0"
               onChange={(event) => handleProgressChange(Number(event.target.value))}
-              step="5"
+              step="1"
               type="range"
               value={task.progress}
             />
