@@ -15,7 +15,7 @@ import {
   toDateKey,
 } from "./schedule";
 
-const palette = ["#89b7ff", "#9addb8", "#ffc184", "#c7d2fe", "#8bd4d2"];
+const defaultTaskColor = "#89b7ff";
 
 export type TaskInsertionResult = {
   insertedTaskId: string | null;
@@ -28,18 +28,17 @@ export type TaskPasteMode = "child" | "sibling";
 export type TaskSiblingReorderPlacement = "before" | "after";
 export function createTaskFromInput(
   input: CreateTaskInput,
-  existingTasks: ScheduleTask[],
+  _existingTasks: ScheduleTask[],
   calendar?: CalendarDefinition,
   calendarAware = true,
 ): ScheduleTask {
   const id = `task-${Date.now().toString(36)}-${Math.round(Math.random() * 999)}`;
-  const siblings = existingTasks.filter((task) => task.parentId === input.parentId);
   const requestedWorkDays = getRequestedWorkDays(input.start, input.end);
   const assigneeIds = input.assigneeIds.length > 0 ? input.assigneeIds : ["yk"];
   return {
     assigneeAllocations: createEqualAssigneeAllocations(assigneeIds),
     assigneeIds,
-    color: palette[siblings.length % palette.length],
+    color: defaultTaskColor,
     dependencies: [],
     effortHours: input.effortHours,
     end: resolveEndForWorkDays(input.start, requestedWorkDays, calendar, calendarAware),

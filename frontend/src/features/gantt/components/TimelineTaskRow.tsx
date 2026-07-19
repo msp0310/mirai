@@ -79,15 +79,8 @@ export function TimelineTaskRow({
   const baselineLeft = baselineSpan ? baselineSpan.offset * dayWidth + 7 : 0;
   const baselineWidth = baselineSpan ? Math.max(baselineSpan.duration * dayWidth - 12, 10) : 0;
   const top = index * rowHeight;
-  const barTopOffset =
-    task.type === "task"
-      ? task.hasChildren
-        ? 12
-        : 13
-      : task.type === "summary"
-        ? 11
-        : 12;
-  const metaTopOffset = 12;
+  const barTopOffset = task.type === "task" ? (task.hasChildren ? 10 : 11) : 9;
+  const metaTopOffset = 10;
   const canResize = task.type === "task";
   const canMove = task.type !== "summary";
   const barKeyboardHint = canResize
@@ -158,7 +151,7 @@ export function TimelineTaskRow({
           onFocus={() => onSelect()}
           onKeyDown={handleKeyDown}
           onMouseDown={(event) => startPointerOperation(event, "move")}
-          style={{ left: left + 2, top: top + 10 }}
+          style={{ left: left + 2, top: top + 8 }}
           title={`${task.title} ${formatShortDate(task.start)} / ドラッグで移動 / ダブルクリックで詳細`}
           type="button"
         >
