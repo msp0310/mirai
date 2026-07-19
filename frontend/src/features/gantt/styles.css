@@ -1450,10 +1450,8 @@
 }
 
 .timeline-progress-editor.align-left {
-  top: 50%;
   right: calc(100% + 6px);
   left: auto;
-  transform: translateY(-50%);
 }
 
 .bar-side-meta.summary,
