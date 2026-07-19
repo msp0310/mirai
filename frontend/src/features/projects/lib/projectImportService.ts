@@ -12,6 +12,7 @@ import type {
   TaskCsvImportOptions,
 } from "../../../types/projectImport";
 import type { Member, Project, ScheduleTask, Team } from "../../../types/schedule";
+import { resolveTaskImportMembers } from "./projectImportMembers";
 
 type CreatePendingTaskImportInput = {
   calendar: ScheduleSnapshot["calendar"];
@@ -52,10 +53,12 @@ export function createPendingTaskImport({
   sourceKind = "csv",
   warnings: sourceWarnings = [],
 }: CreatePendingTaskImportInput): PendingTaskCsvImport {
-  const membersToCreate = dedupeImportMembers(members, sourceMembers);
+  const memberResolution = resolveTaskImportMembers(members, sourceMembers, draft);
+  const membersToCreate = memberResolution.membersToCreate;
+  const resolvedDraft = memberResolution.draft;
   const importMembers = [...members, ...membersToCreate];
   try {
-    const imported = parseTaskCsvImportFromDraft(draft, { members: importMembers });
+    const imported = parseTaskCsvImportFromDraft(resolvedDraft, { members: importMembers });
     const validation = validateTaskCsvImportData(imported, {
       calendar,
       members: importMembers,
@@ -63,7 +66,7 @@ export function createPendingTaskImport({
     });
     return {
       data: imported,
-      draft,
+      draft: resolvedDraft,
       fileName,
       membersToCreate,
       sourceKind,
@@ -84,7 +87,7 @@ export function createPendingTaskImport({
   } catch (error) {
     return {
       data: null,
-      draft,
+      draft: resolvedDraft,
       fileName,
       membersToCreate,
       sourceKind,
@@ -237,18 +240,6 @@ function createUniqueImportedId(baseId: string, existingIds: Set<string>) {
     suffix += 1;
   }
   return candidate;
-}
-
-function dedupeImportMembers(existingMembers: Member[], members: Member[]) {
-  const existingIds = new Set(existingMembers.map((member) => member.id));
-  const nextIds = new Set<string>();
-  return members.filter((member) => {
-    if (existingIds.has(member.id) || nextIds.has(member.id)) {
-      return false;
-    }
-    nextIds.add(member.id);
-    return true;
-  });
 }
 
 function uniqueStrings(values: string[]) {
