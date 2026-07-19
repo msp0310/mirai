@@ -382,6 +382,7 @@ export function mergeProjectScopedSavedDraft(
         ...savedSchedule,
         calendar: currentSchedule.calendar,
         issues: currentSchedule.issues ?? [],
+        members: currentSchedule.members,
         project: currentSchedule.project,
         tasks: currentSchedule.tasks,
         workLogs: currentSchedule.workLogs ?? [],
