@@ -10,6 +10,7 @@ public sealed class PjmgtOptions
 {
     public const string SectionName = "Pjmgt";
     public string ApiKey { get; set; } = "";
+    public string InitialPassword { get; set; } = "";
 }
 
 /// <summary>PJMGTの汎用REST APIをページング取得し、同期用スナップショットへ集約します。</summary>
@@ -20,6 +21,8 @@ public sealed class PjmgtClient(HttpClient httpClient, IOptions<PjmgtOptions> op
     private readonly PjmgtOptions options = options.Value;
 
     public bool ApiKeyConfigured => !string.IsNullOrWhiteSpace(options.ApiKey);
+    public bool InitialPasswordConfigured => !string.IsNullOrWhiteSpace(options.InitialPassword);
+    internal string InitialPassword => options.InitialPassword;
 
     public async Task TestConnectionAsync(string baseUrl, CancellationToken cancellationToken)
     {
@@ -64,7 +67,7 @@ public sealed class PjmgtClient(HttpClient httpClient, IOptions<PjmgtOptions> op
                 item.Name,
                 ToId(item.Team),
                 null,
-                null,
+                item.MailAddress,
                 item.EmploymentStatus,
                 item.PeriodFrom,
                 item.PeriodTo)).ToArray(),
@@ -158,6 +161,8 @@ internal sealed class PjmgtApiMemberDto
     [JsonPropertyName("employee_no")]
     public string? EmployeeNo { get; init; }
     public string Name { get; init; } = "";
+    [JsonPropertyName("mail_address")]
+    public string? MailAddress { get; init; }
     public PjmgtApiIdNameDto? Team { get; init; }
     [JsonPropertyName("employment_status")]
     public string? EmploymentStatus { get; init; }

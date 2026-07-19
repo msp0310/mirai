@@ -37,7 +37,7 @@ public sealed class PjmgtIntegrationServiceTests
         var oldEnd = today.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var workMonth = today.ToString("yyyy-MM", CultureInfo.InvariantCulture);
         using var httpClient = new HttpClient(new PjmgtApiHandler(currentStart, currentEnd, oldEnd, workMonth));
-        var client = new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret" }));
+        var client = new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret", InitialPassword = "Uniface01" }));
         var auditLogs = new AuditLogService(db, new HttpContextAccessor());
         var service = new PjmgtIntegrationService(db, client, auditLogs);
         var user = new AuthUserDto("admin", null, "admin@example.com", "管理者", SystemRoles.Admin, false);
@@ -64,9 +64,24 @@ public sealed class PjmgtIntegrationServiceTests
         var team = await db.Teams.Include(item => item.Members).SingleAsync();
         Assert.Equal(member.Id, Assert.Single(team.Members).MemberId);
 
+        var account = await db.Users.SingleAsync();
+        Assert.Equal(member.Id, account.MemberId);
+        Assert.Equal("taro@example.com", account.Email);
+        Assert.Equal(SystemRoles.User, account.Role);
+        Assert.True(account.IsActive);
+        Assert.True(account.PasswordResetRequired);
+        Assert.True(PasswordHasher.VerifyPassword("Uniface01", account.PasswordHash));
+
+        account.PasswordHash = PasswordHasher.HashPassword("ChangedPassword123!");
+        account.PasswordResetRequired = false;
+        await db.SaveChangesAsync();
+
         await service.SyncAsync(user, CancellationToken.None);
         Assert.Single(await db.Projects.ToListAsync());
         Assert.Single(await db.ProjectAssignments.ToListAsync());
+        account = await db.Users.SingleAsync();
+        Assert.True(PasswordHasher.VerifyPassword("ChangedPassword123!", account.PasswordHash));
+        Assert.False(account.PasswordResetRequired);
     }
 
     [Fact]
@@ -91,7 +106,7 @@ public sealed class PjmgtIntegrationServiceTests
         var workMonth = today.ToString("yyyy-MM", CultureInfo.InvariantCulture);
         using var httpClient = new HttpClient(
             new PjmgtApiHandler(currentStart, currentEnd, oldEnd, workMonth, ""));
-        var client = new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret" }));
+        var client = new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret", InitialPassword = "Uniface01" }));
         var service = new PjmgtIntegrationService(
             db,
             client,
@@ -141,7 +156,7 @@ public sealed class PjmgtIntegrationServiceTests
             new PjmgtApiHandler(currentStart, currentEnd, oldEnd, workMonth, "", true));
         var service = new PjmgtIntegrationService(
             db,
-            new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret" })),
+            new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret", InitialPassword = "Uniface01" })),
             new AuditLogService(db, new HttpContextAccessor()));
         var user = new AuthUserDto(
             "admin", null, "admin@example.com", "管理者", SystemRoles.Admin, false);
@@ -154,6 +169,7 @@ public sealed class PjmgtIntegrationServiceTests
         Assert.Equal(["20", "21"], members.Select(member => member.ExternalId!).ToArray());
         var team = await db.Teams.Include(item => item.Members).SingleAsync();
         Assert.Equal(2, team.Members.Count);
+        Assert.Equal(2, await db.Users.CountAsync());
     }
 
     private sealed class PjmgtApiHandler(
@@ -187,6 +203,7 @@ public sealed class PjmgtIntegrationServiceTests
                     id = 20,
                     employee_no = employeeNo,
                     name = "山田 太郎",
+                    mail_address = "taro@example.com",
                     team = new { id = 10, name = "開発部" },
                     employment_status = "1",
                     period_from = currentStart,
@@ -199,6 +216,7 @@ public sealed class PjmgtIntegrationServiceTests
                         id = 21,
                         employee_no = "",
                         name = "山田 太郎",
+                        mail_address = "jiro@example.com",
                         team = new { id = 10, name = "開発部" },
                         employment_status = "1",
                         period_from = currentStart,

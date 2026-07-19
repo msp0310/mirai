@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Globalization;
+using System.Net.Mail;
 using Microsoft.EntityFrameworkCore;
 using Schedule.Api.Contracts;
 using Schedule.Api.Domain;
@@ -129,6 +130,13 @@ public sealed class PjmgtIntegrationService(
         if (duplicateMembers > 0) errors.Add($"重複する社員NOが{duplicateMembers}件あります。");
         if (duplicateProjects > 0) errors.Add($"重複するプロジェクトNOが{duplicateProjects}件あります。");
 
+        var accountSources = GetAccountSources(snapshot.Members, out var missingEmails, out var invalidEmails, out var duplicateEmails);
+        if (missingEmails > 0) warnings.Add($"メールアドレス未設定の要員{missingEmails}名はログインアカウントを作成しません。");
+        if (invalidEmails > 0) warnings.Add($"メールアドレス不正の要員{invalidEmails}名はログインアカウントを作成しません。");
+        if (duplicateEmails > 0) warnings.Add($"同一メールアドレスの要員{duplicateEmails}名を1つのログインアカウントに集約します。");
+        if (accountSources.Length > 0 && !client.InitialPasswordConfigured)
+            errors.Add("PJMGT同期ユーザーの初期パスワードが設定されていません。");
+
         var teams = await db.Teams.AsNoTracking().ToListAsync(cancellationToken);
         var members = await db.Members.AsNoTracking().ToListAsync(cancellationToken);
         var projects = await db.Projects.AsNoTracking().ToListAsync(cancellationToken);
@@ -168,6 +176,7 @@ public sealed class PjmgtIntegrationService(
     {
         var teams = await db.Teams.Include(item => item.Members).ToListAsync(cancellationToken);
         var members = await db.Members.ToListAsync(cancellationToken);
+        var users = await db.Users.ToListAsync(cancellationToken);
         var projects = await db.Projects
             .Include(item => item.Calendar)
             .Include(item => item.Members)
@@ -227,6 +236,45 @@ public sealed class PjmgtIntegrationService(
             member.ExternalSource = Source;
             member.ExternalId = source.MemberId;
             memberMap[source.MemberId] = member;
+        }
+
+        var accountSources = GetAccountSources(snapshot.Members, out _, out _, out _);
+        var now = DateTimeOffset.UtcNow.ToString("O");
+        foreach (var source in accountSources)
+        {
+            var member = memberMap[source.MemberId];
+            var normalizedEmail = AuthService.NormalizeEmail(source.MailAddress!);
+            var groupMemberIds = snapshot.Members
+                .Where(item => NormalizeValidEmail(item.MailAddress) == normalizedEmail)
+                .Select(item => memberMap[item.MemberId].Id)
+                .ToHashSet(StringComparer.Ordinal);
+            var account = users.FirstOrDefault(item => item.MemberId == member.Id)
+                ?? users.FirstOrDefault(item => item.MemberId is not null && groupMemberIds.Contains(item.MemberId))
+                ?? users.FirstOrDefault(item => item.EmailNormalized == normalizedEmail);
+
+            if (account is not null && account.MemberId is null)
+                throw new InvalidDataException($"メールアドレス {source.MailAddress} は既存の未連携アカウントで使用されています。");
+
+            if (account is null)
+            {
+                account = new UserEntity
+                {
+                    Id = StableId("user", source.MemberId),
+                    CreatedAt = now,
+                    PasswordHash = PasswordHasher.HashPassword(client.InitialPassword),
+                    PasswordChangedAt = now,
+                    PasswordResetRequired = true
+                };
+                users.Add(account);
+                db.Users.Add(account);
+            }
+
+            account.MemberId = member.Id;
+            account.Email = source.MailAddress!.Trim();
+            account.EmailNormalized = normalizedEmail;
+            account.Name = source.Name.Trim();
+            account.Role = SystemRoles.User;
+            account.IsActive = true;
         }
 
         var syncedMemberIds = memberMap.Values.Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
@@ -291,7 +339,6 @@ public sealed class PjmgtIntegrationService(
             projectMap[source.ProjectId] = project;
         }
 
-        var now = DateTimeOffset.UtcNow.ToString("O");
         foreach (var project in projects.Where(item => item.ExternalSource == Source))
         {
             var source = snapshot.Projects.FirstOrDefault(item => item.ProjectId == project.ExternalId);
@@ -365,6 +412,36 @@ public sealed class PjmgtIntegrationService(
         setting = new PjmgtIntegrationSettingEntity();
         db.PjmgtIntegrationSettings.Add(setting);
         return setting;
+    }
+
+    private static PjmgtMemberDto[] GetAccountSources(
+        IReadOnlyList<PjmgtMemberDto> members,
+        out int missingEmails,
+        out int invalidEmails,
+        out int duplicateEmails)
+    {
+        missingEmails = members.Count(item => string.IsNullOrWhiteSpace(item.MailAddress));
+        invalidEmails = members.Count(item => !string.IsNullOrWhiteSpace(item.MailAddress) && NormalizeValidEmail(item.MailAddress) is null);
+        var groups = members
+            .Select(item => new { Member = item, Email = NormalizeValidEmail(item.MailAddress) })
+            .Where(item => item.Email is not null)
+            .GroupBy(item => item.Email!, StringComparer.Ordinal)
+            .ToArray();
+        duplicateEmails = groups.Sum(group => group.Count() - 1);
+
+        return groups.Select(group => group
+                .Select(item => item.Member)
+                .OrderBy(item => item.EmploymentStatus is "7" or "9")
+                .ThenBy(item => string.IsNullOrWhiteSpace(item.EmployeeNo))
+                .ThenByDescending(item => int.TryParse(item.MemberId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id) ? id : int.MinValue)
+                .First())
+            .ToArray();
+    }
+
+    private static string? NormalizeValidEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email) || !MailAddress.TryCreate(email.Trim(), out var parsed)) return null;
+        return AuthService.NormalizeEmail(parsed.Address);
     }
 
     private async Task<PjmgtIntegrationSettingEntity> GetConfiguredSettingAsync(CancellationToken cancellationToken)
