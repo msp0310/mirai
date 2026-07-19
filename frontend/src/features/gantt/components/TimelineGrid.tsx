@@ -109,6 +109,7 @@ export function TimelineGrid({
           style={
             {
               "--day-width": `${dayWidth}px`,
+              "--row-height": `${rowHeight}px`,
               height: bodyHeight,
               width: timelineWidth,
             } as CSSProperties

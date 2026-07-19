@@ -571,7 +571,7 @@
   inset: 0 auto auto 0;
   width: 100%;
   background:
-    linear-gradient(#eef2f7 1px, transparent 1px) 0 0 / 100% 38px,
+    linear-gradient(#eef2f7 1px, transparent 1px) 0 0 / 100% var(--row-height, 30px),
     linear-gradient(90deg, #edf1f6 1px, transparent 1px) 0 0 / var(--day-width, 22px) 100%;
   pointer-events: none;
 }
