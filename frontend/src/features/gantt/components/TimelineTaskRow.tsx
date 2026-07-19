@@ -62,6 +62,7 @@ export function TimelineTaskRow({
   visibleSlotWindow,
 }: TimelineTaskRowProps) {
   const [progressEditorOpen, setProgressEditorOpen] = useState(false);
+  const [progressEditorAlignLeft, setProgressEditorAlignLeft] = useState(false);
   const span = getTaskTimelineSpan(task, timeline);
   const baselineSpan =
     task.baselineStart && task.baselineEnd
@@ -255,8 +256,14 @@ export function TimelineTaskRow({
           aria-label={`${task.title}の進捗 ${task.progress}%`}
           className="bar-progress-trigger"
           data-progress-task-id={task.id}
-          onClick={() => {
+          onClick={(event) => {
             onSelect();
+            const timelineBody = event.currentTarget.closest(".timeline-body");
+            if (timelineBody) {
+              const triggerRect = event.currentTarget.getBoundingClientRect();
+              const bodyRect = timelineBody.getBoundingClientRect();
+              setProgressEditorAlignLeft(triggerRect.right + 198 > bodyRect.right);
+            }
             setProgressEditorOpen((open) => !open);
           }}
           type="button"
@@ -265,7 +272,11 @@ export function TimelineTaskRow({
         </button>
         {assigneeMeta.short ? <span>{assigneeMeta.short}</span> : null}
         {progressEditorOpen ? (
-          <div className="timeline-progress-editor" id={progressEditorId} role="dialog">
+          <div
+            className={`timeline-progress-editor ${progressEditorAlignLeft ? "align-left" : ""}`}
+            id={progressEditorId}
+            role="dialog"
+          >
             <div>
               <span>進捗</span>
               <strong>{task.progress}%</strong>
