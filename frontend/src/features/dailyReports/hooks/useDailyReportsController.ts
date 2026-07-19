@@ -11,6 +11,7 @@ import {
   sendDailyReportReminders,
 } from "../../../data/dailyReportRepository";
 import type { ScheduleSnapshot } from "../../../data/scheduleRepository";
+import { getActiveTeamMembers } from "../../../lib/members";
 import type { DailyReport, Team } from "../../../types/schedule";
 import { projectQueryKeys } from "../../projects/api/projectQueries";
 import {
@@ -46,10 +47,10 @@ export function useDailyReportsController({
   const members = useMemo(() => collectScheduleMembers(schedules), [schedules]);
   const currentMember = findCurrentMember(members, currentUser);
   const canManageTeam = canManageTeamReports(team, currentUser);
-  const teamMembers = useMemo(() => {
-    const memberIds = new Set(team.memberIds);
-    return members.filter((member) => memberIds.has(member.id));
-  }, [members, team.memberIds]);
+  const teamMembers = useMemo(
+    () => getActiveTeamMembers(members, team.memberIds),
+    [members, team.memberIds],
+  );
   const teamMemberIds = useMemo(
     () => new Set(teamMembers.map((member) => member.id)),
     [teamMembers],
