@@ -1388,6 +1388,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   pointer-events: none;
+  transform: translateY(-50%);
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
 }
