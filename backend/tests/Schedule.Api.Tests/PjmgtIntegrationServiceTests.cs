@@ -117,12 +117,52 @@ public sealed class PjmgtIntegrationServiceTests
         Assert.Equal(member.Id, Assert.Single(project.Assignments).MemberId);
     }
 
+    [Fact]
+    public async Task SyncKeepsMembersWithSameNameAndDifferentPjmgtIdsSeparate()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var dbOptions = new DbContextOptionsBuilder<ScheduleDbContext>().UseSqlite(connection).Options;
+        await using var db = new ScheduleDbContext(dbOptions);
+        await db.Database.EnsureCreatedAsync();
+        db.PjmgtIntegrationSettings.Add(new PjmgtIntegrationSettingEntity
+        {
+            BaseUrl = "https://pjmgt.example.test/pjmgt/api/v1",
+            ExcludePastProjects = true
+        });
+        await db.SaveChangesAsync();
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var currentStart = today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var currentEnd = today.AddMonths(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var oldEnd = today.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var workMonth = today.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        using var httpClient = new HttpClient(
+            new PjmgtApiHandler(currentStart, currentEnd, oldEnd, workMonth, "", true));
+        var service = new PjmgtIntegrationService(
+            db,
+            new PjmgtClient(httpClient, Options.Create(new PjmgtOptions { ApiKey = "secret" })),
+            new AuditLogService(db, new HttpContextAccessor()));
+        var user = new AuthUserDto(
+            "admin", null, "admin@example.com", "管理者", SystemRoles.Admin, false);
+
+        await service.SyncAsync(user, CancellationToken.None);
+
+        var members = await db.Members.OrderBy(item => item.ExternalId).ToArrayAsync();
+        Assert.Equal(2, members.Length);
+        Assert.All(members, member => Assert.Equal("山田 太郎", member.Name));
+        Assert.Equal(["20", "21"], members.Select(member => member.ExternalId!).ToArray());
+        var team = await db.Teams.Include(item => item.Members).SingleAsync();
+        Assert.Equal(2, team.Members.Count);
+    }
+
     private sealed class PjmgtApiHandler(
         string currentStart,
         string currentEnd,
         string oldEnd,
         string workMonth,
-        string employeeNo = "E001") : HttpMessageHandler
+        string employeeNo = "E001",
+        bool includeSameNameMember = false) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -142,8 +182,8 @@ public sealed class PjmgtIntegrationServiceTests
                 return Collection([new { id = 10, name = "開発部", status = "0" }]);
 
             if (uri.AbsolutePath.EndsWith("/members", StringComparison.Ordinal))
-                return Collection([new
-                {
+            {
+                var members = new List<object> { new {
                     id = 20,
                     employee_no = employeeNo,
                     name = "山田 太郎",
@@ -151,7 +191,22 @@ public sealed class PjmgtIntegrationServiceTests
                     employment_status = "1",
                     period_from = currentStart,
                     period_to = (string?)null
-                }]);
+                } };
+                if (includeSameNameMember)
+                {
+                    members.Add(new
+                    {
+                        id = 21,
+                        employee_no = "",
+                        name = "山田 太郎",
+                        team = new { id = 10, name = "開発部" },
+                        employment_status = "1",
+                        period_from = currentStart,
+                        period_to = (string?)null
+                    });
+                }
+                return Collection(members);
+            }
 
             if (uri.AbsolutePath.EndsWith("/projects", StringComparison.Ordinal))
             {

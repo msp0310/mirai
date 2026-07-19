@@ -139,8 +139,10 @@ public sealed class PjmgtIntegrationService(
         var teamCreated = snapshot.Teams.Count(item => !teams.Any(existing => IsMatch(existing.ExternalSource, existing.ExternalId, item.TeamId) || existing.Name == item.TeamName));
         var memberCreated = snapshot.Members.Count(item => !members.Any(existing =>
             IsMatch(existing.ExternalSource, existing.ExternalId, item.MemberId) ||
+            existing.Id == StableId("member", item.MemberId) ||
             (!string.IsNullOrWhiteSpace(item.EmployeeNo) && existing.EmployeeNo == item.EmployeeNo.Trim()) ||
-            (existing.Name == item.Name && members.Count(candidate => candidate.Name == item.Name) == 1)));
+            (existing.ExternalSource is null && existing.Name == item.Name &&
+             members.Count(candidate => candidate.ExternalSource is null && candidate.Name == item.Name) == 1)));
         var projectCreated = included.Count(item => !projects.Any(existing => IsMatch(existing.ExternalSource, existing.ExternalId, item.ProjectId) || existing.ProjectNo == item.ProjectNo));
         var archived = projects.Count(existing =>
             existing.ExternalSource == Source &&
@@ -195,13 +197,19 @@ public sealed class PjmgtIntegrationService(
         foreach (var source in snapshot.Members)
         {
             var employeeNo = NullIfBlank(source.EmployeeNo);
+            var stableMemberId = StableId("member", source.MemberId);
             var member = members.FirstOrDefault(item => IsMatch(item.ExternalSource, item.ExternalId, source.MemberId))
+                // 旧同期で同姓同名が統合され外部IDだけ上書きされた要員は、安定内部IDから元の要員へ戻します。
+                ?? members.FirstOrDefault(item => item.Id == stableMemberId)
                 ?? (employeeNo is null ? null : members.FirstOrDefault(item => item.EmployeeNo == employeeNo));
-            var nameMatches = members.Where(item => item.Name == source.Name.Trim()).ToArray();
+            // 外部IDが異なる同姓同名を同一人物として上書きしないよう、名前照合は未連携要員だけに限定します。
+            var nameMatches = members
+                .Where(item => item.ExternalSource is null && item.Name == source.Name.Trim())
+                .ToArray();
             if (member is null && nameMatches.Length == 1) member = nameMatches[0];
             if (member is null)
             {
-                member = new MemberEntity { Id = StableId("member", source.MemberId), CapacityHours = 40 };
+                member = new MemberEntity { Id = stableMemberId, CapacityHours = 40 };
                 members.Add(member);
                 db.Members.Add(member);
             }
