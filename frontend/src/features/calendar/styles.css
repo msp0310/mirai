@@ -53,6 +53,25 @@
   background: transparent;
 }
 
+.month-switcher .month-today-button {
+  width: auto;
+  padding-inline: 9px;
+  color: #1649bf;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.month-switcher input[type="date"] {
+  height: 28px;
+  border: 0;
+  border-left: 1px solid #d9e1ed;
+  color: #354258;
+  background: transparent;
+  padding-inline: 9px 5px;
+  font-size: 11px;
+  font-weight: 650;
+}
+
 .month-switcher button:hover {
   color: #1649bf;
   background: #edf4ff;
@@ -69,6 +88,68 @@
   font-size: 13px;
   font-weight: 750;
   text-align: center;
+}
+
+.calendar-date-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  border-bottom: 1px solid #dfe6ef;
+  background: #f8fafc;
+  padding: 8px 14px;
+}
+
+.calendar-date-strip button {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid #dfe6ef;
+  border-radius: 7px;
+  color: #536178;
+  background: #fff;
+  padding: 5px 8px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.calendar-date-strip button:hover {
+  border-color: #b7c8ee;
+  background: #f3f7ff;
+}
+
+.calendar-date-strip button.off {
+  color: #a05030;
+  background: #fff8f3;
+}
+
+.calendar-date-strip button.selected {
+  border-color: #2864ea;
+  color: #fff;
+  background: #2864ea;
+  box-shadow: 0 2px 7px rgba(40, 100, 234, 0.2);
+}
+
+.calendar-date-strip span {
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.calendar-date-strip strong {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.calendar-date-strip small {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .calendar-layout {

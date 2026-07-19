@@ -9,6 +9,7 @@ import type {
   ScheduleTask,
 } from "../../../types/schedule";
 import {
+  buildCalendarDateStrip,
   buildCalendarMonthCells,
   countWorkingDaysInMonth,
   getCalendarDayEvents,
@@ -28,19 +29,20 @@ export function useCalendarPanel({
   project,
   tasks,
 }: UseCalendarPanelOptions) {
-  const [visibleMonth, setVisibleMonth] = useState(() => getProjectMonthStart(project));
-  const [holidayDate, setHolidayDate] = useState(project.rangeStart);
+  const [visibleMonth, setVisibleMonth] = useState(() => getMonthStart(getInitialDate(project)));
+  const [holidayDate, setHolidayDate] = useState(() => getInitialDate(project));
   const [holidayName, setHolidayName] = useState("");
   const [holidayImportMessage, setHolidayImportMessage] = useState("");
   const [holidayImporting, setHolidayImporting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(project.rangeStart);
+  const [selectedDate, setSelectedDate] = useState(() => getInitialDate(project));
 
   useEffect(() => {
-    setVisibleMonth(getProjectMonthStart(project));
-    setHolidayDate(project.rangeStart);
+    const initialDate = getInitialDate(project);
+    setVisibleMonth(getMonthStart(initialDate));
+    setHolidayDate(initialDate);
     setHolidayImportMessage("");
-    setSelectedDate(project.rangeStart);
-  }, [project.id, project.rangeStart]);
+    setSelectedDate(initialDate);
+  }, [project.id, project.rangeEnd, project.rangeStart]);
 
   const monthDate = parseDate(visibleMonth);
   const cells = useMemo(() => buildCalendarMonthCells(monthDate), [visibleMonth]);
@@ -49,6 +51,19 @@ export function useCalendarPanel({
     () => getCalendarDayEvents(tasks, selectedDate),
     [selectedDate, tasks],
   );
+  const dateStrip = useMemo(
+    () => buildCalendarDateStrip(selectedDate, tasks, calendar),
+    [calendar, selectedDate, tasks],
+  );
+
+  function selectDate(dateKey: string) {
+    if (!dateKey) {
+      return;
+    }
+    setSelectedDate(dateKey);
+    setHolidayDate(dateKey);
+    setVisibleMonth(getMonthStart(dateKey));
+  }
 
   function removeHoliday(target: CalendarHoliday) {
     onCalendarChange({
@@ -75,8 +90,10 @@ export function useCalendarPanel({
     cells,
     changeMonth: (offset: number) => {
       const next = new Date(monthDate.getFullYear(), monthDate.getMonth() + offset, 1);
-      setVisibleMonth(toDateKey(next));
+      selectDate(toDateKey(next));
     },
+    dateStrip,
+    goToToday: () => selectDate(toDateKey(new Date())),
     holidayDate,
     holidayImporting,
     holidayImportMessage,
@@ -108,10 +125,7 @@ export function useCalendarPanel({
     ),
     monthLabel: `${monthDate.getFullYear()}年${monthDate.getMonth() + 1}月`,
     removeHoliday,
-    selectDate: (dateKey: string) => {
-      setSelectedDate(dateKey);
-      setHolidayDate(dateKey);
-    },
+    selectDate,
     selectedDate,
     selectedDateEvents,
     selectedDateWorking: isWorkingDay(parseDate(selectedDate), calendar, true),
@@ -143,7 +157,12 @@ export function useCalendarPanel({
   };
 }
 
-function getProjectMonthStart(project: Project) {
-  const projectStart = parseDate(project.rangeStart);
-  return toDateKey(new Date(projectStart.getFullYear(), projectStart.getMonth(), 1));
+function getInitialDate(project: Project) {
+  const today = toDateKey(new Date());
+  return today >= project.rangeStart && today <= project.rangeEnd ? today : project.rangeStart;
+}
+
+function getMonthStart(dateKey: string) {
+  const date = parseDate(dateKey);
+  return toDateKey(new Date(date.getFullYear(), date.getMonth(), 1));
 }

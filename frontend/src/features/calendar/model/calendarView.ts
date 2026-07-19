@@ -1,4 +1,4 @@
-import { addDays, isWorkingDay } from "../../../lib/schedule";
+import { addDays, isWorkingDay, parseDate, toDateKey } from "../../../lib/schedule.ts";
 import type {
   CalendarDefinition,
   ScheduleTask,
@@ -29,6 +29,27 @@ export function getVisibleCalendarEvents(tasks: ScheduleTask[], dateKey: string)
   return getCalendarDayEvents(tasks, dateKey)
     .filter((task) => task.type === "milestone" || task.start === dateKey || task.end === dateKey)
     .slice(0, 3);
+}
+
+export function buildCalendarDateStrip(
+  selectedDate: string,
+  tasks: ScheduleTask[],
+  calendar: CalendarDefinition,
+) {
+  const centerDate = parseDate(selectedDate);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(centerDate, index - 3);
+    const dateKey = toDateKey(date);
+    return {
+      dateKey,
+      day: date.getDate(),
+      eventCount: getCalendarDayEvents(tasks, dateKey).length,
+      month: date.getMonth() + 1,
+      selected: dateKey === selectedDate,
+      weekday: weekdays[date.getDay()],
+      working: isWorkingDay(date, calendar, true),
+    };
+  });
 }
 
 export function getCalendarEventLabel(task: ScheduleTask, dateKey: string) {

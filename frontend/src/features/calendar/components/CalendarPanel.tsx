@@ -43,7 +43,32 @@ export function CalendarPanel({
           <button aria-label="翌月" onClick={() => model.changeMonth(1)} type="button">
             <ChevronRightIcon />
           </button>
+          <button className="month-today-button" onClick={model.goToToday} type="button">
+            今日
+          </button>
+          <input
+            aria-label="表示日"
+            onChange={(event) => model.selectDate(event.target.value)}
+            type="date"
+            value={model.selectedDate}
+          />
         </div>
+      </div>
+      <div className="calendar-date-strip" aria-label="選択日前後の日付">
+        {model.dateStrip.map((item) => (
+          <button
+            className={`${item.selected ? "selected" : ""} ${item.working ? "working" : "off"}`}
+            key={item.dateKey}
+            onClick={() => model.selectDate(item.dateKey)}
+            type="button"
+          >
+            <span>{item.weekday}</span>
+            <strong>
+              {item.month}/{item.day}
+            </strong>
+            <small>{item.eventCount > 0 ? `${item.eventCount}件` : item.working ? "稼働" : "休み"}</small>
+          </button>
+        ))}
       </div>
       <div className="calendar-layout">
         <CalendarMonthGrid
