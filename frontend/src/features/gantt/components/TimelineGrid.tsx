@@ -5,6 +5,7 @@ import type {
   CalendarDefinition,
   GanttTimeUnit,
   Member,
+  ScheduleTask,
   TaskRow,
   TimelineColumn,
   TimelineDay,
@@ -32,6 +33,7 @@ type TimelineGridProps = {
   onOpenTaskInspector: (taskId: string) => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSelectTask: (taskId: string, options?: { additive?: boolean; range?: boolean }) => void;
+  onUpdateTask: (taskId: string, patch: Partial<ScheduleTask>) => void;
   projectRangeEnd: string;
   projectRangeStart: string;
   dependencyIssueByTaskId: Map<string, DependencyIssue[]>;
@@ -65,6 +67,7 @@ export function TimelineGrid({
   onOpenTaskInspector,
   onResizeTask,
   onSelectTask,
+  onUpdateTask,
   projectRangeEnd,
   projectRangeStart,
   dependencyIssueByTaskId,
@@ -142,6 +145,7 @@ export function TimelineGrid({
               onContextMenu={(event) => onTaskContextMenu(task.id, event)}
               onOpenInspector={() => onOpenTaskInspector(task.id)}
               onSelect={(options) => onSelectTask(task.id, options)}
+              onUpdateTask={onUpdateTask}
               dependencyIssues={dependencyIssueByTaskId.get(task.id) ?? []}
               searchMatched={taskMatchesQuery(task, query)}
               selected={selectedTaskIds.has(task.id)}

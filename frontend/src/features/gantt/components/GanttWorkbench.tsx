@@ -411,6 +411,7 @@ export function GanttWorkbench({
             onResizeTask={onResizeTask}
             onSelectTask={onSelectTask}
             onTaskContextMenu={openTaskContextMenu}
+            onUpdateTask={onUpdateTask}
             projectRangeEnd={projectRangeEnd}
             projectRangeStart={projectRangeStart}
             rowIndexOffset={virtualWindow.start}

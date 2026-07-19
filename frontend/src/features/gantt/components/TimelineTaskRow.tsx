@@ -1,10 +1,12 @@
-import { type CSSProperties, type MouseEvent } from "react";
+import { type CSSProperties, type FocusEvent, type MouseEvent, useState } from "react";
 
 import { type DependencyIssue, formatShortDate, getTaskTimelineSpan } from "../../../lib/schedule";
+import { normalizeProgressStatus } from "../../../lib/taskOperations";
 import type {
   CalendarDefinition,
   GanttTimeUnit,
   Member,
+  ScheduleTask,
   TaskRow,
   TimelineDay,
 } from "../../../types/schedule";
@@ -25,6 +27,7 @@ type TimelineTaskRowProps = {
   onOpenInspector: () => void;
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSelect: (options?: { additive?: boolean; range?: boolean }) => void;
+  onUpdateTask: (taskId: string, patch: Partial<ScheduleTask>) => void;
   dependencyIssues: DependencyIssue[];
   searchMatched: boolean;
   selected: boolean;
@@ -48,6 +51,7 @@ export function TimelineTaskRow({
   onOpenInspector,
   onResizeTask,
   onSelect,
+  onUpdateTask,
   dependencyIssues,
   searchMatched,
   selected,
@@ -57,6 +61,7 @@ export function TimelineTaskRow({
   timeline,
   visibleSlotWindow,
 }: TimelineTaskRowProps) {
+  const [progressEditorOpen, setProgressEditorOpen] = useState(false);
   const span = getTaskTimelineSpan(task, timeline);
   const baselineSpan =
     task.baselineStart && task.baselineEnd
@@ -70,9 +75,6 @@ export function TimelineTaskRow({
   const left = span.offset * dayWidth + 7;
   const width = Math.max(span.duration * dayWidth - 12, 10);
   const assigneeMeta = formatTimelineAssignees(task.assigneeIds, members);
-  const sideMetaLabel = assigneeMeta.short
-    ? `${task.progress}% ${assigneeMeta.short}`
-    : `${task.progress}%`;
   const metaTitle = assigneeMeta.full
     ? `${task.progress}% ${assigneeMeta.full}`
     : `${task.progress}%`;
@@ -102,6 +104,20 @@ export function TimelineTaskRow({
           ? "ahead"
           : "same"
       : "same";
+  const progressEditorId = `timeline-progress-${task.id}`;
+
+  const handleProgressChange = (progress: number) => {
+    onUpdateTask(task.id, {
+      progress,
+      status: normalizeProgressStatus(progress),
+    });
+  };
+
+  const handleProgressEditorBlur = (event: FocusEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setProgressEditorOpen(false);
+    }
+  };
 
   const { handleKeyDown, handleOpenInspector, handleTaskClick, startPointerOperation } =
     useTimelineBarInteraction({
@@ -225,13 +241,47 @@ export function TimelineTaskRow({
           />
         ) : null}
       </button>
-      <span
+      <div
         className={`bar-side-meta ${task.type}`}
+        onBlur={handleProgressEditorBlur}
+        onClick={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
         style={{ left: left + width + 8, top: top + rowHeight / 2 }}
         title={metaTitle}
       >
-        {sideMetaLabel}
-      </span>
+        <button
+          aria-controls={progressEditorId}
+          aria-expanded={progressEditorOpen}
+          aria-label={`${task.title}の進捗 ${task.progress}%`}
+          className="bar-progress-trigger"
+          data-progress-task-id={task.id}
+          onClick={() => {
+            onSelect();
+            setProgressEditorOpen((open) => !open);
+          }}
+          type="button"
+        >
+          {task.progress}%
+        </button>
+        {assigneeMeta.short ? <span>{assigneeMeta.short}</span> : null}
+        {progressEditorOpen ? (
+          <div className="timeline-progress-editor" id={progressEditorId} role="dialog">
+            <div>
+              <span>進捗</span>
+              <strong>{task.progress}%</strong>
+            </div>
+            <input
+              aria-label={`${task.title}の進捗率`}
+              max="100"
+              min="0"
+              onChange={(event) => handleProgressChange(Number(event.target.value))}
+              step="5"
+              type="range"
+              value={task.progress}
+            />
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

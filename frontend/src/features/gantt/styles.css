@@ -1374,8 +1374,10 @@
 .bar-side-meta {
   position: absolute;
   z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 3px;
   max-width: 148px;
-  overflow: hidden;
   border-radius: 999px;
   color: #44546c;
   background: rgba(255, 255, 255, 0.86);
@@ -1385,12 +1387,66 @@
   font-family: "Noto Sans JP Variable", "Noto Sans JP", sans-serif;
   font-weight: 650;
   line-height: 1;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  pointer-events: none;
   transform: translateY(-50%);
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
+}
+
+.bar-side-meta > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-progress-trigger {
+  border: 0;
+  color: #285bb8;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.bar-progress-trigger:hover,
+.bar-progress-trigger:focus-visible {
+  color: #1649bf;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.timeline-progress-editor {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 12;
+  display: grid;
+  width: 190px;
+  gap: 8px;
+  border: 1px solid #cbd6e5;
+  border-radius: 8px;
+  color: #24364f;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(23, 32, 51, 0.2);
+  padding: 10px 12px;
+}
+
+.timeline-progress-editor > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.timeline-progress-editor strong {
+  color: #1649bf;
+  font-size: 12px;
+}
+
+.timeline-progress-editor input[type="range"] {
+  width: 100%;
+  accent-color: #2864ea;
+  cursor: pointer;
 }
 
 .bar-side-meta.summary,

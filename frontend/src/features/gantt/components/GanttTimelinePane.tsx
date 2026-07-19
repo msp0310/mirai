@@ -31,6 +31,7 @@ type GanttTimelinePaneProps = {
   onResizeTask: (taskId: string, edge: "start" | "end", deltaDays: number) => void;
   onSelectTask: (taskId: string) => void;
   onTaskContextMenu: (taskId: string, event: MouseEvent<HTMLElement>) => void;
+  onUpdateTask: (taskId: string, patch: Partial<ScheduleTask>) => void;
   projectRangeEnd: string;
   projectRangeStart: string;
   rowIndexOffset: number;
@@ -63,6 +64,7 @@ export function GanttTimelinePane({
   onResizeTask,
   onSelectTask,
   onTaskContextMenu,
+  onUpdateTask,
   projectRangeEnd,
   projectRangeStart,
   rowIndexOffset,
@@ -95,6 +97,7 @@ export function GanttTimelinePane({
         onResizeTask={onResizeTask}
         onSelectTask={onSelectTask}
         onTaskContextMenu={onTaskContextMenu}
+        onUpdateTask={onUpdateTask}
         projectRangeEnd={projectRangeEnd}
         projectRangeStart={projectRangeStart}
         query=""
