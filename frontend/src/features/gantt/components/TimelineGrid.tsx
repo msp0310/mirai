@@ -10,6 +10,7 @@ import type {
   TimelineDay,
 } from "../../../types/schedule";
 import type { VisibleTimelineSlotWindow } from "../types/ganttState";
+import { useTimelinePan } from "../hooks/useTimelinePan";
 import { rowHeight } from "./constants";
 import { TimelineCalendarBackdrop } from "./TimelineCalendarBackdrop";
 import { TimelineDependencyOverlay } from "./TimelineDependencyOverlay";
@@ -82,6 +83,7 @@ export function TimelineGrid({
 }: TimelineGridProps) {
   const timelineWidth = timeline.length * dayWidth;
   const bodyHeight = Math.max(totalRows * rowHeight, viewportHeight);
+  const timelinePanHandlers = useTimelinePan();
   return (
     <>
       <TimelineHeader
@@ -96,7 +98,12 @@ export function TimelineGrid({
         weeks={weeks}
       />
 
-      <div className="timeline-body" onScroll={onBodyScroll} ref={timelineBodyRef}>
+      <div
+        className="timeline-body"
+        onScroll={onBodyScroll}
+        ref={timelineBodyRef}
+        {...timelinePanHandlers}
+      >
         <div
           className="timeline-canvas"
           style={

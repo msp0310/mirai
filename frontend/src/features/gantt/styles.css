@@ -489,6 +489,16 @@
   grid-column: 2;
   grid-row: 2;
   min-width: 0;
+  cursor: grab;
+}
+
+.timeline-body[data-panning="true"] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.timeline-body[data-panning="true"] .timeline-canvas {
+  cursor: grabbing;
 }
 
 .gantt-out-of-range-guide {
