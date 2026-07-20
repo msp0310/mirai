@@ -1,7 +1,7 @@
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { type CSSProperties, useEffect, useState } from "react";
 
-import { isMemberActive } from "../../../../lib/members";
+import { getActiveMembers } from "../../../../lib/members";
 import type { Member, Team } from "../../../../types/schedule";
 import { getActiveTeamMemberCount, updateTeamMembershipRole } from "../../model/masterSettings";
 
@@ -35,6 +35,7 @@ export function TeamSettingsSection({
   const [code, setCode] = useState(selectedTeam.code);
   const [description, setDescription] = useState(selectedTeam.description);
   const [newTeamName, setNewTeamName] = useState("");
+  const activeMembers = getActiveMembers(members);
   const activeMemberCount = getActiveTeamMemberCount(selectedTeam, members);
 
   useEffect(() => {
@@ -85,11 +86,11 @@ export function TeamSettingsSection({
         </div>
         <div>
           <span>所属メンバー</span>
-          <strong>{selectedTeam.memberIds.length}名</strong>
+          <strong>{activeMemberCount}名</strong>
         </div>
         <div>
-          <span>有効メンバー</span>
-          <strong>{activeMemberCount}名</strong>
+          <span>登録メンバー</span>
+          <strong>{activeMembers.length}名</strong>
         </div>
       </div>
 
@@ -164,15 +165,13 @@ export function TeamSettingsSection({
 
           <div className="settings-card-heading team-members-heading">
             <strong>所属メンバー</strong>
-            <span>
-              有効{activeMemberCount}名 / 全{selectedTeam.memberIds.length}名
-            </span>
+            <span>{activeMemberCount}名</span>
           </div>
           <div className="team-member-checks">
-            {members.map((member) => {
+            {activeMembers.map((member) => {
               const assigned = selectedTeam.memberIds.includes(member.id);
               return (
-                <label className={isMemberActive(member) ? "" : "inactive"} key={member.id}>
+                <label key={member.id}>
                   <input
                     checked={assigned}
                     onChange={(event) =>
@@ -184,10 +183,7 @@ export function TeamSettingsSection({
                     {member.initials}
                   </span>
                   <strong>{member.name}</strong>
-                  <small>
-                    {member.role}
-                    {!isMemberActive(member) ? " / 休止中" : ""}
-                  </small>
+                  <small>{member.role}</small>
                   {assigned ? (
                     <select
                       aria-label={`${member.name}のチーム権限`}
